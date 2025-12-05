@@ -1,1456 +1,353 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>N64 Vault - Nintendo 64 Emulator</title>
-        <meta
-            name="description"
-            content="Play classic Nintendo 64 games in your browser with N64 Vault - a modern web-based emulator."
-        />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <link
-            href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Rajdhani:wght@400;500;600;700&family=Roboto:wght@400;500&family=Roboto+Mono:wght@400;500&display=swap"
-            rel="stylesheet"
-        />
-
-        <style>
-            :root {
-                --primary: #e43f5a;
-                --primary-hover: #c9354d;
-                --secondary: #e94560;
-                --background: #0f0f23;
-                --card-bg: #1b1b2f;
-                --card-border: #2a2a45;
-                --ui-dark: #16213e;
-                --accent: #162447;
-                --text-primary: #ffffff;
-                --text-secondary: #a0a0b0;
-                --text-muted: #6b6b80;
-                --success: #4ade80;
-                --warning: #fbbf24;
-                --error: #f87171;
-            }
-
-            * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-            }
-
-            body {
-                font-family:
-                    "Roboto",
-                    -apple-system,
-                    BlinkMacSystemFont,
-                    sans-serif;
-                background: var(--background);
-                color: var(--text-primary);
-                min-height: 100vh;
-                background-image:
-                    linear-gradient(
-                        rgba(228, 63, 90, 0.03) 1px,
-                        transparent 1px
-                    ),
-                    linear-gradient(
-                        90deg,
-                        rgba(228, 63, 90, 0.03) 1px,
-                        transparent 1px
-                    );
-                background-size: 50px 50px;
-            }
-
-            .container {
-                max-width: 1000px;
-                margin: 0 auto;
-                padding: 30px 20px;
-            }
-
-            /* Header */
-            .header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 30px;
-                flex-wrap: wrap;
-                gap: 16px;
-            }
-
-            .logo-section {
-                display: flex;
-                align-items: center;
-                gap: 16px;
-            }
-
-            .logo-icon {
-                width: 48px;
-                height: 48px;
-                color: var(--primary);
-            }
-
-            .logo-text {
-                font-family: "Orbitron", monospace;
-                font-size: 1.8rem;
-                font-weight: 800;
-                color: var(--primary);
-                text-transform: uppercase;
-                letter-spacing: 3px;
-                text-shadow: 0 0 20px rgba(228, 63, 90, 0.4);
-            }
-
-            .nav-tabs {
-                display: flex;
-                gap: 8px;
-            }
-
-            .nav-tab {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                padding: 10px 20px;
-                background: var(--ui-dark);
-                border: 1px solid var(--card-border);
-                border-radius: 8px;
-                color: var(--text-secondary);
-                font-family: "Rajdhani", sans-serif;
-                font-size: 0.95rem;
-                font-weight: 600;
-                cursor: pointer;
-                transition: all 0.2s;
-                text-transform: uppercase;
-                letter-spacing: 1px;
-            }
-
-            .nav-tab:hover {
-                border-color: var(--primary);
-                color: var(--text-primary);
-            }
-            .nav-tab.active {
-                background: var(--primary);
-                border-color: var(--primary);
-                color: white;
-            }
-            .nav-tab svg {
-                width: 18px;
-                height: 18px;
-            }
-
-            .upload-btn {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                padding: 10px 20px;
-                background: var(--primary);
-                border: none;
-                border-radius: 8px;
-                color: white;
-                font-family: "Rajdhani", sans-serif;
-                font-size: 0.95rem;
-                font-weight: 600;
-                cursor: pointer;
-                transition: all 0.2s;
-                text-transform: uppercase;
-                letter-spacing: 1px;
-            }
-
-            .upload-btn:hover {
-                background: var(--primary-hover);
-                transform: translateY(-2px);
-            }
-            .upload-btn svg {
-                width: 18px;
-                height: 18px;
-            }
-
-            /* Page Sections */
-            .page {
-                display: none;
-            }
-            .page.active {
-                display: block;
-            }
-
-            /* Library Page */
-            .page-title {
-                font-family: "Orbitron", monospace;
-                font-size: 2rem;
-                font-weight: 700;
-                margin-bottom: 8px;
-            }
-
-            .page-title span {
-                color: var(--primary);
-            }
-
-            .page-subtitle {
-                color: var(--text-secondary);
-                margin-bottom: 24px;
-            }
-
-            .search-bar {
-                display: flex;
-                gap: 12px;
-                margin-bottom: 24px;
-                flex-wrap: wrap;
-            }
-
-            .search-input {
-                flex: 1;
-                min-width: 200px;
-                padding: 12px 16px;
-                background: var(--card-bg);
-                border: 1px solid var(--card-border);
-                border-radius: 8px;
-                color: var(--text-primary);
-                font-size: 0.95rem;
-            }
-
-            .search-input:focus {
-                outline: none;
-                border-color: var(--primary);
-            }
-            .search-input::placeholder {
-                color: var(--text-muted);
-            }
-
-            /* Games Grid */
-            .games-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-                gap: 20px;
-            }
-
-            .game-card {
-                background: var(--card-bg);
-                border: 1px solid var(--card-border);
-                border-radius: 12px;
-                overflow: hidden;
-                cursor: pointer;
-                transition: all 0.2s;
-            }
-
-            .game-card:hover {
-                border-color: var(--primary);
-                transform: translateY(-4px);
-                box-shadow: 0 8px 30px rgba(228, 63, 90, 0.2);
-            }
-
-            .game-cover {
-                aspect-ratio: 1;
-                background: var(--ui-dark);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-
-            .game-cover svg {
-                width: 48px;
-                height: 48px;
-                color: var(--text-muted);
-            }
-
-            .game-info {
-                padding: 12px;
-            }
-
-            .game-title {
-                font-family: "Rajdhani", sans-serif;
-                font-size: 0.95rem;
-                font-weight: 600;
-                color: var(--text-primary);
-                margin-bottom: 4px;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-
-            .game-size {
-                font-size: 0.8rem;
-                color: var(--text-muted);
-            }
-
-            .game-actions {
-                display: flex;
-                gap: 8px;
-                padding: 0 12px 12px;
-            }
-
-            .game-btn {
-                flex: 1;
-                padding: 8px;
-                border-radius: 6px;
-                border: none;
-                font-family: "Rajdhani", sans-serif;
-                font-size: 0.85rem;
-                font-weight: 600;
-                cursor: pointer;
-                transition: all 0.2s;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 6px;
-            }
-
-            .game-btn svg {
-                width: 14px;
-                height: 14px;
-            }
-
-            .game-btn-play {
-                background: var(--primary);
-                color: white;
-            }
-            .game-btn-play:hover {
-                background: var(--primary-hover);
-            }
-
-            .game-btn-delete {
-                background: var(--ui-dark);
-                color: var(--text-secondary);
-                border: 1px solid var(--card-border);
-            }
-            .game-btn-delete:hover {
-                border-color: var(--error);
-                color: var(--error);
-            }
-
-            /* Empty State */
-            .empty-state {
-                text-align: center;
-                padding: 60px 20px;
-            }
-
-            .empty-icon {
-                width: 80px;
-                height: 80px;
-                margin: 0 auto 20px;
-                padding: 20px;
-                background: var(--ui-dark);
-                border-radius: 50%;
-                color: var(--text-muted);
-            }
-
-            .empty-title {
-                font-family: "Orbitron", monospace;
-                font-size: 1.3rem;
-                font-weight: 600;
-                margin-bottom: 8px;
-            }
-
-            .empty-desc {
-                color: var(--text-secondary);
-                max-width: 400px;
-                margin: 0 auto;
-            }
-
-            /* Controls Page */
-            .controls-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 24px;
-                flex-wrap: wrap;
-                gap: 16px;
-            }
-
-            .controller-tabs {
-                display: flex;
-                gap: 8px;
-                flex-wrap: wrap;
-            }
-
-            .controller-tab {
-                padding: 8px 16px;
-                background: var(--ui-dark);
-                border: 1px solid var(--card-border);
-                border-radius: 6px;
-                color: var(--text-secondary);
-                font-family: "Rajdhani", sans-serif;
-                font-size: 0.9rem;
-                font-weight: 600;
-                cursor: pointer;
-                transition: all 0.2s;
-            }
-
-            .controller-tab:hover {
-                border-color: var(--primary);
-            }
-            .controller-tab.active {
-                background: var(--primary);
-                border-color: var(--primary);
-                color: white;
-            }
-
-            .controls-card {
-                background: var(--card-bg);
-                border: 1px solid var(--card-border);
-                border-radius: 12px;
-                padding: 24px;
-                margin-bottom: 20px;
-            }
-
-            .controls-card-title {
-                font-family: "Rajdhani", sans-serif;
-                font-size: 1.1rem;
-                font-weight: 600;
-                color: var(--primary);
-                margin-bottom: 16px;
-                text-transform: uppercase;
-                letter-spacing: 1px;
-            }
-
-            .controls-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-                gap: 12px;
-            }
-
-            .control-item {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 12px 16px;
-                background: var(--ui-dark);
-                border-radius: 8px;
-                border: 1px solid var(--card-border);
-                transition: all 0.2s;
-            }
-
-            .control-item:hover {
-                border-color: var(--primary);
-            }
-            .control-item.editing {
-                border-color: var(--warning);
-                background: rgba(251, 191, 36, 0.1);
-            }
-
-            .control-label {
-                font-family: "Rajdhani", sans-serif;
-                font-size: 0.9rem;
-                color: var(--text-secondary);
-            }
-
-            .control-key {
-                font-family: "Roboto Mono", monospace;
-                font-size: 0.8rem;
-                font-weight: 500;
-                padding: 6px 12px;
-                background: var(--accent);
-                border-radius: 6px;
-                color: var(--primary);
-                border: 1px solid var(--primary);
-                min-width: 60px;
-                text-align: center;
-                cursor: pointer;
-                transition: all 0.2s;
-            }
-
-            .control-key:hover {
-                background: rgba(228, 63, 90, 0.2);
-            }
-            .control-key.listening {
-                background: var(--warning);
-                color: var(--background);
-                border-color: var(--warning);
-                animation: pulse 1s infinite;
-            }
-
-            @keyframes pulse {
-                0%,
-                100% {
-                    opacity: 1;
-                }
-                50% {
-                    opacity: 0.7;
-                }
-            }
-
-            .controls-actions {
-                display: flex;
-                gap: 12px;
-                margin-top: 20px;
-                flex-wrap: wrap;
-            }
-
-            .btn {
-                display: inline-flex;
-                align-items: center;
-                gap: 8px;
-                padding: 10px 20px;
-                border-radius: 8px;
-                font-family: "Rajdhani", sans-serif;
-                font-size: 0.95rem;
-                font-weight: 600;
-                cursor: pointer;
-                border: none;
-                transition: all 0.2s;
-            }
-
-            .btn svg {
-                width: 16px;
-                height: 16px;
-            }
-
-            .btn-primary {
-                background: var(--primary);
-                color: white;
-            }
-            .btn-primary:hover {
-                background: var(--primary-hover);
-            }
-
-            .btn-secondary {
-                background: var(--ui-dark);
-                color: var(--text-secondary);
-                border: 1px solid var(--card-border);
-            }
-            .btn-secondary:hover {
-                border-color: var(--primary);
-                color: var(--primary);
-            }
-
-            /* Modal */
-            .modal-overlay {
-                position: fixed;
-                inset: 0;
-                background: rgba(0, 0, 0, 0.8);
-                display: none;
-                align-items: center;
-                justify-content: center;
-                z-index: 1000;
-                padding: 20px;
-            }
-
-            .modal-overlay.active {
-                display: flex;
-            }
-
-            .modal {
-                background: var(--card-bg);
-                border: 1px solid var(--card-border);
-                border-radius: 16px;
-                padding: 32px;
-                max-width: 500px;
-                width: 100%;
-                text-align: center;
-            }
-
-            .modal-icon {
-                width: 64px;
-                height: 64px;
-                margin: 0 auto 20px;
-                color: var(--primary);
-            }
-
-            .modal-title {
-                font-family: "Orbitron", monospace;
-                font-size: 1.3rem;
-                font-weight: 700;
-                margin-bottom: 12px;
-            }
-
-            .modal-desc {
-                color: var(--text-secondary);
-                margin-bottom: 24px;
-                line-height: 1.6;
-            }
-
-            .drop-zone {
-                border: 2px dashed var(--primary);
-                border-radius: 12px;
-                padding: 40px;
-                margin-bottom: 20px;
-                transition: all 0.2s;
-                cursor: pointer;
-            }
-
-            .drop-zone:hover,
-            .drop-zone.dragover {
-                background: rgba(228, 63, 90, 0.1);
-                border-color: var(--success);
-            }
-
-            .drop-zone-text {
-                font-family: "Rajdhani", sans-serif;
-                font-size: 1rem;
-                color: var(--text-secondary);
-            }
-
-            .modal-actions {
-                display: flex;
-                gap: 12px;
-                justify-content: center;
-            }
-
-            .play-options {
-                display: flex;
-                flex-direction: column;
-                gap: 12px;
-                margin-bottom: 20px;
-            }
-
-            .play-option {
-                display: flex;
-                align-items: center;
-                gap: 16px;
-                padding: 16px 20px;
-                background: var(--ui-dark);
-                border: 1px solid var(--card-border);
-                border-radius: 10px;
-                text-decoration: none;
-                transition: all 0.2s;
-            }
-
-            .play-option:hover {
-                border-color: var(--primary);
-                background: rgba(228, 63, 90, 0.1);
-                transform: translateX(4px);
-            }
-
-            .play-option svg {
-                width: 32px;
-                height: 32px;
-                color: var(--primary);
-                flex-shrink: 0;
-            }
-
-            .play-option-text {
-                text-align: left;
-            }
-
-            .play-option-text strong {
-                display: block;
-                font-family: "Rajdhani", sans-serif;
-                font-size: 1.05rem;
-                color: var(--text-primary);
-                margin-bottom: 2px;
-            }
-
-            .play-option-text span {
-                font-size: 0.85rem;
-                color: var(--text-muted);
-            }
-
-            .modal-hint {
-                font-size: 0.8rem;
-                color: var(--text-muted);
-                margin-bottom: 20px;
-                padding: 12px;
-                background: var(--ui-dark);
-                border-radius: 8px;
-                border-left: 3px solid var(--warning);
-            }
-
-            /* Toast */
-            .toast {
-                position: fixed;
-                bottom: 20px;
-                right: 20px;
-                background: var(--card-bg);
-                border: 1px solid var(--card-border);
-                border-radius: 8px;
-                padding: 16px 20px;
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                z-index: 2000;
-                transform: translateY(100px);
-                opacity: 0;
-                transition: all 0.3s;
-            }
-
-            .toast.show {
-                transform: translateY(0);
-                opacity: 1;
-            }
-            .toast.success {
-                border-color: var(--success);
-            }
-            .toast.error {
-                border-color: var(--error);
-            }
-
-            .toast-icon {
-                width: 20px;
-                height: 20px;
-            }
-            .toast.success .toast-icon {
-                color: var(--success);
-            }
-            .toast.error .toast-icon {
-                color: var(--error);
-            }
-
-            /* Footer */
-            .footer {
-                text-align: center;
-                margin-top: 40px;
-                padding-top: 20px;
-                border-top: 1px solid var(--card-border);
-            }
-
-            .footer-text {
-                font-size: 0.85rem;
-                color: var(--text-muted);
-                margin-bottom: 4px;
-            }
-
-            .footer-link {
-                color: var(--primary);
-                text-decoration: none;
-            }
-            .footer-link:hover {
-                text-decoration: underline;
-            }
-
-            /* Responsive */
-            @media (max-width: 600px) {
-                .header {
-                    flex-direction: column;
-                    align-items: flex-start;
-                }
-                .logo-text {
-                    font-size: 1.4rem;
-                }
-                .nav-tabs {
-                    width: 100%;
-                }
-                .nav-tab {
-                    flex: 1;
-                    justify-content: center;
-                }
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <!-- Header -->
-            <header class="header">
-                <div class="logo-section">
-                    <svg
-                        class="logo-icon"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="1.5"
-                    >
-                        <rect x="2" y="6" width="20" height="12" rx="2" />
-                        <circle cx="7" cy="12" r="1.5" />
-                        <circle cx="17" cy="12" r="1.5" />
-                        <path d="M12 6v-2" />
-                    </svg>
-                    <span class="logo-text">N64 Vault</span>
-                </div>
-
-                <div class="nav-tabs">
-                    <button class="nav-tab active" data-page="library">
-                        <svg
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                        >
-                            <rect x="3" y="3" width="7" height="7" />
-                            <rect x="14" y="3" width="7" height="7" />
-                            <rect x="14" y="14" width="7" height="7" />
-                            <rect x="3" y="14" width="7" height="7" />
-                        </svg>
-                        Library
-                    </button>
-                    <button class="nav-tab" data-page="controls">
-                        <svg
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                        >
-                            <circle cx="12" cy="12" r="3" />
-                            <path
-                                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
-                            />
-                        </svg>
-                        Controls
-                    </button>
-                </div>
-
-                <button class="upload-btn" id="upload-btn">
-                    <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                    >
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                        <polyline points="17 8 12 3 7 8" />
-                        <line x1="12" y1="3" x2="12" y2="15" />
-                    </svg>
-                    Upload ROM
-                </button>
-            </header>
-
-            <!-- Library Page -->
-            <div class="page active" id="page-library">
-                <h1 class="page-title">Game <span>Library</span></h1>
-                <p class="page-subtitle">
-                    Your collection of classic N64 games, ready to play
-                </p>
-
-                <div class="search-bar">
-                    <input
-                        type="text"
-                        class="search-input"
-                        id="search-input"
-                        placeholder="Search games..."
-                    />
-                </div>
-
-                <div id="games-container">
-                    <div class="empty-state" id="empty-state">
-                        <div class="empty-icon">
-                            <svg
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="1.5"
-                            >
-                                <rect
-                                    x="2"
-                                    y="6"
-                                    width="20"
-                                    height="12"
-                                    rx="2"
-                                />
-                                <circle cx="7" cy="12" r="1.5" />
-                                <circle cx="17" cy="12" r="1.5" />
-                            </svg>
-                        </div>
-                        <h3 class="empty-title">No Games Yet</h3>
-                        <p class="empty-desc">
-                            Upload your first ROM to start building your game
-                            library and relive the golden age of gaming.
-                        </p>
-                    </div>
-                    <div class="games-grid" id="games-grid"></div>
-                </div>
-            </div>
-
-            <!-- Controls Page -->
-            <div class="page" id="page-controls">
-                <div class="controls-header">
-                    <div>
-                        <h1 class="page-title">Control <span>Mapping</span></h1>
-                        <p class="page-subtitle">
-                            Customize your keyboard and gamepad controls
-                        </p>
-                    </div>
-                    <div class="controller-tabs">
-                        <button class="controller-tab active">Keyboard</button>
-                    </div>
-                </div>
-
-                <div class="controls-card">
-                    <h3 class="controls-card-title">Button Mapping</h3>
-                    <div class="controls-grid" id="button-controls"></div>
-                </div>
-
-                <div class="controls-card">
-                    <h3 class="controls-card-title">D-Pad & Analog Stick</h3>
-                    <div class="controls-grid" id="movement-controls"></div>
-                </div>
-
-                <div class="controls-actions">
-                    <button class="btn btn-primary" id="save-controls">
-                        <svg
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                        >
-                            <path
-                                d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"
-                            />
-                            <polyline points="17 21 17 13 7 13 7 21" />
-                            <polyline points="7 3 7 8 15 8" />
-                        </svg>
-                        Save Controls
-                    </button>
-                    <button class="btn btn-secondary" id="reset-controls">
-                        <svg
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                        >
-                            <polyline points="1 4 1 10 7 10" />
-                            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
-                        </svg>
-                        Reset to Default
-                    </button>
-                </div>
-            </div>
-
-            <!-- Footer -->
-            <footer class="footer">
-                <p class="footer-text">
-                    N64 Vault - Powered by
-                    <a
-                        href="https://www.neilb.net/n64wasm/"
-                        target="_blank"
-                        class="footer-link"
-                        >N64Wasm</a
-                    >
-                </p>
-                <p class="footer-text">
-                    For personal use only. Please use legally obtained ROM
-                    files.
-                </p>
-            </footer>
-        </div>
-
-        <!-- Upload Modal -->
-        <div class="modal-overlay" id="upload-modal">
-            <div class="modal">
-                <svg
-                    class="modal-icon"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                >
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                    <polyline points="17 8 12 3 7 8" />
-                    <line x1="12" y1="3" x2="12" y2="15" />
-                </svg>
-                <h2 class="modal-title">Upload ROM</h2>
-                <p class="modal-desc">
-                    Drag and drop your ROM file here, or click to browse.
-                    Supports .z64, .n64, .v64, and .rom files.
-                </p>
-
-                <div class="drop-zone" id="drop-zone">
-                    <p class="drop-zone-text">
-                        Drop ROM file here or click to browse
-                    </p>
-                </div>
-
-                <div class="modal-actions">
-                    <button class="btn btn-secondary" id="close-modal">
-                        Cancel
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Play Modal -->
-        <div class="modal-overlay" id="play-modal">
-            <div class="modal">
-                <svg class="modal-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <polygon points="5 3 19 12 5 21 5 3"/>
-                </svg>
-                <h2 class="modal-title">Play <span id="play-game-name">Game</span></h2>
-                <p class="modal-desc">
-                    To play N64 games, you need to use an external emulator. Choose an option below:
-                </p>
-                
-                <div class="play-options">
-                    <a href="https://hulkholden.github.io/n64js/" target="_blank" class="play-option" id="play-n64js">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polygon points="5 3 19 12 5 21 5 3"/>
-                        </svg>
-                        <div class="play-option-text">
-                            <strong>n64js Emulator</strong>
-                            <span>JavaScript-based - works great in Chrome</span>
-                        </div>
-                    </a>
-                    <a href="https://www.neilb.net/n64wasm/" target="_blank" class="play-option">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="2" y="6" width="20" height="12" rx="2"/>
-                            <circle cx="7" cy="12" r="1.5"/>
-                            <circle cx="17" cy="12" r="1.5"/>
-                        </svg>
-                        <div class="play-option-text">
-                            <strong>N64Wasm Emulator</strong>
-                            <span>WebAssembly-based - good 3D performance</span>
-                        </div>
-                    </a>
-                </div>
-                
-                <p class="modal-hint">Your ROM file is saved in your browser. You'll need to select it again in the external emulator.</p>
-                
-                <div class="modal-actions">
-                    <button class="btn btn-secondary" id="close-play-modal">Close</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Toast -->
-        <div class="toast" id="toast">
-            <svg
-                class="toast-icon"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-            >
-                <polyline points="20 6 9 17 4 12" />
-            </svg>
-            <span id="toast-message">Success!</span>
-        </div>
-
-        <input
-            type="file"
-            id="file-input"
-            accept=".z64,.n64,.v64,.rom"
-            style="display: none"
-        />
-
-        <script>
-            (function () {
-                // Default controls
-                var defaultControls = {
-                    a: "x",
-                    b: "z",
-                    start: "Enter",
-                    z: "a",
-                    l: "q",
-                    r: "e",
-                    cUp: "i",
-                    cDown: "k",
-                    cLeft: "j",
-                    cRight: "l",
-                    dpadUp: "ArrowUp",
-                    dpadDown: "ArrowDown",
-                    dpadLeft: "ArrowLeft",
-                    dpadRight: "ArrowRight",
-                    analogUp: "w",
-                    analogDown: "s",
-                    analogLeft: "a",
-                    analogRight: "d",
-                };
-
-                var controlLabels = {
-                    a: "A Button",
-                    b: "B Button",
-                    start: "Start",
-                    z: "Z Trigger",
-                    l: "L Shoulder",
-                    r: "R Shoulder",
-                    cUp: "C-Up",
-                    cDown: "C-Down",
-                    cLeft: "C-Left",
-                    cRight: "C-Right",
-                    dpadUp: "D-Pad Up",
-                    dpadDown: "D-Pad Down",
-                    dpadLeft: "D-Pad Left",
-                    dpadRight: "D-Pad Right",
-                    analogUp: "Analog Up",
-                    analogDown: "Analog Down",
-                    analogLeft: "Analog Left",
-                    analogRight: "Analog Right",
-                };
-
-                var buttonKeys = [
-                    "a",
-                    "b",
-                    "start",
-                    "z",
-                    "l",
-                    "r",
-                    "cUp",
-                    "cDown",
-                    "cLeft",
-                    "cRight",
-                ];
-                var movementKeys = [
-                    "dpadUp",
-                    "dpadDown",
-                    "dpadLeft",
-                    "dpadRight",
-                    "analogUp",
-                    "analogDown",
-                    "analogLeft",
-                    "analogRight",
-                ];
-
-                // State
-                var games = [];
-                var controls = JSON.parse(
-                    localStorage.getItem("n64vault_controls"),
-                ) || { ...defaultControls };
-                var listeningFor = null;
-
-                // Load games from localStorage
-                function loadGames() {
-                    var saved = localStorage.getItem("n64vault_games");
-                    games = saved ? JSON.parse(saved) : [];
-                }
-
-                function saveGames() {
-                    localStorage.setItem(
-                        "n64vault_games",
-                        JSON.stringify(games),
-                    );
-                }
-
-                // Format key for display
-                function formatKey(key) {
-                    if (!key) return "?";
-                    var map = {
-                        ArrowUp: "\u2191",
-                        ArrowDown: "\u2193",
-                        ArrowLeft: "\u2190",
-                        ArrowRight: "\u2192",
-                        Enter: "Enter",
-                        " ": "Space",
-                        Shift: "Shift",
-                        Control: "Ctrl",
-                        Alt: "Alt",
-                    };
-                    return map[key] || key.toUpperCase();
-                }
-
-                // Render controls
-                function renderControls() {
-                    var buttonGrid = document.getElementById("button-controls");
-                    var movementGrid =
-                        document.getElementById("movement-controls");
-
-                    buttonGrid.innerHTML = buttonKeys
-                        .map(function (key) {
-                            return (
-                                '<div class="control-item" data-key="' +
-                                key +
-                                '">' +
-                                '<span class="control-label">' +
-                                controlLabels[key] +
-                                "</span>" +
-                                '<span class="control-key" data-key="' +
-                                key +
-                                '">' +
-                                formatKey(controls[key]) +
-                                "</span>" +
-                                "</div>"
-                            );
-                        })
-                        .join("");
-
-                    movementGrid.innerHTML = movementKeys
-                        .map(function (key) {
-                            return (
-                                '<div class="control-item" data-key="' +
-                                key +
-                                '">' +
-                                '<span class="control-label">' +
-                                controlLabels[key] +
-                                "</span>" +
-                                '<span class="control-key" data-key="' +
-                                key +
-                                '">' +
-                                formatKey(controls[key]) +
-                                "</span>" +
-                                "</div>"
-                            );
-                        })
-                        .join("");
-
-                    // Add click listeners
-                    document
-                        .querySelectorAll(".control-key")
-                        .forEach(function (el) {
-                            el.addEventListener("click", function () {
-                                startListening(el.dataset.key);
-                            });
-                        });
-                }
-
-                function startListening(key) {
-                    if (listeningFor) {
-                        document
-                            .querySelector(
-                                '.control-key[data-key="' + listeningFor + '"]',
-                            )
-                            .classList.remove("listening");
-                    }
-                    listeningFor = key;
-                    var el = document.querySelector(
-                        '.control-key[data-key="' + key + '"]',
-                    );
-                    el.classList.add("listening");
-                    el.textContent = "Press key...";
-                }
-
-                // Render games
-                function renderGames() {
-                    var grid = document.getElementById("games-grid");
-                    var empty = document.getElementById("empty-state");
-                    var search = document
-                        .getElementById("search-input")
-                        .value.toLowerCase();
-
-                    var filtered = games.filter(function (g) {
-                        return g.name.toLowerCase().includes(search);
-                    });
-
-                    if (games.length === 0) {
-                        empty.style.display = "block";
-                        grid.style.display = "none";
-                    } else {
-                        empty.style.display = "none";
-                        grid.style.display = "grid";
-
-                        grid.innerHTML = filtered
-                            .map(function (game, i) {
-                                return (
-                                    '<div class="game-card" data-index="' +
-                                    i +
-                                    '">' +
-                                    '<div class="game-cover">' +
-                                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">' +
-                                    '<rect x="2" y="6" width="20" height="12" rx="2"/>' +
-                                    '<circle cx="7" cy="12" r="1.5"/>' +
-                                    '<circle cx="17" cy="12" r="1.5"/>' +
-                                    "</svg>" +
-                                    "</div>" +
-                                    '<div class="game-info">' +
-                                    '<div class="game-title">' +
-                                    game.name +
-                                    "</div>" +
-                                    '<div class="game-size">' +
-                                    formatSize(game.size) +
-                                    "</div>" +
-                                    "</div>" +
-                                    '<div class="game-actions">' +
-                                    '<button class="game-btn game-btn-play" data-action="play" data-index="' +
-                                    i +
-                                    '">' +
-                                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21"/></svg>' +
-                                    "Play" +
-                                    "</button>" +
-                                    '<button class="game-btn game-btn-delete" data-action="delete" data-index="' +
-                                    i +
-                                    '">' +
-                                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>' +
-                                    "</button>" +
-                                    "</div>" +
-                                    "</div>"
-                                );
-                            })
-                            .join("");
-
-                        // Add event listeners
-                        grid.querySelectorAll(".game-btn").forEach(
-                            function (btn) {
-                                btn.addEventListener("click", function (e) {
-                                    e.stopPropagation();
-                                    var index = parseInt(btn.dataset.index);
-                                    if (btn.dataset.action === "play") {
-                                        playGame(index);
-                                    } else if (
-                                        btn.dataset.action === "delete"
-                                    ) {
-                                        deleteGame(index);
-                                    }
-                                });
-                            },
-                        );
-                    }
-                }
-
-                function formatSize(bytes) {
-                    if (bytes < 1024) return bytes + " B";
-                    if (bytes < 1024 * 1024)
-                        return (bytes / 1024).toFixed(1) + " KB";
-                    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
-                }
-
-                function playGame(index) {
-                    var game = games[index];
-                    currentGameToPlay = game;
-                    document.getElementById('play-game-name').textContent = game.name;
-                    document.getElementById('play-modal').classList.add('active');
-                }
-                
-                var currentGameToPlay = null;
-
-                function deleteGame(index) {
-                    if (
-                        confirm(
-                            'Are you sure you want to delete "' +
-                                games[index].name +
-                                '"?',
-                        )
-                    ) {
-                        games.splice(index, 1);
-                        saveGames();
-                        renderGames();
-                        showToast("Game deleted", "success");
-                    }
-                }
-
-                function addGame(file) {
-                    var name = file.name.replace(/\.(z64|n64|v64|rom)$/i, "");
-                    games.push({
-                        id: Date.now(),
-                        name: name,
-                        filename: file.name,
-                        size: file.size,
-                        addedAt: new Date().toISOString(),
-                    });
-                    saveGames();
-                    renderGames();
-                    showToast(name + " added to library!", "success");
-                }
-
-                function showToast(message, type) {
-                    var toast = document.getElementById("toast");
-                    var msg = document.getElementById("toast-message");
-                    msg.textContent = message;
-                    toast.className = "toast " + type + " show";
-                    setTimeout(function () {
-                        toast.classList.remove("show");
-                    }, 3000);
-                }
-
-                // Navigation
-                document.querySelectorAll(".nav-tab").forEach(function (tab) {
-                    tab.addEventListener("click", function () {
-                        document
-                            .querySelectorAll(".nav-tab")
-                            .forEach(function (t) {
-                                t.classList.remove("active");
-                            });
-                        document
-                            .querySelectorAll(".page")
-                            .forEach(function (p) {
-                                p.classList.remove("active");
-                            });
-                        tab.classList.add("active");
-                        document
-                            .getElementById("page-" + tab.dataset.page)
-                            .classList.add("active");
-                    });
-                });
-
-                // Upload modal
-                var uploadBtn = document.getElementById("upload-btn");
-                var modal = document.getElementById("upload-modal");
-                var closeModal = document.getElementById("close-modal");
-                var dropZone = document.getElementById("drop-zone");
-                var fileInput = document.getElementById("file-input");
-
-                uploadBtn.addEventListener("click", function () {
-                    modal.classList.add("active");
-                });
-                closeModal.addEventListener("click", function () {
-                    modal.classList.remove("active");
-                });
-                modal.addEventListener("click", function (e) {
-                    if (e.target === modal) modal.classList.remove("active");
-                });
-
-                // Play modal
-                var playModal = document.getElementById("play-modal");
-                var closePlayModal = document.getElementById("close-play-modal");
-                
-                closePlayModal.addEventListener("click", function () {
-                    playModal.classList.remove("active");
-                });
-                playModal.addEventListener("click", function (e) {
-                    if (e.target === playModal) playModal.classList.remove("active");
-                });
-
-                dropZone.addEventListener("click", function () {
-                    fileInput.click();
-                });
-
-                dropZone.addEventListener("dragover", function (e) {
-                    e.preventDefault();
-                    dropZone.classList.add("dragover");
-                });
-
-                dropZone.addEventListener("dragleave", function () {
-                    dropZone.classList.remove("dragover");
-                });
-
-                dropZone.addEventListener("drop", function (e) {
-                    e.preventDefault();
-                    dropZone.classList.remove("dragover");
-                    if (e.dataTransfer.files.length) {
-                        handleFile(e.dataTransfer.files[0]);
-                    }
-                });
-
-                fileInput.addEventListener("change", function () {
-                    if (fileInput.files.length) {
-                        handleFile(fileInput.files[0]);
-                    }
-                });
-
-                function handleFile(file) {
-                    var validExts = [".z64", ".n64", ".v64", ".rom"];
-                    var ext = file.name
-                        .toLowerCase()
-                        .substring(file.name.lastIndexOf("."));
-
-                    if (!validExts.includes(ext)) {
-                        showToast(
-                            "Invalid file type. Use .z64, .n64, .v64, or .rom files.",
-                            "error",
-                        );
-                        return;
-                    }
-
-                    addGame(file);
-                    modal.classList.remove("active");
-                    fileInput.value = "";
-                }
-
-                // Search
-                document
-                    .getElementById("search-input")
-                    .addEventListener("input", renderGames);
-
-                // Controls
-                document
-                    .getElementById("save-controls")
-                    .addEventListener("click", function () {
-                        localStorage.setItem(
-                            "n64vault_controls",
-                            JSON.stringify(controls),
-                        );
-                        showToast("Controls saved!", "success");
-                    });
-
-                document
-                    .getElementById("reset-controls")
-                    .addEventListener("click", function () {
-                        if (confirm("Reset all controls to default?")) {
-                            controls = { ...defaultControls };
-                            renderControls();
-                            showToast("Controls reset to default", "success");
-                        }
-                    });
-
-                // Key listening
-                document.addEventListener("keydown", function (e) {
-                    if (listeningFor) {
-                        e.preventDefault();
-                        controls[listeningFor] = e.key;
-                        var el = document.querySelector(
-                            '.control-key[data-key="' + listeningFor + '"]',
-                        );
-                        el.classList.remove("listening");
-                        el.textContent = formatKey(e.key);
-                        listeningFor = null;
-                    }
-                });
-
-                // Init
-                loadGames();
-                renderGames();
-                renderControls();
-            })();
-        </script>
-    </body>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>N64 Vault - Emulator</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    body {
+      background: #000;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    #container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+    }
+    #display {
+      background: #000;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    #status {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #E43F5A;
+      font-size: 14px;
+      background: rgba(0,0,0,0.8);
+      padding: 8px 16px;
+      border-radius: 4px;
+    }
+    #controls {
+      position: absolute;
+      bottom: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 10px;
+    }
+    button {
+      background: #E43F5A;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover {
+      background: #E94560;
+    }
+    button:disabled {
+      background: #444;
+      cursor: not-allowed;
+    }
+    #file-input {
+      display: none;
+    }
+    .hidden { display: none !important; }
+    .standalone-only { display: flex; }
+    body.in-iframe .standalone-only { display: none !important; }
+    body.in-iframe #status { display: none; }
+    #alerts { position: fixed; top: 10px; left: 10px; right: 10px; z-index: 1000; }
+    #performance { 
+      position: fixed; 
+      top: 10px; 
+      right: 10px; 
+      font-size: 11px; 
+      color: #aaa;
+      background: rgba(0,0,0,0.7);
+      padding: 5px 10px;
+      border-radius: 4px;
+    }
+    .debug-adjacent { display: none; }
+    #info { display: none; }
+  </style>
+</head>
+<body>
+  <div id="alerts"></div>
+  
+  <div id="container">
+    <canvas id="display" width="640" height="480"></canvas>
+    <div id="adjacent-debug" class="debug debug-adjacent hidden"></div>
+    <div id="performance"></div>
+    <div id="status">Initializing emulator...</div>
+    <div id="controls" class="standalone-only">
+      <button id="btn-load">Load ROM</button>
+      <button id="btn-run" disabled>Run</button>
+      <button id="btn-fullscreen">Fullscreen</button>
+    </div>
+    <input type="file" id="file-input" accept=".z64,.n64,.v64,.rom">
+  </div>
+  
+  <div id="info" style="display:none"></div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "n64js": "./n64.min.js"
+    }
+  }
+  </script>
+  
+  <script type="module">
+    import * as n64jsModule from 'n64js';
+    
+    const isEmbedded = window.parent !== window;
+    const parentOrigin = window.location.origin;
+    let emulatorReady = false;
+    let isRunning = false;
+    let hasWebGL = false;
+    
+    function notifyParent(message) {
+      if (isEmbedded && window.parent) {
+        try {
+          window.parent.postMessage(message, parentOrigin);
+        } catch (e) {
+          console.error('Failed to post message to parent:', e);
+        }
+      }
+    }
+    
+    function updateStatus(text) {
+      const statusEl = document.getElementById('status');
+      if (statusEl) statusEl.textContent = text;
+    }
+    
+    function setEmulatorState(state, errorMsg = null) {
+      notifyParent({ type: 'stateChange', state, error: errorMsg });
+      if (state === 'running') {
+        isRunning = true;
+        updateStatus('Running');
+      } else if (state === 'paused') {
+        isRunning = false;
+        updateStatus('Paused');
+      } else if (state === 'error') {
+        isRunning = false;
+        updateStatus('Error: ' + (errorMsg || 'Unknown error'));
+        notifyParent({ type: 'error', message: errorMsg || 'Unknown error' });
+      }
+    }
+    
+    function checkWebGLSupport() {
+      try {
+        const canvas = document.createElement('canvas');
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        hasWebGL = !!gl;
+        return hasWebGL;
+      } catch (e) {
+        hasWebGL = false;
+        return false;
+      }
+    }
+    
+    if (isEmbedded) {
+      document.body.classList.add('in-iframe');
+    }
+    
+    function initEmulator() {
+      if (!checkWebGLSupport()) {
+        setEmulatorState('error', 'WebGL is not supported in your browser. N64 emulation requires WebGL.');
+        notifyParent({ type: 'unsupported', reason: 'webgl' });
+        return false;
+      }
+      
+      try {
+        if (window.n64js && window.n64js.init) {
+          window.n64js.init();
+          emulatorReady = true;
+          updateStatus('Ready - Load a ROM to start');
+          notifyParent({ type: 'emulatorReady' });
+          console.log('n64js initialized and ready');
+          
+          document.getElementById('display').focus();
+          
+          return true;
+        } else {
+          throw new Error('n64js API not available');
+        }
+      } catch (error) {
+        console.error('Failed to initialize n64js:', error);
+        setEmulatorState('error', 'Failed to initialize emulator: ' + error.message);
+        return false;
+      }
+    }
+    
+    window.addEventListener('DOMContentLoaded', () => {
+      const btnLoad = document.getElementById('btn-load');
+      const btnRun = document.getElementById('btn-run');
+      const btnFullscreen = document.getElementById('btn-fullscreen');
+      const fileInput = document.getElementById('file-input');
+      
+      if (btnLoad) {
+        btnLoad.onclick = () => fileInput?.click();
+      }
+      
+      if (btnRun) {
+        btnRun.onclick = () => window.toggleRun();
+      }
+      
+      if (btnFullscreen) {
+        btnFullscreen.onclick = () => window.goFullscreen();
+      }
+      
+      if (fileInput) {
+        fileInput.onchange = (event) => window.handleFileSelect(event);
+      }
+      
+      setTimeout(() => {
+        initEmulator();
+      }, 100);
+    });
+    
+    window.toggleRun = function() {
+      if (!emulatorReady) return;
+      
+      try {
+        if (window.n64js && window.n64js.toggleRun) {
+          window.n64js.toggleRun();
+          isRunning = !isRunning;
+          setEmulatorState(isRunning ? 'running' : 'paused');
+        }
+      } catch (error) {
+        console.error('Toggle run failed:', error);
+        setEmulatorState('error', 'Failed to toggle run: ' + error.message);
+      }
+    };
+    
+    window.goFullscreen = function() {
+      try {
+        if (window.n64js && window.n64js.toggleFullscreen) {
+          window.n64js.toggleFullscreen();
+        } else {
+          const canvas = document.getElementById('display');
+          if (canvas && canvas.requestFullscreen) {
+            canvas.requestFullscreen();
+          }
+        }
+      } catch (error) {
+        console.error('Fullscreen failed:', error);
+      }
+    };
+    
+    window.resetEmulator = function() {
+      try {
+        if (window.n64js && window.n64js.reset) {
+          window.n64js.reset();
+          isRunning = true;
+          setEmulatorState('running');
+        }
+      } catch (error) {
+        console.error('Reset failed:', error);
+        setEmulatorState('error', 'Failed to reset: ' + error.message);
+      }
+    };
+    
+    window.loadRom = function(arrayBuffer, romName) {
+      if (!emulatorReady) {
+        if (!initEmulator()) {
+          setEmulatorState('error', 'Emulator not ready and failed to initialize');
+          return;
+        }
+      }
+      
+      updateStatus('Loading ROM...');
+      notifyParent({ type: 'stateChange', state: 'loading-rom' });
+      
+      try {
+        if (window.n64js && window.n64js.loadRomAndStartRunning) {
+          window.n64js.loadRomAndStartRunning(arrayBuffer);
+          const btnRun = document.getElementById('btn-run');
+          if (btnRun) btnRun.disabled = false;
+          isRunning = true;
+          updateStatus('Running - ' + (romName || 'Unknown ROM'));
+          setEmulatorState('running');
+          
+          document.getElementById('display')?.focus();
+        } else {
+          throw new Error('loadRomAndStartRunning not available');
+        }
+      } catch (error) {
+        console.error('Failed to load ROM:', error);
+        setEmulatorState('error', 'Failed to load ROM: ' + error.message);
+      }
+    };
+    
+    window.handleFileSelect = function(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      updateStatus('Loading ROM...');
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        window.loadRom(e.target.result, file.name);
+      };
+      reader.onerror = function() {
+        setEmulatorState('error', 'Failed to read ROM file');
+      };
+      reader.readAsArrayBuffer(file);
+    };
+    
+    window.addEventListener('message', function(event) {
+      if (event.origin !== parentOrigin && event.origin !== window.location.origin) {
+        console.warn('Ignoring message from unknown origin:', event.origin);
+        return;
+      }
+      
+      const data = event.data;
+      
+      if (data.type === 'loadRom') {
+        const romData = data.romData;
+        const romName = data.romName;
+        window.loadRom(romData, romName);
+      } else if (data.type === 'toggleRun') {
+        window.toggleRun();
+      } else if (data.type === 'reset') {
+        window.resetEmulator();
+      } else if (data.type === 'fullscreen') {
+        window.goFullscreen();
+      } else if (data.type === 'focus') {
+        document.getElementById('display')?.focus();
+      } else if (data.type === 'ping') {
+        notifyParent({ type: 'pong', ready: emulatorReady, running: isRunning, hasWebGL });
+      }
+    });
+    
+    setTimeout(() => {
+      notifyParent({ type: 'iframeLoaded' });
+    }, 100);
+    
+    window.addEventListener('click', () => {
+      document.getElementById('display')?.focus();
+    });
+    
+    window.addEventListener('focus', () => {
+      document.getElementById('display')?.focus();
+    });
+  </script>
+</body>
 </html>
