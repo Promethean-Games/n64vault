@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>N64 Vault - Nintendo 64 Emulator</title>
+    <meta name="description" content="Play classic Nintendo 64 games directly in your browser with our sleek, modern emulator">
+    
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="N64 Vault">
+    <meta name="theme-color" content="#E43F5A">
+    <meta name="msapplication-TileColor" content="#0F0F23">
+    
+    <link rel="manifest" href="manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Rajdhani:wght@400;500;600;700&family=Roboto:wght@400;500&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -40,6 +50,10 @@
             align-items: center;
             padding: 24px;
             line-height: 1.5;
+            touch-action: manipulation;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
         
         .header { text-align: center; margin-bottom: 32px; }
@@ -66,6 +80,41 @@
         }
         
         .container { max-width: 960px; width: 100%; }
+        
+        /* Main Navigation Tabs */
+        .main-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 24px;
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            padding: 4px;
+        }
+        
+        .main-tab {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 20px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            color: var(--text-muted);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .main-tab:hover { background: rgba(255, 255, 255, 0.05); color: var(--text); }
+        .main-tab.active { background: rgba(228, 63, 90, 0.2); color: var(--primary); }
+        .main-tab svg { width: 20px; height: 20px; }
+        
+        .main-content { display: none; }
+        .main-content.active { display: block; }
         .card {
             background: var(--bg-card);
             border: 1px solid rgba(255, 255, 255, 0.06);
@@ -148,7 +197,7 @@
         .upload-hint { color: var(--text-dim); font-size: 0.9rem; }
         
         #file-upload { display: none; }
-        #emulator-container { display: none; width: 100%; min-height: 500px; margin-bottom: 24px; }
+        #emulator-container { display: none; width: 100%; min-height: 500px; margin-bottom: 24px; position: relative; }
         #game { width: 100%; height: 500px; }
         
         /* Input Mode Tabs */
@@ -358,9 +407,7 @@
             text-align: center;
         }
         
-        .wizard-header {
-            margin-bottom: 24px;
-        }
+        .wizard-header { margin-bottom: 24px; }
         .wizard-title {
             font-family: 'Orbitron', sans-serif;
             font-size: 1.5rem;
@@ -374,9 +421,7 @@
             font-size: 0.95rem;
         }
         
-        .wizard-progress {
-            margin-bottom: 32px;
-        }
+        .wizard-progress { margin-bottom: 32px; }
         .progress-bar {
             height: 6px;
             background: var(--bg-element);
@@ -434,6 +479,153 @@
             justify-content: center;
         }
         
+        /* Mobile Racing Controls */
+        .racing-controls {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 180px;
+            background: linear-gradient(to top, rgba(15, 15, 35, 0.95) 0%, rgba(15, 15, 35, 0.8) 70%, transparent 100%);
+            z-index: 100;
+            pointer-events: none;
+            padding: 16px;
+        }
+        .racing-controls.active { display: block; }
+        
+        .racing-controls-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            height: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            pointer-events: auto;
+        }
+        
+        /* Joystick Zone */
+        .joystick-zone {
+            width: 140px;
+            height: 140px;
+            position: relative;
+            touch-action: none;
+        }
+        
+        .joystick-base {
+            width: 120px;
+            height: 120px;
+            background: #1a1a2e;
+            border: 3px solid #E43F5A;
+            border-radius: 50%;
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .joystick-stick {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(145deg, #E43F5A, #c0354d);
+            border-radius: 50%;
+            box-shadow: 0 4px 12px rgba(228, 63, 90, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.2);
+            transition: transform 0.05s ease-out;
+            pointer-events: none;
+        }
+        
+        /* Action Buttons Zone */
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: flex-end;
+        }
+        
+        .button-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .racing-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+        
+        .racing-btn.pressed {
+            transform: scale(0.92);
+        }
+        
+        /* A Button - Gas/Accelerate (Green) */
+        .btn-a {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: #10b981;
+            color: white;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 0 #059669, 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+        .btn-a.pressed {
+            box-shadow: 0 2px 0 #059669, 0 3px 10px rgba(16, 185, 129, 0.4);
+        }
+        
+        /* B Button - Brake/Reverse (Red) */
+        .btn-b {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #ef4444;
+            color: white;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 0 #b91c1c, 0 6px 20px rgba(239, 68, 68, 0.4);
+        }
+        .btn-b.pressed {
+            box-shadow: 0 2px 0 #b91c1c, 0 3px 10px rgba(239, 68, 68, 0.4);
+        }
+        
+        /* Z Button - Item/Weapon (Yellow) */
+        .btn-z {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #f59e0b;
+            color: #1a1a2e;
+            font-size: 1rem;
+            box-shadow: 0 4px 0 #d97706, 0 6px 16px rgba(245, 158, 11, 0.4);
+        }
+        .btn-z.pressed {
+            box-shadow: 0 2px 0 #d97706, 0 3px 8px rgba(245, 158, 11, 0.4);
+        }
+        
+        /* Start Button - Pause (Small pill) */
+        .btn-start {
+            padding: 8px 20px;
+            border-radius: 20px;
+            background: #374151;
+            color: #9ca3af;
+            font-size: 0.7rem;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            box-shadow: 0 3px 0 #1f2937;
+        }
+        .btn-start.pressed {
+            box-shadow: 0 1px 0 #1f2937;
+        }
+        
         /* Mobile Info */
         .mobile-info {
             text-align: center;
@@ -454,7 +646,40 @@
             color: var(--text-muted);
             font-size: 0.95rem;
             max-width: 400px;
-            margin: 0 auto;
+            margin: 0 auto 16px;
+        }
+        
+        .control-preview {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            padding: 20px;
+            background: var(--bg-element);
+            border-radius: 12px;
+        }
+        .control-preview-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+        .control-preview-item .preview-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: white;
+        }
+        .control-preview-item span {
+            font-size: 0.75rem;
+            color: var(--text-dim);
         }
         
         .info-box {
@@ -477,6 +702,64 @@
         .footer a:hover { color: var(--secondary); }
         
         .hidden { display: none !important; }
+        
+        /* Gamepad Toggle Button */
+        .gamepad-toggle {
+            display: none;
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            cursor: pointer;
+            z-index: 150;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            transition: all 0.2s ease;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .gamepad-toggle.visible { display: flex; }
+        .gamepad-toggle:hover {
+            background: var(--primary);
+            color: white;
+        }
+        .gamepad-toggle:active {
+            transform: scale(0.95);
+        }
+        .gamepad-toggle svg {
+            width: 24px;
+            height: 24px;
+        }
+        .gamepad-toggle.controls-hidden {
+            background: rgba(228, 63, 90, 0.2);
+            border-style: dashed;
+        }
+        .gamepad-toggle.controls-hidden::after {
+            content: '';
+            position: absolute;
+            width: 32px;
+            height: 2px;
+            background: var(--primary);
+            transform: rotate(-45deg);
+        }
+        
+        /* Mobile adjustments */
+        @media (max-width: 480px) {
+            body { padding: 16px; }
+            .header h1 { font-size: 2rem; }
+            .card { padding: 16px; }
+            .joystick-base { width: 100px; height: 100px; }
+            .joystick-stick { width: 48px; height: 48px; }
+            .btn-a { width: 64px; height: 64px; font-size: 1.3rem; }
+            .btn-b { width: 48px; height: 48px; font-size: 1rem; }
+            .btn-z { width: 40px; height: 40px; font-size: 0.9rem; }
+        }
     </style>
 </head>
 <body>
@@ -486,26 +769,43 @@
     </div>
     
     <div class="container">
-        <div class="status-bar">
-            <div class="status-indicator ready" id="statusIndicator"></div>
-            <span class="status-text" id="statusText">Ready - Select a ROM file to play</span>
+        <!-- Main Navigation Tabs -->
+        <div class="main-tabs">
+            <button class="main-tab active" data-main="library" id="mainTabLibrary">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                Game Library
+            </button>
+            <button class="main-tab" data-main="controls" id="mainTabControls">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+                Controls
+            </button>
         </div>
         
-        <div class="upload-zone" id="uploadZone">
-            <div class="upload-icon">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
-                </svg>
+        <!-- Library Content -->
+        <div class="main-content active" id="mainContentLibrary">
+            <div class="status-bar">
+                <div class="status-indicator ready" id="statusIndicator"></div>
+                <span class="status-text" id="statusText">Ready - Select a ROM file to play</span>
             </div>
-            <div class="upload-text">Drop your ROM file here or click to browse</div>
-            <div class="upload-hint">Supports .z64, .n64, .v64, .rom, .zip files</div>
-            <input type="file" id="file-upload" accept=".z64,.n64,.v64,.rom,.zip" />
+            
+            <div class="upload-zone" id="uploadZone">
+                <div class="upload-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
+                    </svg>
+                </div>
+                <div class="upload-text">Drop your ROM file here or click to browse</div>
+                <div class="upload-hint">Supports .z64, .n64, .v64, .rom, .zip files</div>
+                <input type="file" id="file-upload" accept=".z64,.n64,.v64,.rom,.zip" />
+            </div>
+            
+            <div id="emulator-container"><div id="game"></div></div>
         </div>
         
-        <div id="emulator-container"><div id="game"></div></div>
-        
-        <div class="card">
-            <div class="input-tabs">
+        <!-- Controls Content -->
+        <div class="main-content" id="mainContentControls">
+            <div class="card">
+                <div class="input-tabs">
                 <button class="input-tab active" data-mode="keyboard" id="tabKeyboard">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2" stroke-width="2"/><path stroke-width="2" d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/></svg>
                     Keyboard
@@ -584,11 +884,64 @@
             <div class="input-content" id="content-mobile">
                 <div class="mobile-info">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-                    <h3>Touch Controls</h3>
-                    <p>Touch controls will automatically appear when you start playing a game in fullscreen mode. Virtual buttons and joystick will overlay the game screen.</p>
+                    <h3>Racing Controls</h3>
+                    <p>Minimal touch controls optimized for racing games. Load a ROM and controls will appear automatically.</p>
+                    
+                    <div class="control-preview">
+                        <div class="control-preview-item">
+                            <div class="preview-circle" style="background: linear-gradient(145deg, #E43F5A, #c0354d); width: 50px; height: 50px;">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 24px; height: 24px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h8M8 12h8m-4-9v18"/></svg>
+                            </div>
+                            <span>Steering</span>
+                        </div>
+                        <div class="control-preview-item">
+                            <div class="preview-circle" style="background: #10b981;">A</div>
+                            <span>Gas</span>
+                        </div>
+                        <div class="control-preview-item">
+                            <div class="preview-circle" style="background: #ef4444;">B</div>
+                            <span>Brake</span>
+                        </div>
+                        <div class="control-preview-item">
+                            <div class="preview-circle" style="background: #f59e0b; color: #1a1a2e;">Z</div>
+                            <span>Item</span>
+                        </div>
+                        <div class="control-preview-item">
+                            <div class="preview-circle" style="background: #374151; font-size: 0.6rem; font-family: 'Rajdhani', sans-serif;">START</div>
+                            <span>Pause</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="info-box">
-                    <p><strong>Mobile Detected:</strong> For the best experience, load a ROM and tap the fullscreen button. Touch controls will appear automatically.</p>
+                    <p><strong>Racing Mode:</strong> Joystick for steering, A for gas, B for brake, Z for items. Start a game to see the controls!</p>
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Gamepad Toggle Button -->
+    <button class="gamepad-toggle" id="gamepadToggle" title="Toggle Controls">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
+        </svg>
+    </button>
+    
+    <!-- Racing Touch Controls -->
+    <div class="racing-controls" id="racingControls">
+        <div class="racing-controls-inner">
+            <div class="joystick-zone" id="joystickZone">
+                <div class="joystick-base">
+                    <div class="joystick-stick" id="joystickStick"></div>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="racing-btn btn-start" id="btnStart">START</button>
+                <div class="button-row">
+                    <button class="racing-btn btn-z" id="btnZ">Z</button>
+                    <button class="racing-btn btn-b" id="btnB">B</button>
+                    <button class="racing-btn btn-a" id="btnA">A</button>
                 </div>
             </div>
         </div>
@@ -672,6 +1025,7 @@
         
         // ===== State =====
         var state = {
+            mainTab: 'library',
             mode: 'keyboard',
             keyboardMap: loadMap(STORAGE_KEY_KEYBOARD, defaultKeyboardMap),
             gamepadMap: loadMap(STORAGE_KEY_GAMEPAD, defaultGamepadMap),
@@ -679,7 +1033,9 @@
             listeningMode: null,
             connectedGamepad: null,
             wizard: { active: false, index: 0, mode: null },
-            isMobile: false
+            isMobile: false,
+            gameRunning: false,
+            controlsVisible: true
         };
         
         var gamepadPollId = null;
@@ -687,10 +1043,20 @@
         var previousAxes = [];
         var stabilizationFrames = 0;
         
+        // Touch state
+        var joystickTouch = null;
+        var joystickCenter = { x: 0, y: 0 };
+        var currentJoystick = { x: 0, y: 0 };
+        var buttonTouches = {};
+        
         // ===== DOM Elements =====
         var elements = {};
         
         function initElements() {
+            elements.mainTabLibrary = document.getElementById('mainTabLibrary');
+            elements.mainTabControls = document.getElementById('mainTabControls');
+            elements.mainContentLibrary = document.getElementById('mainContentLibrary');
+            elements.mainContentControls = document.getElementById('mainContentControls');
             elements.uploadZone = document.getElementById('uploadZone');
             elements.fileInput = document.getElementById('file-upload');
             elements.statusIndicator = document.getElementById('statusIndicator');
@@ -715,6 +1081,14 @@
             elements.wizardButtonName = document.getElementById('wizardButtonName');
             elements.wizardInstruction = document.getElementById('wizardInstruction');
             elements.wizardHint = document.getElementById('wizardHint');
+            elements.racingControls = document.getElementById('racingControls');
+            elements.joystickZone = document.getElementById('joystickZone');
+            elements.joystickStick = document.getElementById('joystickStick');
+            elements.btnA = document.getElementById('btnA');
+            elements.btnB = document.getElementById('btnB');
+            elements.btnZ = document.getElementById('btnZ');
+            elements.btnStart = document.getElementById('btnStart');
+            elements.gamepadToggle = document.getElementById('gamepadToggle');
         }
         
         // ===== Utilities =====
@@ -757,7 +1131,8 @@
         
         function isMobileDevice() {
             return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-                   (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
+                   (navigator.maxTouchPoints && navigator.maxTouchPoints > 2) ||
+                   ('ontouchstart' in window);
         }
         
         function getShortGamepadName(fullName) {
@@ -939,7 +1314,6 @@
                 return;
             }
             
-            // Check buttons
             for (var bi = 0; bi < gp.buttons.length; bi++) {
                 var wasPressed = previousButtons[bi] || false;
                 var isPressed = gp.buttons[bi].pressed || gp.buttons[bi].value > 0.5;
@@ -950,7 +1324,6 @@
                 }
             }
             
-            // Check axes
             var THRESHOLD = 0.6;
             for (var ai = 0; ai < gp.axes.length; ai++) {
                 var prev = previousAxes[ai] || 0;
@@ -1075,6 +1448,15 @@
         }
         
         // ===== Tab Switching =====
+        function switchMainTab(tab) {
+            state.mainTab = tab;
+            
+            elements.mainTabLibrary.classList.toggle('active', tab === 'library');
+            elements.mainTabControls.classList.toggle('active', tab === 'controls');
+            elements.mainContentLibrary.classList.toggle('active', tab === 'library');
+            elements.mainContentControls.classList.toggle('active', tab === 'controls');
+        }
+        
         function switchMode(mode) {
             state.mode = mode;
             stopListening();
@@ -1088,6 +1470,160 @@
             elements.contentMobile.classList.toggle('active', mode === 'mobile');
             
             render();
+        }
+        
+        // ===== Touch Controls =====
+        function showRacingControls() {
+            if (state.isMobile) {
+                state.controlsVisible = true;
+                elements.racingControls.classList.add('active');
+                elements.gamepadToggle.classList.add('visible');
+                elements.gamepadToggle.classList.remove('controls-hidden');
+            }
+        }
+        
+        function hideRacingControls() {
+            state.controlsVisible = false;
+            elements.racingControls.classList.remove('active');
+            elements.gamepadToggle.classList.add('controls-hidden');
+        }
+        
+        function toggleRacingControls() {
+            if (state.controlsVisible) {
+                hideRacingControls();
+            } else {
+                showRacingControls();
+            }
+        }
+        
+        function sendButtonPress(button) {
+            if (window.EJS_emulator) {
+                try {
+                    window.EJS_emulator.simulateInput(0, button, 1);
+                } catch (e) {}
+            }
+        }
+        
+        function sendButtonRelease(button) {
+            if (window.EJS_emulator) {
+                try {
+                    window.EJS_emulator.simulateInput(0, button, 0);
+                } catch (e) {}
+            }
+        }
+        
+        function sendJoystick(x, y) {
+            if (window.EJS_emulator) {
+                try {
+                    // N64: Axis 0 = X (left/right), Axis 1 = Y (up/down)
+                    // Convert -1..1 to 0..255 range (128 is center)
+                    var mappedX = Math.round((x + 1) * 127.5);
+                    var mappedY = Math.round((-y + 1) * 127.5); // Invert Y for proper direction
+                    window.EJS_emulator.simulateInput(0, 24, mappedX); // X axis
+                    window.EJS_emulator.simulateInput(0, 25, mappedY); // Y axis
+                } catch (e) {}
+            }
+        }
+        
+        function initJoystick() {
+            var zone = elements.joystickZone;
+            var stick = elements.joystickStick;
+            var base = zone.querySelector('.joystick-base');
+            var maxDistance = 32;
+            
+            function updateStick(touchX, touchY) {
+                var rect = base.getBoundingClientRect();
+                joystickCenter.x = rect.left + rect.width / 2;
+                joystickCenter.y = rect.top + rect.height / 2;
+                
+                var deltaX = touchX - joystickCenter.x;
+                var deltaY = touchY - joystickCenter.y;
+                var distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                
+                if (distance > maxDistance) {
+                    deltaX = (deltaX / distance) * maxDistance;
+                    deltaY = (deltaY / distance) * maxDistance;
+                    distance = maxDistance;
+                }
+                
+                stick.style.transform = 'translate(' + deltaX + 'px, ' + deltaY + 'px)';
+                
+                // Normalize to -1..1 range
+                currentJoystick.x = deltaX / maxDistance;
+                currentJoystick.y = deltaY / maxDistance;
+                
+                sendJoystick(currentJoystick.x, currentJoystick.y);
+            }
+            
+            function resetStick() {
+                stick.style.transform = 'translate(0, 0)';
+                currentJoystick.x = 0;
+                currentJoystick.y = 0;
+                sendJoystick(0, 0);
+            }
+            
+            zone.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                var touch = e.touches[0];
+                joystickTouch = touch.identifier;
+                updateStick(touch.clientX, touch.clientY);
+            }, { passive: false });
+            
+            zone.addEventListener('touchmove', function(e) {
+                e.preventDefault();
+                for (var i = 0; i < e.touches.length; i++) {
+                    if (e.touches[i].identifier === joystickTouch) {
+                        updateStick(e.touches[i].clientX, e.touches[i].clientY);
+                        break;
+                    }
+                }
+            }, { passive: false });
+            
+            zone.addEventListener('touchend', function(e) {
+                for (var i = 0; i < e.changedTouches.length; i++) {
+                    if (e.changedTouches[i].identifier === joystickTouch) {
+                        joystickTouch = null;
+                        resetStick();
+                        break;
+                    }
+                }
+            });
+            
+            zone.addEventListener('touchcancel', function() {
+                joystickTouch = null;
+                resetStick();
+            });
+        }
+        
+        function initButton(element, n64Button) {
+            element.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                element.classList.add('pressed');
+                sendButtonPress(n64Button);
+            }, { passive: false });
+            
+            element.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                element.classList.remove('pressed');
+                sendButtonRelease(n64Button);
+            }, { passive: false });
+            
+            element.addEventListener('touchcancel', function() {
+                element.classList.remove('pressed');
+                sendButtonRelease(n64Button);
+            });
+        }
+        
+        function initTouchControls() {
+            initJoystick();
+            
+            // N64 button mappings for EmulatorJS:
+            // 0=B, 1=A, 2=Z, 3=Start, 4=DUp, 5=DDown, 6=DLeft, 7=DRight
+            // 8=L, 9=R, 10=CUp, 11=CDown, 12=CLeft, 13=CRight
+            initButton(elements.btnA, 1);     // A
+            initButton(elements.btnB, 0);     // B
+            initButton(elements.btnZ, 2);     // Z
+            initButton(elements.btnStart, 3); // Start
         }
         
         // ===== Emulator =====
@@ -1118,6 +1654,8 @@
             window.EJS_onGameStart = function() {
                 setStatus('Playing: ' + romName, 'ready');
                 emulatorLoaded = true;
+                state.gameRunning = true;
+                showRacingControls();
             };
             
             var script = document.createElement('script');
@@ -1152,7 +1690,10 @@
         
         // ===== Event Bindings =====
         function bindEvents() {
-            // Tab switching
+            // Main tab switching
+            elements.mainTabLibrary.addEventListener('click', function() { switchMainTab('library'); });
+            elements.mainTabControls.addEventListener('click', function() { switchMainTab('controls'); });
+            
             document.querySelectorAll('.input-tab').forEach(function(tab) {
                 tab.addEventListener('click', function() {
                     if (!tab.disabled) {
@@ -1161,10 +1702,8 @@
                 });
             });
             
-            // Keyboard events
             document.addEventListener('keydown', handleKeyDown);
             
-            // Keyboard actions
             document.getElementById('wizardKeyboard').addEventListener('click', function() { startWizard('keyboard'); });
             document.getElementById('resetKeyboard').addEventListener('click', function() {
                 state.keyboardMap = Object.assign({}, defaultKeyboardMap);
@@ -1176,7 +1715,6 @@
                 setStatus('Keyboard mappings saved!', 'ready');
             });
             
-            // Gamepad actions
             document.getElementById('wizardGamepad').addEventListener('click', function() { startWizard('gamepad'); });
             document.getElementById('resetGamepad').addEventListener('click', function() {
                 state.gamepadMap = Object.assign({}, defaultGamepadMap);
@@ -1188,11 +1726,16 @@
                 setStatus('Controller mappings saved!', 'ready');
             });
             
-            // Wizard actions
             document.getElementById('wizardSkip').addEventListener('click', skipWizardStep);
             document.getElementById('wizardCancel').addEventListener('click', cancelWizard);
             
-            // File upload
+            // Gamepad toggle button
+            elements.gamepadToggle.addEventListener('click', toggleRacingControls);
+            elements.gamepadToggle.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                toggleRacingControls();
+            }, { passive: false });
+            
             elements.uploadZone.addEventListener('click', function() { elements.fileInput.click(); });
             elements.fileInput.addEventListener('change', function(e) {
                 if (e.target.files.length > 0) handleFile(e.target.files[0]);
@@ -1211,7 +1754,6 @@
                 if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
             });
             
-            // Gamepad detection
             window.addEventListener('gamepadconnected', function() { setTimeout(detectGamepads, 100); });
             window.addEventListener('gamepaddisconnected', function() { setTimeout(detectGamepads, 100); });
             setInterval(detectGamepads, 500);
@@ -1221,14 +1763,13 @@
         function init() {
             initElements();
             
-            // Detect mobile
             state.isMobile = isMobileDevice();
             if (state.isMobile) {
                 elements.tabMobile.style.display = 'flex';
                 switchMode('mobile');
+                initTouchControls();
             }
             
-            // Initial render
             render();
             bindEvents();
             detectGamepads();
@@ -1240,6 +1781,19 @@
             init();
         }
     })();
+    
+    // Register Service Worker for PWA
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('./sw.js')
+                .then(function(registration) {
+                    console.log('SW registered:', registration.scope);
+                })
+                .catch(function(error) {
+                    console.log('SW registration failed:', error);
+                });
+        });
+    }
     </script>
 </body>
 </html>
