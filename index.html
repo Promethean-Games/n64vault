@@ -1,450 +1,237 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>N64 Vault - Nintendo 64 Emulator</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Rajdhani:wght@400;500;600;700&family=Roboto:wght@400;500&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
-    
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        :root {
-            --primary: #E43F5A;
-            --primary-glow: rgba(228, 63, 90, 0.4);
-            --secondary: #E94560;
-            --bg-dark: #0F0F23;
-            --bg-card: #1B1B2F;
-            --bg-element: #16213E;
-            --accent: #162447;
-            --text: #ffffff;
-            --text-muted: #8892a0;
-            --text-dim: #5a6270;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --error: #ef4444;
-        }
-        
-        body {
-            background: var(--bg-dark);
-            background-image: 
-                radial-gradient(ellipse at top, rgba(22, 36, 71, 0.5) 0%, transparent 50%),
-                radial-gradient(ellipse at bottom, rgba(27, 27, 47, 0.5) 0%, transparent 50%);
-            color: var(--text);
-            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 24px;
-            line-height: 1.5;
-        }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 32px;
-        }
-        
-        .header h1 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 2.75rem;
-            font-weight: 700;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 8px;
-            text-shadow: 0 0 40px var(--primary-glow);
-        }
-        
-        .header p {
-            font-family: 'Rajdhani', sans-serif;
-            color: var(--text-muted);
-            font-size: 1.1rem;
-            font-weight: 500;
-            letter-spacing: 0.05em;
-        }
-        
-        .container {
-            max-width: 900px;
-            width: 100%;
-        }
-        
-        .card {
-            background: var(--bg-card);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 20px;
-        }
-        
-        .status-bar {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 16px 20px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 12px;
-            margin-bottom: 24px;
-        }
-        
-        .status-indicator {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: var(--primary);
-            flex-shrink: 0;
-        }
-        
-        .status-indicator.ready { background: var(--success); }
-        .status-indicator.loading { 
-            background: var(--warning);
-            animation: pulse 1.5s ease-in-out infinite;
-        }
-        .status-indicator.error { background: var(--error); }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.6; transform: scale(0.9); }
-        }
-        
-        .status-text {
-            font-family: 'Rajdhani', sans-serif;
-            font-size: 0.95rem;
-            font-weight: 500;
-            color: var(--text-muted);
-        }
-        
-        .upload-zone {
-            border: 2px dashed rgba(228, 63, 90, 0.4);
-            border-radius: 16px;
-            padding: 48px 32px;
-            text-align: center;
-            background: rgba(228, 63, 90, 0.05);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-bottom: 24px;
-        }
-        
-        .upload-zone:hover {
-            background: rgba(228, 63, 90, 0.1);
-            border-color: var(--primary);
-            transform: translateY(-2px);
-        }
-        
-        .upload-zone.dragover {
-            background: rgba(228, 63, 90, 0.15);
-            border-color: var(--secondary);
-            transform: scale(1.01);
-        }
-        
-        .upload-icon {
-            width: 64px;
-            height: 64px;
-            margin: 0 auto 20px;
-            padding: 16px;
-            background: rgba(228, 63, 90, 0.1);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .upload-icon svg {
-            width: 32px;
-            height: 32px;
-            color: var(--primary);
-        }
-        
-        .upload-text {
-            font-family: 'Rajdhani', sans-serif;
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--text);
-            margin-bottom: 8px;
-        }
-        
-        .upload-hint {
-            color: var(--text-dim);
-            font-size: 0.9rem;
-        }
-        
-        #file-upload { display: none; }
-        
-        #emulator-container {
-            display: none;
-            width: 100%;
-            min-height: 500px;
-            margin-bottom: 24px;
-        }
-        
-        #game {
-            width: 100%;
-            height: 500px;
-        }
-        
-        .keyboard-guide {
-            margin-top: 8px;
-        }
-        
-        .keyboard-guide h3 {
-            font-family: 'Rajdhani', sans-serif;
-            color: var(--primary);
-            margin-bottom: 16px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .keyboard-guide h3 svg {
-            width: 20px;
-            height: 20px;
-        }
-        
-        .key-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-        }
-        
-        @media (max-width: 768px) {
-            .key-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-        
-        .key-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 16px;
-            background: var(--bg-element);
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            border-radius: 10px;
-            transition: all 0.2s ease;
-        }
-        
-        .key-item:hover {
-            background: rgba(255, 255, 255, 0.06);
-            border-color: rgba(228, 63, 90, 0.2);
-        }
-        
-        .key-label {
-            font-family: 'Rajdhani', sans-serif;
-            font-weight: 500;
-            color: var(--text-muted);
-            font-size: 0.9rem;
-        }
-        
-        .key-value {
-            font-family: 'Roboto Mono', monospace;
-            font-size: 0.85rem;
-            color: var(--primary);
-            background: rgba(228, 63, 90, 0.1);
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-weight: 500;
-        }
-        
-        .footer {
-            margin-top: auto;
-            padding-top: 32px;
-            text-align: center;
-        }
-        
-        .footer p {
-            color: var(--text-dim);
-            font-size: 0.85rem;
-            margin-bottom: 4px;
-        }
-        
-        .footer a {
-            color: var(--primary);
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-        
-        .footer a:hover {
-            color: var(--secondary);
-        }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>N64 Vault - Emulator</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #000;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    #game {
+      width: 100%;
+      height: 100%;
+    }
+    #status-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background-color: #0F0F23;
+      color: #E43F5A;
+      font-size: 16px;
+      text-align: center;
+      padding: 20px;
+      z-index: 1000;
+    }
+    #status-overlay.hidden {
+      display: none;
+    }
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid #1B1B2F;
+      border-top-color: #E43F5A;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    #status-text {
+      max-width: 300px;
+      line-height: 1.5;
+    }
+    #controls-bar {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 12px;
+      z-index: 1001;
+    }
+    .ctrl-btn {
+      background-color: #E43F5A;
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+    .ctrl-btn:hover {
+      background-color: #E94560;
+    }
+    .ctrl-btn:disabled {
+      background-color: #444;
+      cursor: not-allowed;
+    }
+    #rom-file-input {
+      display: none;
+    }
+    body.embedded #controls-bar {
+      display: none;
+    }
+  </style>
 </head>
 <body>
-    <div class="header">
-        <h1>N64 Vault</h1>
-        <p>Web-Based Nintendo 64 Emulator</p>
-    </div>
-    
-    <div class="container">
-        <div class="status-bar">
-            <div class="status-indicator ready" id="statusIndicator"></div>
-            <span class="status-text" id="statusText">Ready - Select a ROM file to play</span>
-        </div>
+  <div id="game"></div>
+  
+  <div id="status-overlay">
+    <div class="spinner"></div>
+    <div id="status-text">Waiting for ROM...</div>
+  </div>
+  
+  <div id="controls-bar">
+    <button class="ctrl-btn" id="load-btn">Load ROM</button>
+  </div>
+  
+  <input type="file" id="rom-file-input" accept=".z64,.n64,.v64,.rom,.zip">
+
+  <script>
+    (function() {
+      'use strict';
+      
+      var isInIframe = window.parent !== window;
+      var origin = window.location.origin;
+      var emulatorStarted = false;
+      
+      if (isInIframe) {
+        document.body.classList.add('embedded');
+      }
+      
+      function sendToParent(msg) {
+        if (isInIframe) {
+          try {
+            window.parent.postMessage(msg, origin);
+          } catch (e) {
+            console.error('postMessage error:', e);
+          }
+        }
+      }
+      
+      function setStatus(text, showSpinner) {
+        var overlay = document.getElementById('status-overlay');
+        var textEl = document.getElementById('status-text');
+        if (overlay && textEl) {
+          textEl.textContent = text;
+          var spinner = overlay.querySelector('.spinner');
+          if (spinner) {
+            spinner.style.display = showSpinner ? 'block' : 'none';
+          }
+          overlay.classList.remove('hidden');
+        }
+      }
+      
+      function hideStatus() {
+        var overlay = document.getElementById('status-overlay');
+        if (overlay) {
+          overlay.classList.add('hidden');
+        }
+      }
+      
+      function startEmulator(romBlob, romName) {
+        if (emulatorStarted) {
+          window.location.reload();
+          return;
+        }
         
-        <div class="upload-zone" id="uploadZone">
-            <div class="upload-icon">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
-                </svg>
-            </div>
-            <div class="upload-text">Drop your ROM file here or click to browse</div>
-            <div class="upload-hint">Supports .z64, .n64, .v64, .rom, .zip files</div>
-            <input type="file" id="file-upload" accept=".z64,.n64,.v64,.rom,.zip" />
-        </div>
+        setStatus('Starting emulator...', true);
         
-        <div id="emulator-container">
-            <div id="game"></div>
-        </div>
+        var romUrl = URL.createObjectURL(romBlob);
         
-        <div class="card keyboard-guide">
-            <h3>
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
-                </svg>
-                Keyboard Controls (EmulatorJS Default)
-            </h3>
-            <div class="key-grid">
-                <div class="key-item"><span class="key-label">A Button</span><span class="key-value">X</span></div>
-                <div class="key-item"><span class="key-label">B Button</span><span class="key-value">Z</span></div>
-                <div class="key-item"><span class="key-label">Start</span><span class="key-value">Enter</span></div>
-                <div class="key-item"><span class="key-label">L Trigger</span><span class="key-value">Q</span></div>
-                <div class="key-item"><span class="key-label">R Trigger</span><span class="key-value">E</span></div>
-                <div class="key-item"><span class="key-label">Z Trigger</span><span class="key-value">C</span></div>
-                <div class="key-item"><span class="key-label">D-Pad</span><span class="key-value">Arrows</span></div>
-                <div class="key-item"><span class="key-label">Analog</span><span class="key-value">WASD</span></div>
-                <div class="key-item"><span class="key-label">C-Up</span><span class="key-value">I</span></div>
-                <div class="key-item"><span class="key-label">C-Down</span><span class="key-value">K</span></div>
-                <div class="key-item"><span class="key-label">C-Left</span><span class="key-value">J</span></div>
-                <div class="key-item"><span class="key-label">C-Right</span><span class="key-value">L</span></div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="footer">
-        <p>N64 Vault - Powered by <a href="https://emulatorjs.org" target="_blank">EmulatorJS</a></p>
-        <p>For personal use only. Please use legally obtained ROM files.</p>
-    </div>
-    
-    <script>
-        (function() {
-            'use strict';
-            
-            var uploadZone = document.getElementById('uploadZone');
-            var fileInput = document.getElementById('file-upload');
-            var statusIndicator = document.getElementById('statusIndicator');
-            var statusText = document.getElementById('statusText');
-            var emulatorContainer = document.getElementById('emulator-container');
-            var emulatorLoaded = false;
-            
-            function setStatus(text, state) {
-                statusText.textContent = text;
-                statusIndicator.className = 'status-indicator';
-                if (state) statusIndicator.classList.add(state);
-            }
-            
-            function loadEmulator(romBlob, romName) {
-                if (emulatorLoaded) {
-                    window.location.reload();
-                    return;
-                }
-                
-                setStatus('Loading emulator...', 'loading');
-                
-                uploadZone.style.display = 'none';
-                emulatorContainer.style.display = 'block';
-                
-                var romUrl = URL.createObjectURL(romBlob);
-                
-                window.EJS_player = '#game';
-                window.EJS_core = 'n64';
-                window.EJS_gameUrl = romUrl;
-                window.EJS_gameName = romName || 'N64 Game';
-                window.EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
-                window.EJS_startOnLoaded = true;
-                window.EJS_color = '#E43F5A';
-                window.EJS_backgroundColor = '#0F0F23';
-                
-                window.EJS_onGameStart = function() {
-                    setStatus('Playing: ' + romName, 'ready');
-                    emulatorLoaded = true;
-                };
-                
-                var script = document.createElement('script');
-                script.src = 'https://cdn.emulatorjs.org/stable/data/loader.js';
-                script.onload = function() {
-                    console.log('EmulatorJS loaded');
-                };
-                script.onerror = function() {
-                    setStatus('Failed to load emulator. Check your internet connection.', 'error');
-                    uploadZone.style.display = 'block';
-                    emulatorContainer.style.display = 'none';
-                };
-                document.body.appendChild(script);
-            }
-            
-            function handleFile(file) {
-                var validExtensions = ['.z64', '.n64', '.v64', '.rom', '.zip'];
-                var ext = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
-                
-                if (!validExtensions.includes(ext)) {
-                    setStatus('Invalid file type. Use .z64, .n64, .v64, .rom, or .zip', 'error');
-                    return;
-                }
-                
-                setStatus('Reading file: ' + file.name, 'loading');
-                
-                var reader = new FileReader();
-                reader.onload = function(e) {
-                    var blob = new Blob([e.target.result], { type: 'application/octet-stream' });
-                    loadEmulator(blob, file.name);
-                };
-                reader.onerror = function() {
-                    setStatus('Failed to read file', 'error');
-                };
-                reader.readAsArrayBuffer(file);
-            }
-            
-            uploadZone.addEventListener('click', function() {
-                fileInput.click();
-            });
-            
-            fileInput.addEventListener('change', function(e) {
-                if (e.target.files.length > 0) {
-                    handleFile(e.target.files[0]);
-                }
-            });
-            
-            uploadZone.addEventListener('dragover', function(e) {
-                e.preventDefault();
-                uploadZone.classList.add('dragover');
-            });
-            
-            uploadZone.addEventListener('dragleave', function(e) {
-                e.preventDefault();
-                uploadZone.classList.remove('dragover');
-            });
-            
-            uploadZone.addEventListener('drop', function(e) {
-                e.preventDefault();
-                uploadZone.classList.remove('dragover');
-                
-                if (e.dataTransfer.files.length > 0) {
-                    handleFile(e.dataTransfer.files[0]);
-                }
-            });
-        })();
-    </script>
+        window.EJS_player = '#game';
+        window.EJS_core = 'n64';
+        window.EJS_gameUrl = romUrl;
+        window.EJS_gameName = romName || 'N64 Game';
+        window.EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
+        window.EJS_startOnLoaded = true;
+        window.EJS_color = '#E43F5A';
+        window.EJS_backgroundColor = '#0F0F23';
+        
+        window.EJS_onGameStart = function() {
+          console.log('Game started');
+          hideStatus();
+          emulatorStarted = true;
+          sendToParent({ type: 'stateChange', state: 'running' });
+        };
+        
+        var loaderScript = document.createElement('script');
+        loaderScript.src = 'https://cdn.emulatorjs.org/stable/data/loader.js';
+        loaderScript.onload = function() {
+          console.log('EmulatorJS loaded');
+          sendToParent({ type: 'emulatorReady' });
+        };
+        loaderScript.onerror = function() {
+          setStatus('Failed to load emulator. Check your internet connection.', false);
+          sendToParent({ type: 'error', message: 'CDN load failed' });
+        };
+        document.body.appendChild(loaderScript);
+      }
+      
+      function loadRomData(arrayBuffer, name) {
+        console.log('ROM received:', name, arrayBuffer.byteLength, 'bytes');
+        setStatus('Loading ROM...', true);
+        var blob = new Blob([arrayBuffer], { type: 'application/octet-stream' });
+        startEmulator(blob, name);
+      }
+      
+      function handleFileSelect(file) {
+        setStatus('Reading file...', true);
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          loadRomData(e.target.result, file.name);
+        };
+        reader.onerror = function() {
+          setStatus('Failed to read file.', false);
+        };
+        reader.readAsArrayBuffer(file);
+      }
+      
+      document.getElementById('load-btn').addEventListener('click', function() {
+        document.getElementById('rom-file-input').click();
+      });
+      
+      document.getElementById('rom-file-input').addEventListener('change', function(e) {
+        var file = e.target.files[0];
+        if (file) {
+          handleFileSelect(file);
+        }
+      });
+      
+      window.addEventListener('message', function(e) {
+        if (e.origin !== origin && e.origin !== window.location.origin) {
+          return;
+        }
+        var data = e.data;
+        if (data && data.type === 'loadRom' && data.romData) {
+          loadRomData(data.romData, data.romName);
+        } else if (data && data.type === 'ping') {
+          sendToParent({ type: 'pong', ready: emulatorStarted });
+        }
+      });
+      
+      sendToParent({ type: 'iframeLoaded' });
+      setStatus('Select a ROM to start playing', false);
+    })();
+  </script>
 </body>
 </html>
