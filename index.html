@@ -854,6 +854,46 @@
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     <span><strong id="gamepadName">Controller</strong> connected</span>
                 </div>
+                
+                <!-- Debug Panel -->
+                <div class="debug-panel" id="debugPanel" style="margin: 12px 0; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(228, 63, 90, 0.3); border-radius: 8px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px;">
+                        <button class="btn btn-secondary" id="toggleDebug" style="font-size: 0.85rem; padding: 6px 12px;">
+                            Show Debug Info
+                        </button>
+                        <span id="debugHint" style="font-size: 0.75rem; color: var(--text-muted); display: none;">
+                            Press any button on your controller to see raw data
+                        </span>
+                    </div>
+                    <div id="debugContent" style="display: none; font-family: 'Roboto Mono', monospace; font-size: 0.75rem; background: var(--bg-dark); padding: 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);">
+                        <div style="color: var(--primary); font-weight: 600; margin-bottom: 8px;">Raw Controller Input:</div>
+                        <div style="margin-bottom: 8px;">
+                            <div style="color: var(--text-muted); margin-bottom: 4px;">Active Buttons:</div>
+                            <div id="debugButtons" style="min-height: 24px; padding: 4px 8px; background: rgba(255,255,255,0.05); border-radius: 4px; color: #10b981;">
+                                No buttons pressed
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 8px;">
+                            <div style="color: var(--text-muted); margin-bottom: 4px;">Active Axes (|value| &gt; 0.1):</div>
+                            <div id="debugAxes" style="min-height: 24px; padding: 4px 8px; background: rgba(255,255,255,0.05); border-radius: 4px; color: #f59e0b;">
+                                No axis movement
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 8px;">
+                            <div style="color: var(--text-muted); margin-bottom: 4px;">Last Detected Input:</div>
+                            <div id="debugLastDetected" style="min-height: 24px; padding: 4px 8px; background: rgba(228, 63, 90, 0.2); border-radius: 4px; color: var(--primary); font-weight: 600;">
+                                None yet
+                            </div>
+                        </div>
+                        <div style="color: var(--text-dim); font-size: 0.7rem; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1);">
+                            Tip: Standard D-pad is buttons 12-15. Some controllers use Axis 6/7. If D-pad Left shows as Axis[X] with a specific value, let me know!
+                        </div>
+                    </div>
+                    <div id="debugInstructions" style="display: none; padding: 8px; color: var(--text-muted); font-size: 0.85rem;">
+                        Click on a button to remap (like "D-Left") to start seeing controller debug data.
+                    </div>
+                </div>
+                
                 <div class="mapping-header">
                     <div class="mapping-title">
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
@@ -1089,7 +1129,16 @@
             elements.btnZ = document.getElementById('btnZ');
             elements.btnStart = document.getElementById('btnStart');
             elements.gamepadToggle = document.getElementById('gamepadToggle');
+            elements.toggleDebug = document.getElementById('toggleDebug');
+            elements.debugHint = document.getElementById('debugHint');
+            elements.debugContent = document.getElementById('debugContent');
+            elements.debugButtons = document.getElementById('debugButtons');
+            elements.debugAxes = document.getElementById('debugAxes');
+            elements.debugLastDetected = document.getElementById('debugLastDetected');
+            elements.debugInstructions = document.getElementById('debugInstructions');
         }
+        
+        var debugMode = false;
         
         // ===== Utilities =====
         function loadMap(key, defaultMap) {
@@ -1305,6 +1354,32 @@
                 return;
             }
             
+            // Update debug display
+            if (debugMode) {
+                elements.debugContent.style.display = 'block';
+                elements.debugInstructions.style.display = 'none';
+                
+                // Show active buttons
+                var activeButtons = [];
+                for (var dbi = 0; dbi < gp.buttons.length; dbi++) {
+                    var btn = gp.buttons[dbi];
+                    if (btn.pressed || btn.value > 0.1) {
+                        activeButtons.push('Button[' + dbi + '] = ' + btn.value.toFixed(2) + (btn.pressed ? ' (PRESSED)' : ''));
+                    }
+                }
+                elements.debugButtons.textContent = activeButtons.length ? activeButtons.join('  |  ') : 'No buttons pressed';
+                
+                // Show active axes
+                var activeAxes = [];
+                for (var dai = 0; dai < gp.axes.length; dai++) {
+                    var axisVal = gp.axes[dai];
+                    if (Math.abs(axisVal) > 0.1) {
+                        activeAxes.push('Axis[' + dai + '] = ' + axisVal.toFixed(3));
+                    }
+                }
+                elements.debugAxes.textContent = activeAxes.length ? activeAxes.join('  |  ') : 'No axis movement';
+            }
+            
             stabilizationFrames++;
             
             if (stabilizationFrames <= 15) {
@@ -1318,7 +1393,11 @@
                 var wasPressed = previousButtons[bi] || false;
                 var isPressed = gp.buttons[bi].pressed || gp.buttons[bi].value > 0.5;
                 if (isPressed && !wasPressed) {
-                    applyInput('Button:' + bi);
+                    var inputCode = 'Button:' + bi;
+                    if (debugMode) {
+                        elements.debugLastDetected.textContent = inputCode;
+                    }
+                    applyInput(inputCode);
                     gamepadPollId = requestAnimationFrame(pollGamepad);
                     return;
                 }
@@ -1330,12 +1409,20 @@
                 var curr = gp.axes[ai];
                 
                 if (curr > THRESHOLD && prev <= THRESHOLD) {
-                    applyInput('Axis:' + ai + ':+');
+                    var inputCodePos = 'Axis:' + ai + ':+';
+                    if (debugMode) {
+                        elements.debugLastDetected.textContent = inputCodePos;
+                    }
+                    applyInput(inputCodePos);
                     gamepadPollId = requestAnimationFrame(pollGamepad);
                     return;
                 }
                 if (curr < -THRESHOLD && prev >= -THRESHOLD) {
-                    applyInput('Axis:' + ai + ':-');
+                    var inputCodeNeg = 'Axis:' + ai + ':-';
+                    if (debugMode) {
+                        elements.debugLastDetected.textContent = inputCodeNeg;
+                    }
+                    applyInput(inputCodeNeg);
                     gamepadPollId = requestAnimationFrame(pollGamepad);
                     return;
                 }
@@ -1856,6 +1943,26 @@
             document.getElementById('saveGamepad').addEventListener('click', function() {
                 saveMap(STORAGE_KEY_GAMEPAD, state.gamepadMap);
                 setStatus('Controller mappings saved!', 'ready');
+            });
+            
+            // Debug toggle
+            elements.toggleDebug.addEventListener('click', function() {
+                debugMode = !debugMode;
+                elements.toggleDebug.textContent = debugMode ? 'Hide Debug' : 'Show Debug Info';
+                elements.debugHint.style.display = debugMode ? 'inline' : 'none';
+                
+                if (debugMode) {
+                    if (state.listeningKey) {
+                        elements.debugContent.style.display = 'block';
+                        elements.debugInstructions.style.display = 'none';
+                    } else {
+                        elements.debugContent.style.display = 'none';
+                        elements.debugInstructions.style.display = 'block';
+                    }
+                } else {
+                    elements.debugContent.style.display = 'none';
+                    elements.debugInstructions.style.display = 'none';
+                }
             });
             
             document.getElementById('wizardSkip').addEventListener('click', skipWizardStep);
