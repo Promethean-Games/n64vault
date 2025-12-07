@@ -199,16 +199,6 @@
         #file-upload { display: none; }
         #emulator-container { display: none; width: 100%; min-height: 500px; margin-bottom: 24px; position: relative; }
         
-        /* Hide EmulatorJS built-in virtual gamepad - we use our own touch controls */
-        .ejs-virtual-gamepad,
-        .ejs_virtual_gamepad,
-        [class*="virtual-gamepad"],
-        [class*="virtualGamepad"] {
-            display: none !important;
-            visibility: hidden !important;
-            opacity: 0 !important;
-            pointer-events: none !important;
-        }
         #game { width: 100%; height: 500px; }
         
         /* Input Mode Tabs */
@@ -267,6 +257,65 @@
         .detection-banner.warning svg { color: var(--warning); }
         .detection-banner span { font-size: 0.9rem; color: var(--text-muted); }
         .detection-banner strong { color: var(--text); }
+        
+        /* Controller Tabs for Multi-Controller */
+        .controller-tabs {
+            margin-bottom: 16px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .controller-tabs-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+        .controller-tabs-header svg { color: var(--primary); }
+        .controller-tabs-list {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .controller-tab {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--text-muted);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .controller-tab:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+        }
+        .controller-tab.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+        .controller-tab .player-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 50%;
+            font-size: 0.75rem;
+        }
+        .controller-tab.active .player-num { background: rgba(255, 255, 255, 0.2); }
+        .controller-tab svg { width: 14px; height: 14px; }
         
         /* Mapping UI */
         .mapping-header {
@@ -502,153 +551,6 @@
             justify-content: center;
         }
         
-        /* Mobile Racing Controls */
-        .racing-controls {
-            display: none;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 180px;
-            background: linear-gradient(to top, rgba(15, 15, 35, 0.95) 0%, rgba(15, 15, 35, 0.8) 70%, transparent 100%);
-            z-index: 100;
-            pointer-events: none;
-            padding: 16px;
-        }
-        .racing-controls.active { display: block; }
-        
-        .racing-controls-inner {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            height: 100%;
-            max-width: 600px;
-            margin: 0 auto;
-            pointer-events: auto;
-        }
-        
-        /* Joystick Zone */
-        .joystick-zone {
-            width: 140px;
-            height: 140px;
-            position: relative;
-            touch-action: none;
-        }
-        
-        .joystick-base {
-            width: 120px;
-            height: 120px;
-            background: #1a1a2e;
-            border: 3px solid #E43F5A;
-            border-radius: 50%;
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .joystick-stick {
-            width: 56px;
-            height: 56px;
-            background: linear-gradient(145deg, #E43F5A, #c0354d);
-            border-radius: 50%;
-            box-shadow: 0 4px 12px rgba(228, 63, 90, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.2);
-            transition: transform 0.05s ease-out;
-            pointer-events: none;
-        }
-        
-        /* Action Buttons Zone */
-        .action-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            align-items: flex-end;
-        }
-        
-        .button-row {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-        
-        .racing-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Orbitron', sans-serif;
-            font-weight: 700;
-            border: none;
-            cursor: pointer;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-            transition: transform 0.1s ease, box-shadow 0.1s ease;
-        }
-        
-        .racing-btn.pressed {
-            transform: scale(0.92);
-        }
-        
-        /* A Button - Gas/Accelerate (Green) */
-        .btn-a {
-            width: 72px;
-            height: 72px;
-            border-radius: 50%;
-            background: #10b981;
-            color: white;
-            font-size: 1.5rem;
-            box-shadow: 0 4px 0 #059669, 0 6px 20px rgba(16, 185, 129, 0.4);
-        }
-        .btn-a.pressed {
-            box-shadow: 0 2px 0 #059669, 0 3px 10px rgba(16, 185, 129, 0.4);
-        }
-        
-        /* B Button - Brake/Reverse (Red) */
-        .btn-b {
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: #ef4444;
-            color: white;
-            font-size: 1.2rem;
-            box-shadow: 0 4px 0 #b91c1c, 0 6px 20px rgba(239, 68, 68, 0.4);
-        }
-        .btn-b.pressed {
-            box-shadow: 0 2px 0 #b91c1c, 0 3px 10px rgba(239, 68, 68, 0.4);
-        }
-        
-        /* Z Button - Item/Weapon (Yellow) */
-        .btn-z {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: #f59e0b;
-            color: #1a1a2e;
-            font-size: 1rem;
-            box-shadow: 0 4px 0 #d97706, 0 6px 16px rgba(245, 158, 11, 0.4);
-        }
-        .btn-z.pressed {
-            box-shadow: 0 2px 0 #d97706, 0 3px 8px rgba(245, 158, 11, 0.4);
-        }
-        
-        /* Start Button - Pause (Small pill) */
-        .btn-start {
-            padding: 8px 20px;
-            border-radius: 20px;
-            background: #374151;
-            color: #9ca3af;
-            font-size: 0.7rem;
-            font-family: 'Rajdhani', sans-serif;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            box-shadow: 0 3px 0 #1f2937;
-        }
-        .btn-start.pressed {
-            box-shadow: 0 1px 0 #1f2937;
-        }
-        
         /* Mobile Info */
         .mobile-info {
             text-align: center;
@@ -726,62 +628,11 @@
         
         .hidden { display: none !important; }
         
-        /* Gamepad Toggle Button */
-        .gamepad-toggle {
-            display: none;
-            position: fixed;
-            top: 16px;
-            right: 16px;
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: var(--bg-card);
-            border: 2px solid var(--primary);
-            color: var(--primary);
-            cursor: pointer;
-            z-index: 150;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-            transition: all 0.2s ease;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-        }
-        .gamepad-toggle.visible { display: flex; }
-        .gamepad-toggle:hover {
-            background: var(--primary);
-            color: white;
-        }
-        .gamepad-toggle:active {
-            transform: scale(0.95);
-        }
-        .gamepad-toggle svg {
-            width: 24px;
-            height: 24px;
-        }
-        .gamepad-toggle.controls-hidden {
-            background: rgba(228, 63, 90, 0.2);
-            border-style: dashed;
-        }
-        .gamepad-toggle.controls-hidden::after {
-            content: '';
-            position: absolute;
-            width: 32px;
-            height: 2px;
-            background: var(--primary);
-            transform: rotate(-45deg);
-        }
-        
         /* Mobile adjustments */
         @media (max-width: 480px) {
             body { padding: 16px; }
             .header h1 { font-size: 2rem; }
             .card { padding: 16px; }
-            .joystick-base { width: 100px; height: 100px; }
-            .joystick-stick { width: 48px; height: 48px; }
-            .btn-a { width: 64px; height: 64px; font-size: 1.3rem; }
-            .btn-b { width: 48px; height: 48px; font-size: 1rem; }
-            .btn-z { width: 40px; height: 40px; font-size: 0.9rem; }
         }
     </style>
 </head>
@@ -880,6 +731,15 @@
                 <div class="detection-banner" id="gamepadBanner">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     <span><strong id="gamepadName">Controller</strong> connected</span>
+                </div>
+                
+                <!-- Controller Tabs for Multi-Controller Support -->
+                <div class="controller-tabs" id="controllerTabs" style="display: none;">
+                    <div class="controller-tabs-header">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 16px; height: 16px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                        <span>Select Controller to Configure:</span>
+                    </div>
+                    <div class="controller-tabs-list" id="controllerTabsList"></div>
                 </div>
                 
                 <!-- Debug Panel -->
@@ -987,33 +847,6 @@
         </div>
     </div>
     
-    <!-- Gamepad Toggle Button -->
-    <button class="gamepad-toggle" id="gamepadToggle" title="Toggle Controls">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
-        </svg>
-    </button>
-    
-    <!-- Racing Touch Controls -->
-    <div class="racing-controls" id="racingControls">
-        <div class="racing-controls-inner">
-            <div class="joystick-zone" id="joystickZone">
-                <div class="joystick-base">
-                    <div class="joystick-stick" id="joystickStick"></div>
-                </div>
-            </div>
-            
-            <div class="action-buttons">
-                <button class="racing-btn btn-start" id="btnStart">START</button>
-                <div class="button-row">
-                    <button class="racing-btn btn-z" id="btnZ">Z</button>
-                    <button class="racing-btn btn-b" id="btnB">B</button>
-                    <button class="racing-btn btn-a" id="btnA">A</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    
     <!-- Wizard Modal -->
     <div class="wizard-overlay" id="wizardOverlay">
         <div class="wizard-modal">
@@ -1038,8 +871,8 @@
     </div>
     
     <div class="footer">
-        <p>N64 Vault™ by Alan Acevedo</p>
-        <p>Personal use only</p>
+        <p>N64 Vault - Powered by <a href="https://emulatorjs.org" target="_blank">EmulatorJS</a></p>
+        <p>For personal use only. Please use legally obtained ROM files.</p>
     </div>
     
     <script>
@@ -1048,7 +881,8 @@
         
         // ===== Constants =====
         var STORAGE_KEY_KEYBOARD = 'n64vault_mappings_keyboard';
-        var STORAGE_KEY_GAMEPAD = 'n64vault_mappings_gamepad';
+        var STORAGE_KEY_GAMEPAD_PREFIX = 'n64vault_mappings_gamepad_';
+        var MAX_CONTROLLERS = 4;
         
         var defaultKeyboardMap = {
             a: 'KeyX', b: 'KeyZ', start: 'Enter', z: 'KeyC',
@@ -1091,14 +925,23 @@
         };
         
         // ===== State =====
+        function loadGamepadMaps() {
+            var maps = {};
+            for (var i = 0; i < MAX_CONTROLLERS; i++) {
+                maps[i] = loadMap(STORAGE_KEY_GAMEPAD_PREFIX + i, defaultGamepadMap);
+            }
+            return maps;
+        }
+        
         var state = {
             mainTab: 'library',
             mode: 'keyboard',
             keyboardMap: loadMap(STORAGE_KEY_KEYBOARD, defaultKeyboardMap),
-            gamepadMap: loadMap(STORAGE_KEY_GAMEPAD, defaultGamepadMap),
+            gamepadMaps: loadGamepadMaps(),
+            selectedGamepadIndex: 0,
             listeningKey: null,
             listeningMode: null,
-            connectedGamepad: null,
+            connectedGamepads: [],
             wizard: { active: false, index: 0, mode: null },
             isMobile: false,
             gameRunning: false,
@@ -1110,11 +953,6 @@
         var previousAxes = [];
         var stabilizationFrames = 0;
         
-        // Touch state
-        var joystickTouch = null;
-        var joystickCenter = { x: 0, y: 0 };
-        var currentJoystick = { x: 0, y: 0 };
-        var buttonTouches = {};
         
         // ===== DOM Elements =====
         var elements = {};
@@ -1149,14 +987,6 @@
             elements.wizardButtonName = document.getElementById('wizardButtonName');
             elements.wizardInstruction = document.getElementById('wizardInstruction');
             elements.wizardHint = document.getElementById('wizardHint');
-            elements.racingControls = document.getElementById('racingControls');
-            elements.joystickZone = document.getElementById('joystickZone');
-            elements.joystickStick = document.getElementById('joystickStick');
-            elements.btnA = document.getElementById('btnA');
-            elements.btnB = document.getElementById('btnB');
-            elements.btnZ = document.getElementById('btnZ');
-            elements.btnStart = document.getElementById('btnStart');
-            elements.gamepadToggle = document.getElementById('gamepadToggle');
             elements.toggleDebug = document.getElementById('toggleDebug');
             elements.debugHint = document.getElementById('debugHint');
             elements.debugContent = document.getElementById('debugContent');
@@ -1164,6 +994,8 @@
             elements.debugAxes = document.getElementById('debugAxes');
             elements.debugLastDetected = document.getElementById('debugLastDetected');
             elements.debugInstructions = document.getElementById('debugInstructions');
+            elements.controllerTabs = document.getElementById('controllerTabs');
+            elements.controllerTabsList = document.getElementById('controllerTabsList');
         }
         
         var debugMode = false;
@@ -1282,8 +1114,8 @@
         
         function render() {
             renderMappings('keyboardMappings', state.keyboardMap, 'keyboard');
-            if (state.connectedGamepad) {
-                renderMappings('gamepadMappings', state.gamepadMap, 'gamepad');
+            if (state.connectedGamepads.length > 0) {
+                renderMappings('gamepadMappings', getSelectedGamepadMap(), 'gamepad');
             }
         }
         
@@ -1318,7 +1150,7 @@
             if (mode === 'keyboard') {
                 state.keyboardMap[key] = code;
             } else {
-                state.gamepadMap[key] = code;
+                state.gamepadMaps[state.selectedGamepadIndex][key] = code;
             }
             
             if (state.wizard.active) {
@@ -1370,10 +1202,22 @@
             
             var gamepads = navigator.getGamepads();
             var gp = null;
-            for (var i = 0; i < gamepads.length; i++) {
-                if (gamepads[i] && gamepads[i].connected) {
-                    gp = gamepads[i];
-                    break;
+            
+            // Poll the selected controller if available, otherwise poll any connected controller
+            if (state.connectedGamepads.length > 0) {
+                var selectedGp = state.connectedGamepads[state.selectedGamepadIndex];
+                if (selectedGp) {
+                    gp = gamepads[selectedGp.index];
+                }
+            }
+            
+            // Fallback: if selected controller not available, try any connected controller
+            if (!gp) {
+                for (var i = 0; i < gamepads.length; i++) {
+                    if (gamepads[i] && gamepads[i].connected) {
+                        gp = gamepads[i];
+                        break;
+                    }
                 }
             }
             
@@ -1463,31 +1307,101 @@
         
         function detectGamepads() {
             var gamepads = navigator.getGamepads();
-            var found = null;
+            var connected = [];
             
-            for (var i = 0; i < gamepads.length; i++) {
+            for (var i = 0; i < gamepads.length && connected.length < MAX_CONTROLLERS; i++) {
                 if (gamepads[i] && gamepads[i].connected) {
-                    found = gamepads[i];
-                    break;
+                    connected.push({ index: gamepads[i].index, id: gamepads[i].id, gamepad: gamepads[i] });
                 }
             }
             
-            if (found && !state.connectedGamepad) {
-                state.connectedGamepad = found;
+            var prevCount = state.connectedGamepads.length;
+            var newCount = connected.length;
+            
+            state.connectedGamepads = connected;
+            
+            if (newCount > 0 && prevCount === 0) {
                 elements.tabGamepad.disabled = false;
-                elements.gamepadTabLabel.textContent = getShortGamepadName(found.id);
-                elements.gamepadName.textContent = getShortGamepadName(found.id);
+                state.selectedGamepadIndex = 0;
+                updateControllerTabs();
+                updateGamepadBanner();
                 render();
-                setStatus('Controller connected: ' + getShortGamepadName(found.id), 'ready');
-            } else if (!found && state.connectedGamepad) {
-                state.connectedGamepad = null;
+                setStatus(newCount + ' controller(s) connected', 'ready');
+            } else if (newCount === 0 && prevCount > 0) {
                 elements.tabGamepad.disabled = true;
                 elements.gamepadTabLabel.textContent = 'USB Controller';
+                elements.controllerTabs.style.display = 'none';
                 if (state.mode === 'gamepad') {
                     switchMode('keyboard');
                 }
-                setStatus('Controller disconnected', 'ready');
+                setStatus('All controllers disconnected', 'ready');
+            } else if (newCount !== prevCount) {
+                if (state.selectedGamepadIndex >= newCount) {
+                    state.selectedGamepadIndex = Math.max(0, newCount - 1);
+                }
+                updateControllerTabs();
+                updateGamepadBanner();
+                render();
+                setStatus(newCount + ' controller(s) connected', 'ready');
             }
+        }
+        
+        function updateControllerTabs() {
+            var count = state.connectedGamepads.length;
+            
+            if (count <= 1) {
+                elements.controllerTabs.style.display = 'none';
+                if (count === 1) {
+                    elements.gamepadTabLabel.textContent = getShortGamepadName(state.connectedGamepads[0].id);
+                }
+                return;
+            }
+            
+            elements.controllerTabs.style.display = 'block';
+            elements.gamepadTabLabel.textContent = count + ' Controllers';
+            
+            var html = '';
+            for (var i = 0; i < count; i++) {
+                var gp = state.connectedGamepads[i];
+                var isActive = i === state.selectedGamepadIndex;
+                html += '<button class="controller-tab' + (isActive ? ' active' : '') + '" data-index="' + i + '">';
+                html += '<span class="player-num">P' + (i + 1) + '</span>';
+                html += '<span>' + getShortGamepadName(gp.id) + '</span>';
+                html += '</button>';
+            }
+            elements.controllerTabsList.innerHTML = html;
+            
+            elements.controllerTabsList.querySelectorAll('.controller-tab').forEach(function(tab) {
+                tab.addEventListener('click', function() {
+                    var idx = parseInt(tab.getAttribute('data-index'), 10);
+                    selectController(idx);
+                });
+            });
+        }
+        
+        function selectController(index) {
+            if (index >= 0 && index < state.connectedGamepads.length) {
+                state.selectedGamepadIndex = index;
+                updateControllerTabs();
+                updateGamepadBanner();
+                render();
+            }
+        }
+        
+        function updateGamepadBanner() {
+            if (state.connectedGamepads.length > 0) {
+                var gp = state.connectedGamepads[state.selectedGamepadIndex];
+                if (gp) {
+                    var label = state.connectedGamepads.length > 1 
+                        ? 'Player ' + (state.selectedGamepadIndex + 1) + ': ' + getShortGamepadName(gp.id)
+                        : getShortGamepadName(gp.id);
+                    elements.gamepadName.textContent = label;
+                }
+            }
+        }
+        
+        function getSelectedGamepadMap() {
+            return state.gamepadMaps[state.selectedGamepadIndex] || state.gamepadMaps[0];
         }
         
         // ===== Wizard =====
@@ -1630,170 +1544,6 @@
             }
         }
         
-        // ===== Touch Controls =====
-        function showRacingControls() {
-            if (state.isMobile) {
-                state.controlsVisible = true;
-                elements.racingControls.classList.add('active');
-                elements.gamepadToggle.classList.add('visible');
-                elements.gamepadToggle.classList.remove('controls-hidden');
-            }
-        }
-        
-        function hideRacingControls() {
-            state.controlsVisible = false;
-            elements.racingControls.classList.remove('active');
-            elements.gamepadToggle.classList.add('controls-hidden');
-        }
-        
-        function toggleRacingControls() {
-            if (state.controlsVisible) {
-                hideRacingControls();
-            } else {
-                showRacingControls();
-            }
-        }
-        
-        // Touch control button simulation using keyboard events
-        function sendTouchButtonPress(n64Button) {
-            simulateEmulatorKey(n64Button, 'keydown');
-        }
-        
-        function sendTouchButtonRelease(n64Button) {
-            simulateEmulatorKey(n64Button, 'keyup');
-        }
-        
-        // Touch joystick state
-        var touchStickState = { up: false, down: false, left: false, right: false };
-        
-        function sendJoystick(x, y) {
-            // Use keyboard simulation for joystick (WASD)
-            var DEADZONE = 0.3;
-            
-            var newUp = y < -DEADZONE;
-            var newDown = y > DEADZONE;
-            var newLeft = x < -DEADZONE;
-            var newRight = x > DEADZONE;
-            
-            if (newUp !== touchStickState.up) {
-                touchStickState.up = newUp;
-                simulateEmulatorKey('stickUp', newUp ? 'keydown' : 'keyup');
-            }
-            if (newDown !== touchStickState.down) {
-                touchStickState.down = newDown;
-                simulateEmulatorKey('stickDown', newDown ? 'keydown' : 'keyup');
-            }
-            if (newLeft !== touchStickState.left) {
-                touchStickState.left = newLeft;
-                simulateEmulatorKey('stickLeft', newLeft ? 'keydown' : 'keyup');
-            }
-            if (newRight !== touchStickState.right) {
-                touchStickState.right = newRight;
-                simulateEmulatorKey('stickRight', newRight ? 'keydown' : 'keyup');
-            }
-        }
-        
-        function initJoystick() {
-            var zone = elements.joystickZone;
-            var stick = elements.joystickStick;
-            var base = zone.querySelector('.joystick-base');
-            var maxDistance = 32;
-            
-            function updateStick(touchX, touchY) {
-                var rect = base.getBoundingClientRect();
-                joystickCenter.x = rect.left + rect.width / 2;
-                joystickCenter.y = rect.top + rect.height / 2;
-                
-                var deltaX = touchX - joystickCenter.x;
-                var deltaY = touchY - joystickCenter.y;
-                var distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-                
-                if (distance > maxDistance) {
-                    deltaX = (deltaX / distance) * maxDistance;
-                    deltaY = (deltaY / distance) * maxDistance;
-                    distance = maxDistance;
-                }
-                
-                stick.style.transform = 'translate(' + deltaX + 'px, ' + deltaY + 'px)';
-                
-                // Normalize to -1..1 range
-                currentJoystick.x = deltaX / maxDistance;
-                currentJoystick.y = deltaY / maxDistance;
-                
-                sendJoystick(currentJoystick.x, currentJoystick.y);
-            }
-            
-            function resetStick() {
-                stick.style.transform = 'translate(0, 0)';
-                currentJoystick.x = 0;
-                currentJoystick.y = 0;
-                sendJoystick(0, 0);
-            }
-            
-            zone.addEventListener('touchstart', function(e) {
-                e.preventDefault();
-                var touch = e.touches[0];
-                joystickTouch = touch.identifier;
-                updateStick(touch.clientX, touch.clientY);
-            }, { passive: false });
-            
-            zone.addEventListener('touchmove', function(e) {
-                e.preventDefault();
-                for (var i = 0; i < e.touches.length; i++) {
-                    if (e.touches[i].identifier === joystickTouch) {
-                        updateStick(e.touches[i].clientX, e.touches[i].clientY);
-                        break;
-                    }
-                }
-            }, { passive: false });
-            
-            zone.addEventListener('touchend', function(e) {
-                for (var i = 0; i < e.changedTouches.length; i++) {
-                    if (e.changedTouches[i].identifier === joystickTouch) {
-                        joystickTouch = null;
-                        resetStick();
-                        break;
-                    }
-                }
-            });
-            
-            zone.addEventListener('touchcancel', function() {
-                joystickTouch = null;
-                resetStick();
-            });
-        }
-        
-        function initButton(element, n64ButtonName) {
-            if (!element) return;
-            
-            element.addEventListener('touchstart', function(e) {
-                e.preventDefault();
-                element.classList.add('pressed');
-                sendTouchButtonPress(n64ButtonName);
-            }, { passive: false });
-            
-            element.addEventListener('touchend', function(e) {
-                e.preventDefault();
-                element.classList.remove('pressed');
-                sendTouchButtonRelease(n64ButtonName);
-            }, { passive: false });
-            
-            element.addEventListener('touchcancel', function() {
-                element.classList.remove('pressed');
-                sendTouchButtonRelease(n64ButtonName);
-            });
-        }
-        
-        function initTouchControls() {
-            initJoystick();
-            
-            // Use button names that match ejsKeyMap
-            initButton(elements.btnA, 'a');
-            initButton(elements.btnB, 'b');
-            initButton(elements.btnZ, 'z');
-            initButton(elements.btnStart, 'start');
-        }
-        
         // ===== Emulator =====
         var emulatorLoaded = false;
         var pressedGameKeys = {};
@@ -1904,15 +1654,45 @@
             window.EJS_color = '#E43F5A';
             window.EJS_backgroundColor = '#0F0F23';
             
-            // Disable EmulatorJS built-in virtual gamepad (we use our own)
-            window.EJS_Buttons = { gamepad: false };
-            window.EJS_VirtualGamepadSettings = [];
+            // Fix D-pad left not working - explicit default control mappings for up to 4 players
+            // Control IDs: 0=B, 1=A, 2=Start, 4=DUp, 5=DDown, 6=DLeft, 7=DRight
+            // 8=Z, 9=L, 10=R, 11-14=C-buttons, 19-22=analog
+            var defaultControlMapping = {
+                0: { 'value': 'x', 'value2': 'FACE_1' },
+                1: { 'value': 's', 'value2': 'FACE_2' },
+                2: { 'value': 'enter', 'value2': 'START' },
+                4: { 'value': 'up arrow', 'value2': 'DPAD_UP' },
+                5: { 'value': 'down arrow', 'value2': 'DPAD_DOWN' },
+                6: { 'value': 'left arrow', 'value2': 'DPAD_LEFT' },
+                7: { 'value': 'right arrow', 'value2': 'DPAD_RIGHT' },
+                8: { 'value': 'z', 'value2': 'LEFT_TRIGGER' },
+                9: { 'value': 'q', 'value2': 'LEFT_SHOULDER' },
+                10: { 'value': 'e', 'value2': 'RIGHT_SHOULDER' },
+                11: { 'value': 'i', 'value2': 'FACE_4' },
+                12: { 'value': 'k', 'value2': 'FACE_3' },
+                13: { 'value': 'j', 'value2': 'LEFT_STICK_BUTTON' },
+                14: { 'value': 'l', 'value2': 'RIGHT_STICK_BUTTON' },
+                19: { 'value': 'w' },
+                20: { 'value': 's' },
+                21: { 'value': 'a' },
+                22: { 'value': 'd' },
+                24: { 'value2': 'LEFT_STICK_X:+1' },
+                25: { 'value2': 'LEFT_STICK_X:-1' },
+                26: { 'value2': 'LEFT_STICK_Y:+1' },
+                27: { 'value2': 'LEFT_STICK_Y:-1' }
+            };
+            
+            window.EJS_defaultControls = {
+                0: Object.assign({}, defaultControlMapping),
+                1: Object.assign({}, defaultControlMapping),
+                2: Object.assign({}, defaultControlMapping),
+                3: Object.assign({}, defaultControlMapping)
+            };
             
             window.EJS_onGameStart = function() {
                 setStatus('Playing: ' + romName, 'ready');
                 emulatorLoaded = true;
                 state.gameRunning = true;
-                showRacingControls();
                 elements.btnNewGame.style.display = 'flex';
             };
             
@@ -1979,13 +1759,17 @@
             
             document.getElementById('wizardGamepad').addEventListener('click', function() { startWizard('gamepad'); });
             document.getElementById('resetGamepad').addEventListener('click', function() {
-                state.gamepadMap = Object.assign({}, defaultGamepadMap);
+                var idx = state.selectedGamepadIndex;
+                state.gamepadMaps[idx] = Object.assign({}, defaultGamepadMap);
                 render();
-                setStatus('Controller mappings reset', 'ready');
+                var playerLabel = state.connectedGamepads.length > 1 ? 'Player ' + (idx + 1) + ' ' : '';
+                setStatus(playerLabel + 'controller mappings reset', 'ready');
             });
             document.getElementById('saveGamepad').addEventListener('click', function() {
-                saveMap(STORAGE_KEY_GAMEPAD, state.gamepadMap);
-                setStatus('Controller mappings saved!', 'ready');
+                var idx = state.selectedGamepadIndex;
+                saveMap(STORAGE_KEY_GAMEPAD_PREFIX + idx, state.gamepadMaps[idx]);
+                var playerLabel = state.connectedGamepads.length > 1 ? 'Player ' + (idx + 1) + ' ' : '';
+                setStatus(playerLabel + 'controller mappings saved!', 'ready');
             });
             
             // Debug toggle
@@ -2010,13 +1794,6 @@
             
             document.getElementById('wizardSkip').addEventListener('click', skipWizardStep);
             document.getElementById('wizardCancel').addEventListener('click', cancelWizard);
-            
-            // Gamepad toggle button
-            elements.gamepadToggle.addEventListener('click', toggleRacingControls);
-            elements.gamepadToggle.addEventListener('touchstart', function(e) {
-                e.preventDefault();
-                toggleRacingControls();
-            }, { passive: false });
             
             // New Game button - reload the page to start fresh
             elements.btnNewGame.addEventListener('click', function() {
@@ -2054,7 +1831,6 @@
             if (state.isMobile) {
                 elements.tabMobile.style.display = 'flex';
                 switchMode('mobile');
-                initTouchControls();
             }
             
             render();
