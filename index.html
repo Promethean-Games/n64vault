@@ -765,7 +765,7 @@
 <body>
     <div class="header">
         <h1>N64 Vault</h1>
-        <p>Web-Based Nintendo 64 Emulator [AD FREE]</p>
+        <p>Web-Based Nintendo 64 Emulator</p>
     </div>
     
     <div class="container">
@@ -1011,8 +1011,8 @@
     </div>
     
     <div class="footer">
-        <p>N64 Vault™ by Alan Acevedo</p>
-        <p>For personal use only.</p>
+        <p>N64 Vault - Powered by <a href="https://emulatorjs.org" target="_blank">EmulatorJS</a></p>
+        <p>For personal use only. Please use legally obtained ROM files.</p>
     </div>
     
     <script>
@@ -1559,6 +1559,49 @@
             render();
         }
         
+        // ===== Emulator Key Simulation (needed for touch controls) =====
+        var ejsKeyMap = {
+            a: { key: 'x', code: 'KeyX', keyCode: 88 },
+            b: { key: 'z', code: 'KeyZ', keyCode: 90 },
+            start: { key: 'Enter', code: 'Enter', keyCode: 13 },
+            z: { key: 'Shift', code: 'ShiftLeft', keyCode: 16 },
+            l: { key: 'q', code: 'KeyQ', keyCode: 81 },
+            r: { key: 'e', code: 'KeyE', keyCode: 69 },
+            cUp: { key: 'i', code: 'KeyI', keyCode: 73 },
+            cDown: { key: 'k', code: 'KeyK', keyCode: 75 },
+            cLeft: { key: 'j', code: 'KeyJ', keyCode: 74 },
+            cRight: { key: 'l', code: 'KeyL', keyCode: 76 },
+            stickUp: { key: 'w', code: 'KeyW', keyCode: 87 },
+            stickDown: { key: 's', code: 'KeyS', keyCode: 83 },
+            stickLeft: { key: 'a', code: 'KeyA', keyCode: 65 },
+            stickRight: { key: 'd', code: 'KeyD', keyCode: 68 },
+            dUp: { key: 'ArrowUp', code: 'ArrowUp', keyCode: 38 },
+            dDown: { key: 'ArrowDown', code: 'ArrowDown', keyCode: 40 },
+            dLeft: { key: 'ArrowLeft', code: 'ArrowLeft', keyCode: 37 },
+            dRight: { key: 'ArrowRight', code: 'ArrowRight', keyCode: 39 }
+        };
+        
+        function simulateEmulatorKey(n64Button, eventType) {
+            var keyData = ejsKeyMap[n64Button];
+            if (!keyData) return;
+            
+            var event = new KeyboardEvent(eventType, {
+                key: keyData.key,
+                code: keyData.code,
+                keyCode: keyData.keyCode,
+                which: keyData.keyCode,
+                bubbles: true,
+                cancelable: true
+            });
+            
+            var canvas = document.querySelector('#game canvas');
+            if (canvas) {
+                canvas.dispatchEvent(event);
+            } else {
+                document.dispatchEvent(event);
+            }
+        }
+        
         // ===== Touch Controls =====
         function showRacingControls() {
             if (state.isMobile) {
@@ -1583,32 +1626,42 @@
             }
         }
         
-        function sendButtonPress(button) {
-            if (window.EJS_emulator) {
-                try {
-                    window.EJS_emulator.simulateInput(0, button, 1);
-                } catch (e) {}
-            }
+        // Touch control button simulation using keyboard events
+        function sendTouchButtonPress(n64Button) {
+            simulateEmulatorKey(n64Button, 'keydown');
         }
         
-        function sendButtonRelease(button) {
-            if (window.EJS_emulator) {
-                try {
-                    window.EJS_emulator.simulateInput(0, button, 0);
-                } catch (e) {}
-            }
+        function sendTouchButtonRelease(n64Button) {
+            simulateEmulatorKey(n64Button, 'keyup');
         }
+        
+        // Touch joystick state
+        var touchStickState = { up: false, down: false, left: false, right: false };
         
         function sendJoystick(x, y) {
-            if (window.EJS_emulator) {
-                try {
-                    // N64: Axis 0 = X (left/right), Axis 1 = Y (up/down)
-                    // Convert -1..1 to 0..255 range (128 is center)
-                    var mappedX = Math.round((x + 1) * 127.5);
-                    var mappedY = Math.round((-y + 1) * 127.5); // Invert Y for proper direction
-                    window.EJS_emulator.simulateInput(0, 24, mappedX); // X axis
-                    window.EJS_emulator.simulateInput(0, 25, mappedY); // Y axis
-                } catch (e) {}
+            // Use keyboard simulation for joystick (WASD)
+            var DEADZONE = 0.3;
+            
+            var newUp = y < -DEADZONE;
+            var newDown = y > DEADZONE;
+            var newLeft = x < -DEADZONE;
+            var newRight = x > DEADZONE;
+            
+            if (newUp !== touchStickState.up) {
+                touchStickState.up = newUp;
+                simulateEmulatorKey('stickUp', newUp ? 'keydown' : 'keyup');
+            }
+            if (newDown !== touchStickState.down) {
+                touchStickState.down = newDown;
+                simulateEmulatorKey('stickDown', newDown ? 'keydown' : 'keyup');
+            }
+            if (newLeft !== touchStickState.left) {
+                touchStickState.left = newLeft;
+                simulateEmulatorKey('stickLeft', newLeft ? 'keydown' : 'keyup');
+            }
+            if (newRight !== touchStickState.right) {
+                touchStickState.right = newRight;
+                simulateEmulatorKey('stickRight', newRight ? 'keydown' : 'keyup');
             }
         }
         
@@ -1682,62 +1735,40 @@
             });
         }
         
-        function initButton(element, n64Button) {
+        function initButton(element, n64ButtonName) {
+            if (!element) return;
+            
             element.addEventListener('touchstart', function(e) {
                 e.preventDefault();
                 element.classList.add('pressed');
-                sendButtonPress(n64Button);
+                sendTouchButtonPress(n64ButtonName);
             }, { passive: false });
             
             element.addEventListener('touchend', function(e) {
                 e.preventDefault();
                 element.classList.remove('pressed');
-                sendButtonRelease(n64Button);
+                sendTouchButtonRelease(n64ButtonName);
             }, { passive: false });
             
             element.addEventListener('touchcancel', function() {
                 element.classList.remove('pressed');
-                sendButtonRelease(n64Button);
+                sendTouchButtonRelease(n64ButtonName);
             });
         }
         
         function initTouchControls() {
             initJoystick();
             
-            // N64 button mappings for EmulatorJS:
-            // 0=B, 1=A, 2=Z, 3=Start, 4=DUp, 5=DDown, 6=DLeft, 7=DRight
-            // 8=L, 9=R, 10=CUp, 11=CDown, 12=CLeft, 13=CRight
-            initButton(elements.btnA, 1);     // A
-            initButton(elements.btnB, 0);     // B
-            initButton(elements.btnZ, 2);     // Z
-            initButton(elements.btnStart, 3); // Start
+            // Use button names that match ejsKeyMap
+            initButton(elements.btnA, 'a');
+            initButton(elements.btnB, 'b');
+            initButton(elements.btnZ, 'z');
+            initButton(elements.btnStart, 'start');
         }
         
         // ===== Emulator =====
         var emulatorLoaded = false;
         var pressedGameKeys = {};
-        
-        // EmulatorJS expects these key codes for N64 buttons
-        var ejsKeyMap = {
-            a: { key: 'x', code: 'KeyX', keyCode: 88 },
-            b: { key: 'z', code: 'KeyZ', keyCode: 90 },
-            start: { key: 'Enter', code: 'Enter', keyCode: 13 },
-            z: { key: 'Shift', code: 'ShiftLeft', keyCode: 16 },
-            l: { key: 'q', code: 'KeyQ', keyCode: 81 },
-            r: { key: 'e', code: 'KeyE', keyCode: 69 },
-            cUp: { key: 'i', code: 'KeyI', keyCode: 73 },
-            cDown: { key: 'k', code: 'KeyK', keyCode: 75 },
-            cLeft: { key: 'j', code: 'KeyJ', keyCode: 74 },
-            cRight: { key: 'l', code: 'KeyL', keyCode: 76 },
-            stickUp: { key: 'w', code: 'KeyW', keyCode: 87 },
-            stickDown: { key: 's', code: 'KeyS', keyCode: 83 },
-            stickLeft: { key: 'a', code: 'KeyA', keyCode: 65 },
-            stickRight: { key: 'd', code: 'KeyD', keyCode: 68 },
-            dUp: { key: 'ArrowUp', code: 'ArrowUp', keyCode: 38 },
-            dDown: { key: 'ArrowDown', code: 'ArrowDown', keyCode: 40 },
-            dLeft: { key: 'ArrowLeft', code: 'ArrowLeft', keyCode: 37 },
-            dRight: { key: 'ArrowRight', code: 'ArrowRight', keyCode: 39 }
-        };
         
         var stickState = { up: false, down: false, left: false, right: false };
         var stickButtons = ['stickUp', 'stickDown', 'stickLeft', 'stickRight'];
@@ -1753,27 +1784,6 @@
                 }
             }
             return reverseMap;
-        }
-        
-        function simulateEmulatorKey(n64Button, eventType) {
-            var keyData = ejsKeyMap[n64Button];
-            if (!keyData) return;
-            
-            var event = new KeyboardEvent(eventType, {
-                key: keyData.key,
-                code: keyData.code,
-                keyCode: keyData.keyCode,
-                which: keyData.keyCode,
-                bubbles: true,
-                cancelable: true
-            });
-            
-            var canvas = document.querySelector('#game canvas');
-            if (canvas) {
-                canvas.dispatchEvent(event);
-            } else {
-                document.dispatchEvent(event);
-            }
         }
         
         function updateStickSimulation() {
