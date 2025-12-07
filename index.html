@@ -2,18 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>N64 Vault - Nintendo 64 Emulator</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Rajdhani:wght@400;500;600;700&family=Roboto:wght@400;500&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
     
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
         :root {
             --primary: #E43F5A;
@@ -46,10 +42,7 @@
             line-height: 1.5;
         }
         
-        .header {
-            text-align: center;
-            margin-bottom: 32px;
-        }
+        .header { text-align: center; margin-bottom: 32px; }
         
         .header h1 {
             font-family: 'Orbitron', sans-serif;
@@ -70,14 +63,9 @@
             color: var(--text-muted);
             font-size: 1.1rem;
             font-weight: 500;
-            letter-spacing: 0.05em;
         }
         
-        .container {
-            max-width: 900px;
-            width: 100%;
-        }
-        
+        .container { max-width: 960px; width: 100%; }
         .card {
             background: var(--bg-card);
             border: 1px solid rgba(255, 255, 255, 0.06);
@@ -97,18 +85,13 @@
         }
         
         .status-indicator {
-            width: 10px;
-            height: 10px;
+            width: 10px; height: 10px;
             border-radius: 50%;
             background: var(--primary);
             flex-shrink: 0;
         }
-        
         .status-indicator.ready { background: var(--success); }
-        .status-indicator.loading { 
-            background: var(--warning);
-            animation: pulse 1.5s ease-in-out infinite;
-        }
+        .status-indicator.loading { background: var(--warning); animation: pulse 1.5s ease-in-out infinite; }
         .status-indicator.error { background: var(--error); }
         
         @keyframes pulse {
@@ -133,22 +116,18 @@
             transition: all 0.3s ease;
             margin-bottom: 24px;
         }
-        
         .upload-zone:hover {
             background: rgba(228, 63, 90, 0.1);
             border-color: var(--primary);
             transform: translateY(-2px);
         }
-        
         .upload-zone.dragover {
             background: rgba(228, 63, 90, 0.15);
             border-color: var(--secondary);
-            transform: scale(1.01);
         }
         
         .upload-icon {
-            width: 64px;
-            height: 64px;
+            width: 64px; height: 64px;
             margin: 0 auto 20px;
             padding: 16px;
             background: rgba(228, 63, 90, 0.1);
@@ -157,12 +136,7 @@
             align-items: center;
             justify-content: center;
         }
-        
-        .upload-icon svg {
-            width: 32px;
-            height: 32px;
-            color: var(--primary);
-        }
+        .upload-icon svg { width: 32px; height: 32px; color: var(--primary); }
         
         .upload-text {
             font-family: 'Rajdhani', sans-serif;
@@ -171,37 +145,24 @@
             color: var(--text);
             margin-bottom: 8px;
         }
-        
-        .upload-hint {
-            color: var(--text-dim);
-            font-size: 0.9rem;
-        }
+        .upload-hint { color: var(--text-dim); font-size: 0.9rem; }
         
         #file-upload { display: none; }
+        #emulator-container { display: none; width: 100%; min-height: 500px; margin-bottom: 24px; }
+        #game { width: 100%; height: 500px; }
         
-        #emulator-container {
-            display: none;
-            width: 100%;
-            min-height: 500px;
-            margin-bottom: 24px;
-        }
-        
-        #game {
-            width: 100%;
-            height: 500px;
-        }
-        
-        /* Tabs */
-        .tabs {
+        /* Input Mode Tabs */
+        .input-tabs {
             display: flex;
             gap: 4px;
             margin-bottom: 20px;
             background: rgba(0, 0, 0, 0.3);
             border-radius: 12px;
             padding: 4px;
+            overflow-x: auto;
         }
         
-        .tab-button {
+        .input-tab {
             flex: 1;
             display: flex;
             align-items: center;
@@ -217,32 +178,37 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s ease;
+            white-space: nowrap;
         }
+        .input-tab:hover { background: rgba(255, 255, 255, 0.05); color: var(--text); }
+        .input-tab.active { background: var(--primary); color: white; }
+        .input-tab:disabled { opacity: 0.4; cursor: not-allowed; }
+        .input-tab svg { width: 18px; height: 18px; flex-shrink: 0; }
         
-        .tab-button:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--text);
+        .input-content { display: none; }
+        .input-content.active { display: block; }
+        
+        /* Controller Detection Banner */
+        .detection-banner {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 10px;
+            margin-bottom: 16px;
         }
-        
-        .tab-button.active {
-            background: var(--primary);
-            color: white;
+        .detection-banner.warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: rgba(245, 158, 11, 0.3);
         }
+        .detection-banner svg { width: 20px; height: 20px; color: var(--success); flex-shrink: 0; }
+        .detection-banner.warning svg { color: var(--warning); }
+        .detection-banner span { font-size: 0.9rem; color: var(--text-muted); }
+        .detection-banner strong { color: var(--text); }
         
-        .tab-button svg {
-            width: 18px;
-            height: 18px;
-        }
-        
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        /* Control Mapping */
+        /* Mapping UI */
         .mapping-header {
             display: flex;
             align-items: center;
@@ -255,24 +221,16 @@
         .mapping-title {
             font-family: 'Rajdhani', sans-serif;
             color: var(--primary);
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 600;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
+            letter-spacing: 0.03em;
             display: flex;
             align-items: center;
-            gap: 10px;
-        }
-        
-        .mapping-title svg {
-            width: 20px;
-            height: 20px;
-        }
-        
-        .mapping-actions {
-            display: flex;
             gap: 8px;
         }
+        .mapping-title svg { width: 18px; height: 18px; }
+        
+        .mapping-actions { display: flex; gap: 8px; flex-wrap: wrap; }
         
         .btn {
             display: inline-flex;
@@ -288,57 +246,26 @@
             cursor: pointer;
             transition: all 0.2s ease;
         }
-        
-        .btn svg {
-            width: 16px;
-            height: 16px;
-        }
-        
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: var(--secondary);
-            transform: translateY(-1px);
-        }
-        
-        .btn-secondary {
-            background: var(--bg-element);
-            color: var(--text-muted);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--text);
-        }
-        
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+        .btn svg { width: 16px; height: 16px; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--secondary); transform: translateY(-1px); }
+        .btn-secondary { background: var(--bg-element); color: var(--text-muted); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .btn-secondary:hover { background: rgba(255, 255, 255, 0.1); color: var(--text); }
+        .btn-wizard { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; }
+        .btn-wizard:hover { transform: translateY(-1px); box-shadow: 0 4px 12px var(--primary-glow); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
         
         .mapping-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 10px;
         }
+        @media (max-width: 600px) { .mapping-grid { grid-template-columns: 1fr; } }
         
-        @media (max-width: 600px) {
-            .mapping-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        .mapping-group {
-            margin-bottom: 16px;
-        }
-        
+        .mapping-group { margin-bottom: 16px; }
         .mapping-group-title {
             font-family: 'Rajdhani', sans-serif;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 600;
             color: var(--text-dim);
             text-transform: uppercase;
@@ -358,16 +285,18 @@
             transition: all 0.2s ease;
             cursor: pointer;
         }
-        
         .key-item:hover {
             background: rgba(255, 255, 255, 0.06);
             border-color: rgba(228, 63, 90, 0.3);
         }
-        
         .key-item.listening {
             border-color: var(--primary);
             background: rgba(228, 63, 90, 0.1);
             animation: listening-pulse 1s ease-in-out infinite;
+        }
+        .key-item.completed {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
         }
         
         @keyframes listening-pulse {
@@ -384,7 +313,7 @@
         
         .key-value {
             font-family: 'Roboto Mono', monospace;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: var(--primary);
             background: rgba(228, 63, 90, 0.1);
             padding: 4px 10px;
@@ -393,47 +322,139 @@
             min-width: 50px;
             text-align: center;
         }
-        
         .key-value.listening {
             background: var(--primary);
             color: white;
             animation: blink 0.5s ease-in-out infinite;
         }
+        .key-value.gamepad { color: var(--success); background: rgba(16, 185, 129, 0.1); }
         
         @keyframes blink {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.7; }
         }
         
-        /* Reference Section */
-        .keyboard-guide h3 {
+        /* Wizard Modal */
+        .wizard-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+        .wizard-overlay.active { display: flex; }
+        
+        .wizard-modal {
+            background: var(--bg-card);
+            border: 1px solid rgba(228, 63, 90, 0.3);
+            border-radius: 20px;
+            padding: 32px;
+            max-width: 480px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .wizard-header {
+            margin-bottom: 24px;
+        }
+        .wizard-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+        .wizard-subtitle {
             font-family: 'Rajdhani', sans-serif;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+        
+        .wizard-progress {
+            margin-bottom: 32px;
+        }
+        .progress-bar {
+            height: 6px;
+            background: var(--bg-element);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+        .progress-text {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+        
+        .wizard-current {
+            padding: 24px;
+            background: var(--bg-element);
+            border-radius: 16px;
+            margin-bottom: 24px;
+        }
+        .wizard-button-name {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+        .wizard-instruction {
+            font-family: 'Rajdhani', sans-serif;
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+        .wizard-input-hint {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 16px;
+            padding: 8px 16px;
+            background: rgba(228, 63, 90, 0.1);
+            border-radius: 8px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--primary);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        .wizard-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        
+        /* Mobile Info */
+        .mobile-info {
+            text-align: center;
+            padding: 32px;
+        }
+        .mobile-info svg {
+            width: 64px;
+            height: 64px;
             color: var(--primary);
             margin-bottom: 16px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
-        
-        .keyboard-guide h3 svg {
-            width: 20px;
-            height: 20px;
+        .mobile-info h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.25rem;
+            margin-bottom: 12px;
         }
-        
-        .key-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-        }
-        
-        @media (max-width: 768px) {
-            .key-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
+        .mobile-info p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            max-width: 400px;
+            margin: 0 auto;
         }
         
         .info-box {
@@ -443,38 +464,17 @@
             padding: 16px;
             margin-top: 16px;
         }
-        
-        .info-box p {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            margin: 0;
-        }
-        
-        .info-box strong {
-            color: var(--primary);
-        }
+        .info-box p { color: var(--text-muted); font-size: 0.9rem; margin: 0; }
+        .info-box strong { color: var(--primary); }
         
         .footer {
             margin-top: auto;
             padding-top: 32px;
             text-align: center;
         }
-        
-        .footer p {
-            color: var(--text-dim);
-            font-size: 0.85rem;
-            margin-bottom: 4px;
-        }
-        
-        .footer a {
-            color: var(--primary);
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-        
-        .footer a:hover {
-            color: var(--secondary);
-        }
+        .footer p { color: var(--text-dim); font-size: 0.85rem; margin-bottom: 4px; }
+        .footer a { color: var(--primary); text-decoration: none; }
+        .footer a:hover { color: var(--secondary); }
         
         .hidden { display: none !important; }
     </style>
@@ -502,84 +502,117 @@
             <input type="file" id="file-upload" accept=".z64,.n64,.v64,.rom,.zip" />
         </div>
         
-        <div id="emulator-container">
-            <div id="game"></div>
-        </div>
+        <div id="emulator-container"><div id="game"></div></div>
         
         <div class="card">
-            <div class="tabs">
-                <button class="tab-button active" data-tab="mapping">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    </svg>
-                    Control Mapping
+            <div class="input-tabs">
+                <button class="input-tab active" data-mode="keyboard" id="tabKeyboard">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2" stroke-width="2"/><path stroke-width="2" d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/></svg>
+                    Keyboard
                 </button>
-                <button class="tab-button" data-tab="reference">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
-                    </svg>
-                    Default Reference
+                <button class="input-tab" data-mode="gamepad" id="tabGamepad" disabled>
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
+                    <span id="gamepadTabLabel">USB Controller</span>
+                </button>
+                <button class="input-tab" data-mode="mobile" id="tabMobile" style="display:none;">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" stroke-width="2"/><path stroke-width="2" d="M12 18h.01"/></svg>
+                    Mobile
                 </button>
             </div>
             
-            <div class="tab-content active" id="tab-mapping">
+            <!-- Keyboard Content -->
+            <div class="input-content active" id="content-keyboard">
                 <div class="mapping-header">
                     <div class="mapping-title">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                        </svg>
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                         Click any button to remap
                     </div>
                     <div class="mapping-actions">
-                        <button class="btn btn-secondary" id="resetMappings">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                            </svg>
+                        <button class="btn btn-wizard" id="wizardKeyboard">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                            Quick Setup
+                        </button>
+                        <button class="btn btn-secondary" id="resetKeyboard">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                             Reset
                         </button>
-                        <button class="btn btn-primary" id="saveMappings">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
-                            </svg>
+                        <button class="btn btn-primary" id="saveKeyboard">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
                             Save
                         </button>
                     </div>
                 </div>
-                
-                <div id="mappingContainer"></div>
-                
+                <div id="keyboardMappings"></div>
                 <div class="info-box">
-                    <p><strong>Tip:</strong> Your custom mappings are saved to your browser and will be applied when you start a game. Press Escape to cancel remapping.</p>
+                    <p><strong>Tip:</strong> Press Escape to cancel remapping. Your mappings are saved to this browser.</p>
                 </div>
             </div>
             
-            <div class="tab-content" id="tab-reference">
-                <div class="keyboard-guide">
-                    <h3>
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
-                        </svg>
-                        EmulatorJS Default Controls
-                    </h3>
-                    <div class="key-grid">
-                        <div class="key-item"><span class="key-label">A Button</span><span class="key-value">X</span></div>
-                        <div class="key-item"><span class="key-label">B Button</span><span class="key-value">Z</span></div>
-                        <div class="key-item"><span class="key-label">Start</span><span class="key-value">Enter</span></div>
-                        <div class="key-item"><span class="key-label">L Trigger</span><span class="key-value">Q</span></div>
-                        <div class="key-item"><span class="key-label">R Trigger</span><span class="key-value">E</span></div>
-                        <div class="key-item"><span class="key-label">Z Trigger</span><span class="key-value">C</span></div>
-                        <div class="key-item"><span class="key-label">D-Pad</span><span class="key-value">Arrows</span></div>
-                        <div class="key-item"><span class="key-label">Analog</span><span class="key-value">WASD</span></div>
-                        <div class="key-item"><span class="key-label">C-Up</span><span class="key-value">I</span></div>
-                        <div class="key-item"><span class="key-label">C-Down</span><span class="key-value">K</span></div>
-                        <div class="key-item"><span class="key-label">C-Left</span><span class="key-value">J</span></div>
-                        <div class="key-item"><span class="key-label">C-Right</span><span class="key-value">L</span></div>
+            <!-- Gamepad Content -->
+            <div class="input-content" id="content-gamepad">
+                <div class="detection-banner" id="gamepadBanner">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <span><strong id="gamepadName">Controller</strong> connected</span>
+                </div>
+                <div class="mapping-header">
+                    <div class="mapping-title">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                        Press any button or move stick to remap
                     </div>
-                    <div class="info-box">
-                        <p><strong>Note:</strong> These are the default EmulatorJS controls. You can also access the emulator's built-in settings menu during gameplay to customize controls.</p>
+                    <div class="mapping-actions">
+                        <button class="btn btn-wizard" id="wizardGamepad">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                            Quick Setup
+                        </button>
+                        <button class="btn btn-secondary" id="resetGamepad">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                            Reset
+                        </button>
+                        <button class="btn btn-primary" id="saveGamepad">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+                            Save
+                        </button>
                     </div>
                 </div>
+                <div id="gamepadMappings"></div>
+                <div class="info-box">
+                    <p><strong>Tip:</strong> Move a stick or press a button when prompted. Supports D-Pad, triggers, and analog sticks.</p>
+                </div>
+            </div>
+            
+            <!-- Mobile Content -->
+            <div class="input-content" id="content-mobile">
+                <div class="mobile-info">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                    <h3>Touch Controls</h3>
+                    <p>Touch controls will automatically appear when you start playing a game in fullscreen mode. Virtual buttons and joystick will overlay the game screen.</p>
+                </div>
+                <div class="info-box">
+                    <p><strong>Mobile Detected:</strong> For the best experience, load a ROM and tap the fullscreen button. Touch controls will appear automatically.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Wizard Modal -->
+    <div class="wizard-overlay" id="wizardOverlay">
+        <div class="wizard-modal">
+            <div class="wizard-header">
+                <div class="wizard-title">Quick Setup</div>
+                <div class="wizard-subtitle" id="wizardMode">Keyboard Mapping</div>
+            </div>
+            <div class="wizard-progress">
+                <div class="progress-bar"><div class="progress-fill" id="wizardProgressBar"></div></div>
+                <div class="progress-text"><span id="wizardStep">1</span> / <span id="wizardTotal">18</span></div>
+            </div>
+            <div class="wizard-current">
+                <div class="wizard-button-name" id="wizardButtonName">A</div>
+                <div class="wizard-instruction" id="wizardInstruction">Press the key for this button</div>
+                <div class="wizard-input-hint" id="wizardHint">Waiting for input...</div>
+            </div>
+            <div class="wizard-actions">
+                <button class="btn btn-secondary" id="wizardSkip">Skip</button>
+                <button class="btn btn-secondary" id="wizardCancel">Cancel</button>
             </div>
         </div>
     </div>
@@ -590,304 +623,623 @@
     </div>
     
     <script>
-        (function() {
-            'use strict';
-            
-            var uploadZone = document.getElementById('uploadZone');
-            var fileInput = document.getElementById('file-upload');
-            var statusIndicator = document.getElementById('statusIndicator');
-            var statusText = document.getElementById('statusText');
-            var emulatorContainer = document.getElementById('emulator-container');
-            var emulatorLoaded = false;
-            
-            var defaultMappings = {
-                a: 'KeyX',
-                b: 'KeyZ',
-                start: 'Enter',
-                z: 'KeyC',
-                l: 'KeyQ',
-                r: 'KeyE',
-                cUp: 'KeyI',
-                cDown: 'KeyK',
-                cLeft: 'KeyJ',
-                cRight: 'KeyL',
-                dUp: 'ArrowUp',
-                dDown: 'ArrowDown',
-                dLeft: 'ArrowLeft',
-                dRight: 'ArrowRight',
-                stickUp: 'KeyW',
-                stickDown: 'KeyS',
-                stickLeft: 'KeyA',
-                stickRight: 'KeyD'
-            };
-            
-            var buttonGroups = [
-                { title: 'Action Buttons', keys: ['a', 'b', 'start', 'z'] },
-                { title: 'Shoulder Buttons', keys: ['l', 'r'] },
-                { title: 'C-Buttons', keys: ['cUp', 'cDown', 'cLeft', 'cRight'] },
-                { title: 'D-Pad', keys: ['dUp', 'dDown', 'dLeft', 'dRight'] },
-                { title: 'Analog Stick', keys: ['stickUp', 'stickDown', 'stickLeft', 'stickRight'] }
-            ];
-            
-            var buttonLabels = {
-                a: 'A Button',
-                b: 'B Button',
-                start: 'Start',
-                z: 'Z Trigger',
-                l: 'L Trigger',
-                r: 'R Trigger',
-                cUp: 'C-Up',
-                cDown: 'C-Down',
-                cLeft: 'C-Left',
-                cRight: 'C-Right',
-                dUp: 'D-Up',
-                dDown: 'D-Down',
-                dLeft: 'D-Left',
-                dRight: 'D-Right',
-                stickUp: 'Stick Up',
-                stickDown: 'Stick Down',
-                stickLeft: 'Stick Left',
-                stickRight: 'Stick Right'
-            };
-            
-            var currentMappings = loadMappings();
-            var listeningKey = null;
-            
-            function loadMappings() {
-                try {
-                    var saved = localStorage.getItem('n64vault_control_mappings');
-                    if (saved) {
-                        return JSON.parse(saved);
-                    }
-                } catch (e) {}
-                return Object.assign({}, defaultMappings);
+    (function() {
+        'use strict';
+        
+        // ===== Constants =====
+        var STORAGE_KEY_KEYBOARD = 'n64vault_mappings_keyboard';
+        var STORAGE_KEY_GAMEPAD = 'n64vault_mappings_gamepad';
+        
+        var defaultKeyboardMap = {
+            a: 'KeyX', b: 'KeyZ', start: 'Enter', z: 'KeyC',
+            l: 'KeyQ', r: 'KeyE',
+            cUp: 'KeyI', cDown: 'KeyK', cLeft: 'KeyJ', cRight: 'KeyL',
+            dUp: 'ArrowUp', dDown: 'ArrowDown', dLeft: 'ArrowLeft', dRight: 'ArrowRight',
+            stickUp: 'KeyW', stickDown: 'KeyS', stickLeft: 'KeyA', stickRight: 'KeyD'
+        };
+        
+        var defaultGamepadMap = {
+            a: 'Button:0', b: 'Button:2', start: 'Button:9', z: 'Button:6',
+            l: 'Button:4', r: 'Button:5',
+            cUp: 'Button:12', cDown: 'Button:13', cLeft: 'Button:14', cRight: 'Button:15',
+            dUp: 'Axis:1:-', dDown: 'Axis:1:+', dLeft: 'Axis:0:-', dRight: 'Axis:0:+',
+            stickUp: 'Axis:3:-', stickDown: 'Axis:3:+', stickLeft: 'Axis:2:-', stickRight: 'Axis:2:+'
+        };
+        
+        var buttonGroups = [
+            { title: 'Action Buttons', keys: ['a', 'b', 'start', 'z'] },
+            { title: 'Shoulder Buttons', keys: ['l', 'r'] },
+            { title: 'C-Buttons', keys: ['cUp', 'cDown', 'cLeft', 'cRight'] },
+            { title: 'D-Pad', keys: ['dUp', 'dDown', 'dLeft', 'dRight'] },
+            { title: 'Analog Stick', keys: ['stickUp', 'stickDown', 'stickLeft', 'stickRight'] }
+        ];
+        
+        var buttonLabels = {
+            a: 'A Button', b: 'B Button', start: 'Start', z: 'Z Trigger',
+            l: 'L Trigger', r: 'R Trigger',
+            cUp: 'C-Up', cDown: 'C-Down', cLeft: 'C-Left', cRight: 'C-Right',
+            dUp: 'D-Up', dDown: 'D-Down', dLeft: 'D-Left', dRight: 'D-Right',
+            stickUp: 'Stick Up', stickDown: 'Stick Down', stickLeft: 'Stick Left', stickRight: 'Stick Right'
+        };
+        
+        var wizardOrder = ['a', 'b', 'start', 'z', 'l', 'r', 'cUp', 'cDown', 'cLeft', 'cRight', 'dUp', 'dDown', 'dLeft', 'dRight', 'stickUp', 'stickDown', 'stickLeft', 'stickRight'];
+        
+        var gamepadButtonNames = {
+            0: 'A', 1: 'B', 2: 'X', 3: 'Y', 4: 'LB', 5: 'RB', 6: 'LT', 7: 'RT',
+            8: 'Back', 9: 'Start', 10: 'L3', 11: 'R3',
+            12: 'Up', 13: 'Down', 14: 'Left', 15: 'Right', 16: 'Guide'
+        };
+        
+        // ===== State =====
+        var state = {
+            mode: 'keyboard',
+            keyboardMap: loadMap(STORAGE_KEY_KEYBOARD, defaultKeyboardMap),
+            gamepadMap: loadMap(STORAGE_KEY_GAMEPAD, defaultGamepadMap),
+            listeningKey: null,
+            listeningMode: null,
+            connectedGamepad: null,
+            wizard: { active: false, index: 0, mode: null },
+            isMobile: false
+        };
+        
+        var gamepadPollId = null;
+        var previousButtons = [];
+        var previousAxes = [];
+        var stabilizationFrames = 0;
+        
+        // ===== DOM Elements =====
+        var elements = {};
+        
+        function initElements() {
+            elements.uploadZone = document.getElementById('uploadZone');
+            elements.fileInput = document.getElementById('file-upload');
+            elements.statusIndicator = document.getElementById('statusIndicator');
+            elements.statusText = document.getElementById('statusText');
+            elements.emulatorContainer = document.getElementById('emulator-container');
+            elements.tabKeyboard = document.getElementById('tabKeyboard');
+            elements.tabGamepad = document.getElementById('tabGamepad');
+            elements.tabMobile = document.getElementById('tabMobile');
+            elements.gamepadTabLabel = document.getElementById('gamepadTabLabel');
+            elements.contentKeyboard = document.getElementById('content-keyboard');
+            elements.contentGamepad = document.getElementById('content-gamepad');
+            elements.contentMobile = document.getElementById('content-mobile');
+            elements.keyboardMappings = document.getElementById('keyboardMappings');
+            elements.gamepadMappings = document.getElementById('gamepadMappings');
+            elements.gamepadBanner = document.getElementById('gamepadBanner');
+            elements.gamepadName = document.getElementById('gamepadName');
+            elements.wizardOverlay = document.getElementById('wizardOverlay');
+            elements.wizardMode = document.getElementById('wizardMode');
+            elements.wizardProgressBar = document.getElementById('wizardProgressBar');
+            elements.wizardStep = document.getElementById('wizardStep');
+            elements.wizardTotal = document.getElementById('wizardTotal');
+            elements.wizardButtonName = document.getElementById('wizardButtonName');
+            elements.wizardInstruction = document.getElementById('wizardInstruction');
+            elements.wizardHint = document.getElementById('wizardHint');
+        }
+        
+        // ===== Utilities =====
+        function loadMap(key, defaultMap) {
+            try {
+                var saved = localStorage.getItem(key);
+                if (saved) return JSON.parse(saved);
+            } catch (e) {}
+            return Object.assign({}, defaultMap);
+        }
+        
+        function saveMap(key, map) {
+            try { localStorage.setItem(key, JSON.stringify(map)); } catch (e) {}
+        }
+        
+        function formatKeyName(code) {
+            if (!code) return '?';
+            if (code.startsWith('Button:')) {
+                var idx = parseInt(code.split(':')[1], 10);
+                return gamepadButtonNames[idx] || 'Btn' + idx;
             }
-            
-            function saveMappings() {
-                try {
-                    localStorage.setItem('n64vault_control_mappings', JSON.stringify(currentMappings));
-                } catch (e) {}
+            if (code.startsWith('Axis:')) {
+                var parts = code.split(':');
+                var axisNames = { 0: 'LX', 1: 'LY', 2: 'RX', 3: 'RY' };
+                return (axisNames[parts[1]] || 'Ax' + parts[1]) + (parts[2] === '+' ? '+' : '-');
             }
+            if (code.startsWith('Key')) return code.slice(3);
+            if (code.startsWith('Digit')) return code.slice(5);
+            if (code.startsWith('Arrow')) return code.slice(5);
+            if (code === 'Space') return 'Space';
+            if (code === 'Enter') return 'Enter';
+            return code.replace('Left', '').replace('Right', '');
+        }
+        
+        function setStatus(text, statusClass) {
+            elements.statusText.textContent = text;
+            elements.statusIndicator.className = 'status-indicator';
+            if (statusClass) elements.statusIndicator.classList.add(statusClass);
+        }
+        
+        function isMobileDevice() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                   (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
+        }
+        
+        function getShortGamepadName(fullName) {
+            var name = fullName.split(' (')[0];
+            return name.length > 30 ? name.slice(0, 27) + '...' : name;
+        }
+        
+        // ===== Rendering =====
+        function renderMappings(containerId, map, mode) {
+            var container = document.getElementById(containerId);
+            container.innerHTML = '';
             
-            function formatKeyName(code) {
-                if (code.startsWith('Key')) return code.slice(3);
-                if (code.startsWith('Digit')) return code.slice(5);
-                if (code.startsWith('Arrow')) return code.slice(5);
-                if (code === 'Space') return 'Space';
-                if (code === 'ShiftLeft' || code === 'ShiftRight') return 'Shift';
-                if (code === 'ControlLeft' || code === 'ControlRight') return 'Ctrl';
-                if (code === 'AltLeft' || code === 'AltRight') return 'Alt';
-                if (code === 'Enter') return 'Enter';
-                if (code === 'Backspace') return 'Bksp';
-                if (code === 'Tab') return 'Tab';
-                return code;
-            }
-            
-            function renderMappings() {
-                var container = document.getElementById('mappingContainer');
-                container.innerHTML = '';
+            buttonGroups.forEach(function(group) {
+                var groupDiv = document.createElement('div');
+                groupDiv.className = 'mapping-group';
                 
-                buttonGroups.forEach(function(group) {
-                    var groupDiv = document.createElement('div');
-                    groupDiv.className = 'mapping-group';
+                var title = document.createElement('div');
+                title.className = 'mapping-group-title';
+                title.textContent = group.title;
+                groupDiv.appendChild(title);
+                
+                var grid = document.createElement('div');
+                grid.className = 'mapping-grid';
+                
+                group.keys.forEach(function(key) {
+                    var item = document.createElement('div');
+                    item.className = 'key-item';
+                    item.setAttribute('data-key', key);
+                    item.setAttribute('data-mode', mode);
                     
-                    var title = document.createElement('div');
-                    title.className = 'mapping-group-title';
-                    title.textContent = group.title;
-                    groupDiv.appendChild(title);
-                    
-                    var grid = document.createElement('div');
-                    grid.className = 'mapping-grid';
-                    
-                    group.keys.forEach(function(key) {
-                        var item = document.createElement('div');
-                        item.className = 'key-item';
-                        item.setAttribute('data-key', key);
-                        
-                        if (listeningKey === key) {
-                            item.classList.add('listening');
+                    if (state.listeningKey === key && state.listeningMode === mode) {
+                        item.classList.add('listening');
+                    }
+                    if (state.wizard.active && state.wizard.mode === mode) {
+                        var wizardIdx = wizardOrder.indexOf(key);
+                        if (wizardIdx < state.wizard.index) {
+                            item.classList.add('completed');
                         }
-                        
-                        var label = document.createElement('span');
-                        label.className = 'key-label';
-                        label.textContent = buttonLabels[key];
-                        
-                        var value = document.createElement('span');
-                        value.className = 'key-value';
-                        if (listeningKey === key) {
-                            value.classList.add('listening');
-                            value.textContent = 'Press key...';
-                        } else {
-                            value.textContent = formatKeyName(currentMappings[key]);
-                        }
-                        
-                        item.appendChild(label);
-                        item.appendChild(value);
-                        
-                        item.addEventListener('click', function() {
-                            startListening(key);
-                        });
-                        
-                        grid.appendChild(item);
+                    }
+                    
+                    var label = document.createElement('span');
+                    label.className = 'key-label';
+                    label.textContent = buttonLabels[key];
+                    
+                    var value = document.createElement('span');
+                    value.className = 'key-value';
+                    if (mode === 'gamepad') value.classList.add('gamepad');
+                    
+                    if (state.listeningKey === key && state.listeningMode === mode) {
+                        value.classList.add('listening');
+                        value.textContent = 'Press...';
+                    } else {
+                        value.textContent = formatKeyName(map[key]);
+                    }
+                    
+                    item.appendChild(label);
+                    item.appendChild(value);
+                    
+                    item.addEventListener('click', function() {
+                        startListening(key, mode);
                     });
                     
-                    groupDiv.appendChild(grid);
-                    container.appendChild(groupDiv);
+                    grid.appendChild(item);
                 });
+                
+                groupDiv.appendChild(grid);
+                container.appendChild(groupDiv);
+            });
+        }
+        
+        function render() {
+            renderMappings('keyboardMappings', state.keyboardMap, 'keyboard');
+            if (state.connectedGamepad) {
+                renderMappings('gamepadMappings', state.gamepadMap, 'gamepad');
+            }
+        }
+        
+        // ===== Input Handling =====
+        function startListening(key, mode) {
+            if (state.wizard.active) return;
+            state.listeningKey = key;
+            state.listeningMode = mode;
+            stabilizationFrames = 0;
+            previousButtons = [];
+            previousAxes = [];
+            render();
+            
+            if (mode === 'gamepad') {
+                startGamepadPoll();
+            }
+        }
+        
+        function stopListening() {
+            state.listeningKey = null;
+            state.listeningMode = null;
+            stopGamepadPoll();
+            render();
+        }
+        
+        function applyInput(code) {
+            var key = state.listeningKey;
+            var mode = state.listeningMode;
+            
+            if (!key || !mode) return;
+            
+            if (mode === 'keyboard') {
+                state.keyboardMap[key] = code;
+            } else {
+                state.gamepadMap[key] = code;
             }
             
-            function startListening(key) {
-                listeningKey = key;
-                renderMappings();
-            }
-            
-            function stopListening() {
-                listeningKey = null;
-                renderMappings();
-            }
-            
-            function handleKeyDown(e) {
-                if (!listeningKey) return;
-                
-                e.preventDefault();
-                
-                if (e.code === 'Escape') {
-                    stopListening();
-                    return;
-                }
-                
-                currentMappings[listeningKey] = e.code;
+            if (state.wizard.active) {
+                advanceWizard();
+            } else {
                 stopListening();
             }
+        }
+        
+        function handleKeyDown(e) {
+            if (state.listeningMode !== 'keyboard' && !(state.wizard.active && state.wizard.mode === 'keyboard')) return;
+            if (!state.listeningKey) return;
             
-            document.addEventListener('keydown', handleKeyDown);
+            e.preventDefault();
             
-            document.getElementById('resetMappings').addEventListener('click', function() {
-                currentMappings = Object.assign({}, defaultMappings);
-                renderMappings();
-                setStatus('Mappings reset to defaults', 'ready');
+            if (e.code === 'Escape') {
+                if (state.wizard.active) {
+                    cancelWizard();
+                } else {
+                    stopListening();
+                }
+                return;
+            }
+            
+            applyInput(e.code);
+        }
+        
+        // ===== Gamepad Handling =====
+        function startGamepadPoll() {
+            if (gamepadPollId) return;
+            stabilizationFrames = 0;
+            previousButtons = [];
+            previousAxes = [];
+            pollGamepad();
+        }
+        
+        function stopGamepadPoll() {
+            if (gamepadPollId) {
+                cancelAnimationFrame(gamepadPollId);
+                gamepadPollId = null;
+            }
+        }
+        
+        function pollGamepad() {
+            if (!state.listeningKey || (state.listeningMode !== 'gamepad' && !(state.wizard.active && state.wizard.mode === 'gamepad'))) {
+                gamepadPollId = null;
+                return;
+            }
+            
+            var gamepads = navigator.getGamepads();
+            var gp = null;
+            for (var i = 0; i < gamepads.length; i++) {
+                if (gamepads[i] && gamepads[i].connected) {
+                    gp = gamepads[i];
+                    break;
+                }
+            }
+            
+            if (!gp) {
+                gamepadPollId = requestAnimationFrame(pollGamepad);
+                return;
+            }
+            
+            stabilizationFrames++;
+            
+            if (stabilizationFrames <= 15) {
+                previousButtons = gp.buttons.map(function(b) { return b.pressed || b.value > 0.5; });
+                previousAxes = gp.axes.slice();
+                gamepadPollId = requestAnimationFrame(pollGamepad);
+                return;
+            }
+            
+            // Check buttons
+            for (var bi = 0; bi < gp.buttons.length; bi++) {
+                var wasPressed = previousButtons[bi] || false;
+                var isPressed = gp.buttons[bi].pressed || gp.buttons[bi].value > 0.5;
+                if (isPressed && !wasPressed) {
+                    applyInput('Button:' + bi);
+                    gamepadPollId = requestAnimationFrame(pollGamepad);
+                    return;
+                }
+            }
+            
+            // Check axes
+            var THRESHOLD = 0.6;
+            for (var ai = 0; ai < gp.axes.length; ai++) {
+                var prev = previousAxes[ai] || 0;
+                var curr = gp.axes[ai];
+                
+                if (curr > THRESHOLD && prev <= THRESHOLD) {
+                    applyInput('Axis:' + ai + ':+');
+                    gamepadPollId = requestAnimationFrame(pollGamepad);
+                    return;
+                }
+                if (curr < -THRESHOLD && prev >= -THRESHOLD) {
+                    applyInput('Axis:' + ai + ':-');
+                    gamepadPollId = requestAnimationFrame(pollGamepad);
+                    return;
+                }
+            }
+            
+            previousButtons = gp.buttons.map(function(b) { return b.pressed || b.value > 0.5; });
+            previousAxes = gp.axes.slice();
+            gamepadPollId = requestAnimationFrame(pollGamepad);
+        }
+        
+        function detectGamepads() {
+            var gamepads = navigator.getGamepads();
+            var found = null;
+            
+            for (var i = 0; i < gamepads.length; i++) {
+                if (gamepads[i] && gamepads[i].connected) {
+                    found = gamepads[i];
+                    break;
+                }
+            }
+            
+            if (found && !state.connectedGamepad) {
+                state.connectedGamepad = found;
+                elements.tabGamepad.disabled = false;
+                elements.gamepadTabLabel.textContent = getShortGamepadName(found.id);
+                elements.gamepadName.textContent = getShortGamepadName(found.id);
+                render();
+                setStatus('Controller connected: ' + getShortGamepadName(found.id), 'ready');
+            } else if (!found && state.connectedGamepad) {
+                state.connectedGamepad = null;
+                elements.tabGamepad.disabled = true;
+                elements.gamepadTabLabel.textContent = 'USB Controller';
+                if (state.mode === 'gamepad') {
+                    switchMode('keyboard');
+                }
+                setStatus('Controller disconnected', 'ready');
+            }
+        }
+        
+        // ===== Wizard =====
+        function startWizard(mode) {
+            state.wizard = { active: true, index: 0, mode: mode };
+            state.listeningKey = wizardOrder[0];
+            state.listeningMode = mode;
+            
+            elements.wizardOverlay.classList.add('active');
+            elements.wizardMode.textContent = mode === 'keyboard' ? 'Keyboard Mapping' : 'Controller Mapping';
+            elements.wizardTotal.textContent = wizardOrder.length;
+            elements.wizardInstruction.textContent = mode === 'keyboard' ? 'Press the key for this button' : 'Press a button or move a stick';
+            
+            updateWizardUI();
+            render();
+            
+            if (mode === 'gamepad') {
+                startGamepadPoll();
+            }
+        }
+        
+        function advanceWizard() {
+            state.wizard.index++;
+            
+            if (state.wizard.index >= wizardOrder.length) {
+                completeWizard();
+                return;
+            }
+            
+            state.listeningKey = wizardOrder[state.wizard.index];
+            stabilizationFrames = 0;
+            previousButtons = [];
+            previousAxes = [];
+            updateWizardUI();
+            render();
+            
+            if (state.wizard.mode === 'gamepad') {
+                startGamepadPoll();
+            }
+        }
+        
+        function skipWizardStep() {
+            advanceWizard();
+        }
+        
+        function cancelWizard() {
+            state.wizard = { active: false, index: 0, mode: null };
+            state.listeningKey = null;
+            state.listeningMode = null;
+            elements.wizardOverlay.classList.remove('active');
+            stopGamepadPoll();
+            render();
+        }
+        
+        function completeWizard() {
+            state.wizard = { active: false, index: 0, mode: null };
+            state.listeningKey = null;
+            state.listeningMode = null;
+            elements.wizardOverlay.classList.remove('active');
+            stopGamepadPoll();
+            render();
+            setStatus('Quick Setup complete! Don\'t forget to save.', 'ready');
+        }
+        
+        function updateWizardUI() {
+            var key = wizardOrder[state.wizard.index];
+            var progress = ((state.wizard.index) / wizardOrder.length) * 100;
+            
+            elements.wizardStep.textContent = state.wizard.index + 1;
+            elements.wizardProgressBar.style.width = progress + '%';
+            elements.wizardButtonName.textContent = buttonLabels[key];
+            elements.wizardHint.textContent = 'Waiting for input...';
+        }
+        
+        // ===== Tab Switching =====
+        function switchMode(mode) {
+            state.mode = mode;
+            stopListening();
+            
+            document.querySelectorAll('.input-tab').forEach(function(tab) {
+                tab.classList.toggle('active', tab.getAttribute('data-mode') === mode);
             });
             
-            document.getElementById('saveMappings').addEventListener('click', function() {
-                saveMappings();
-                setStatus('Control mappings saved!', 'ready');
-            });
+            elements.contentKeyboard.classList.toggle('active', mode === 'keyboard');
+            elements.contentGamepad.classList.toggle('active', mode === 'gamepad');
+            elements.contentMobile.classList.toggle('active', mode === 'mobile');
             
-            document.querySelectorAll('.tab-button').forEach(function(btn) {
-                btn.addEventListener('click', function() {
-                    var tabId = btn.getAttribute('data-tab');
-                    
-                    document.querySelectorAll('.tab-button').forEach(function(b) {
-                        b.classList.remove('active');
-                    });
-                    btn.classList.add('active');
-                    
-                    document.querySelectorAll('.tab-content').forEach(function(content) {
-                        content.classList.remove('active');
-                    });
-                    document.getElementById('tab-' + tabId).classList.add('active');
+            render();
+        }
+        
+        // ===== Emulator =====
+        var emulatorLoaded = false;
+        
+        function loadEmulator(romBlob, romName) {
+            if (emulatorLoaded) {
+                window.location.reload();
+                return;
+            }
+            
+            setStatus('Loading emulator...', 'loading');
+            
+            elements.uploadZone.style.display = 'none';
+            elements.emulatorContainer.style.display = 'block';
+            
+            var romUrl = URL.createObjectURL(romBlob);
+            
+            window.EJS_player = '#game';
+            window.EJS_core = 'n64';
+            window.EJS_gameUrl = romUrl;
+            window.EJS_gameName = romName || 'N64 Game';
+            window.EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
+            window.EJS_startOnLoaded = true;
+            window.EJS_color = '#E43F5A';
+            window.EJS_backgroundColor = '#0F0F23';
+            
+            window.EJS_onGameStart = function() {
+                setStatus('Playing: ' + romName, 'ready');
+                emulatorLoaded = true;
+            };
+            
+            var script = document.createElement('script');
+            script.src = 'https://cdn.emulatorjs.org/stable/data/loader.js';
+            script.onerror = function() {
+                setStatus('Failed to load emulator', 'error');
+                elements.uploadZone.style.display = 'block';
+                elements.emulatorContainer.style.display = 'none';
+            };
+            document.body.appendChild(script);
+        }
+        
+        function handleFile(file) {
+            var validExt = ['.z64', '.n64', '.v64', '.rom', '.zip'];
+            var ext = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+            
+            if (validExt.indexOf(ext) === -1) {
+                setStatus('Invalid file type', 'error');
+                return;
+            }
+            
+            setStatus('Reading: ' + file.name, 'loading');
+            
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var blob = new Blob([e.target.result], { type: 'application/octet-stream' });
+                loadEmulator(blob, file.name);
+            };
+            reader.onerror = function() { setStatus('Failed to read file', 'error'); };
+            reader.readAsArrayBuffer(file);
+        }
+        
+        // ===== Event Bindings =====
+        function bindEvents() {
+            // Tab switching
+            document.querySelectorAll('.input-tab').forEach(function(tab) {
+                tab.addEventListener('click', function() {
+                    if (!tab.disabled) {
+                        switchMode(tab.getAttribute('data-mode'));
+                    }
                 });
             });
             
-            renderMappings();
+            // Keyboard events
+            document.addEventListener('keydown', handleKeyDown);
             
-            function setStatus(text, state) {
-                statusText.textContent = text;
-                statusIndicator.className = 'status-indicator';
-                if (state) statusIndicator.classList.add(state);
+            // Keyboard actions
+            document.getElementById('wizardKeyboard').addEventListener('click', function() { startWizard('keyboard'); });
+            document.getElementById('resetKeyboard').addEventListener('click', function() {
+                state.keyboardMap = Object.assign({}, defaultKeyboardMap);
+                render();
+                setStatus('Keyboard mappings reset', 'ready');
+            });
+            document.getElementById('saveKeyboard').addEventListener('click', function() {
+                saveMap(STORAGE_KEY_KEYBOARD, state.keyboardMap);
+                setStatus('Keyboard mappings saved!', 'ready');
+            });
+            
+            // Gamepad actions
+            document.getElementById('wizardGamepad').addEventListener('click', function() { startWizard('gamepad'); });
+            document.getElementById('resetGamepad').addEventListener('click', function() {
+                state.gamepadMap = Object.assign({}, defaultGamepadMap);
+                render();
+                setStatus('Controller mappings reset', 'ready');
+            });
+            document.getElementById('saveGamepad').addEventListener('click', function() {
+                saveMap(STORAGE_KEY_GAMEPAD, state.gamepadMap);
+                setStatus('Controller mappings saved!', 'ready');
+            });
+            
+            // Wizard actions
+            document.getElementById('wizardSkip').addEventListener('click', skipWizardStep);
+            document.getElementById('wizardCancel').addEventListener('click', cancelWizard);
+            
+            // File upload
+            elements.uploadZone.addEventListener('click', function() { elements.fileInput.click(); });
+            elements.fileInput.addEventListener('change', function(e) {
+                if (e.target.files.length > 0) handleFile(e.target.files[0]);
+            });
+            elements.uploadZone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                elements.uploadZone.classList.add('dragover');
+            });
+            elements.uploadZone.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                elements.uploadZone.classList.remove('dragover');
+            });
+            elements.uploadZone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                elements.uploadZone.classList.remove('dragover');
+                if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
+            });
+            
+            // Gamepad detection
+            window.addEventListener('gamepadconnected', function() { setTimeout(detectGamepads, 100); });
+            window.addEventListener('gamepaddisconnected', function() { setTimeout(detectGamepads, 100); });
+            setInterval(detectGamepads, 500);
+        }
+        
+        // ===== Init =====
+        function init() {
+            initElements();
+            
+            // Detect mobile
+            state.isMobile = isMobileDevice();
+            if (state.isMobile) {
+                elements.tabMobile.style.display = 'flex';
+                switchMode('mobile');
             }
             
-            function loadEmulator(romBlob, romName) {
-                if (emulatorLoaded) {
-                    window.location.reload();
-                    return;
-                }
-                
-                setStatus('Loading emulator...', 'loading');
-                
-                uploadZone.style.display = 'none';
-                emulatorContainer.style.display = 'block';
-                
-                var romUrl = URL.createObjectURL(romBlob);
-                
-                window.EJS_player = '#game';
-                window.EJS_core = 'n64';
-                window.EJS_gameUrl = romUrl;
-                window.EJS_gameName = romName || 'N64 Game';
-                window.EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
-                window.EJS_startOnLoaded = true;
-                window.EJS_color = '#E43F5A';
-                window.EJS_backgroundColor = '#0F0F23';
-                
-                window.EJS_onGameStart = function() {
-                    setStatus('Playing: ' + romName, 'ready');
-                    emulatorLoaded = true;
-                };
-                
-                var script = document.createElement('script');
-                script.src = 'https://cdn.emulatorjs.org/stable/data/loader.js';
-                script.onload = function() {
-                    console.log('EmulatorJS loaded');
-                };
-                script.onerror = function() {
-                    setStatus('Failed to load emulator. Check your internet connection.', 'error');
-                    uploadZone.style.display = 'block';
-                    emulatorContainer.style.display = 'none';
-                };
-                document.body.appendChild(script);
-            }
-            
-            function handleFile(file) {
-                var validExtensions = ['.z64', '.n64', '.v64', '.rom', '.zip'];
-                var ext = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
-                
-                if (!validExtensions.includes(ext)) {
-                    setStatus('Invalid file type. Use .z64, .n64, .v64, .rom, or .zip', 'error');
-                    return;
-                }
-                
-                setStatus('Reading file: ' + file.name, 'loading');
-                
-                var reader = new FileReader();
-                reader.onload = function(e) {
-                    var blob = new Blob([e.target.result], { type: 'application/octet-stream' });
-                    loadEmulator(blob, file.name);
-                };
-                reader.onerror = function() {
-                    setStatus('Failed to read file', 'error');
-                };
-                reader.readAsArrayBuffer(file);
-            }
-            
-            uploadZone.addEventListener('click', function() {
-                fileInput.click();
-            });
-            
-            fileInput.addEventListener('change', function(e) {
-                if (e.target.files.length > 0) {
-                    handleFile(e.target.files[0]);
-                }
-            });
-            
-            uploadZone.addEventListener('dragover', function(e) {
-                e.preventDefault();
-                uploadZone.classList.add('dragover');
-            });
-            
-            uploadZone.addEventListener('dragleave', function(e) {
-                e.preventDefault();
-                uploadZone.classList.remove('dragover');
-            });
-            
-            uploadZone.addEventListener('drop', function(e) {
-                e.preventDefault();
-                uploadZone.classList.remove('dragover');
-                
-                if (e.dataTransfer.files.length > 0) {
-                    handleFile(e.dataTransfer.files[0]);
-                }
-            });
-        })();
+            // Initial render
+            render();
+            bindEvents();
+            detectGamepads();
+        }
+        
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    })();
     </script>
 </body>
 </html>
