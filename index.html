@@ -2087,30 +2087,47 @@
         }
         
         function mpConnect() {
-            if (state.mp.ws) return;
+            if (state.mp.ws && state.mp.ws.readyState !== WebSocket.CLOSED) {
+                return;
+            }
+            
+            var wsUrl = getWsUrl();
+            console.log('Connecting to WebSocket:', wsUrl);
+            mpUpdateStatus('', 'Connecting...');
             
             try {
-                state.mp.ws = new WebSocket(getWsUrl());
+                state.mp.ws = new WebSocket(wsUrl);
                 
                 state.mp.ws.onopen = function() {
+                    console.log('WebSocket connected');
                     state.mp.connected = true;
                     mpUpdateStatus('connected', 'Connected to server');
+                    
+                    // Send any pending action
+                    if (pendingAction) {
+                        console.log('Sending pending action:', pendingAction.type);
+                        mpSend(pendingAction);
+                        pendingAction = null;
+                    }
                 };
                 
-                state.mp.ws.onclose = function() {
+                state.mp.ws.onclose = function(e) {
+                    console.log('WebSocket closed:', e.code, e.reason);
                     state.mp.connected = false;
                     state.mp.ws = null;
                     mpUpdateStatus('', 'Disconnected');
                     mpShowJoinCreate();
                 };
                 
-                state.mp.ws.onerror = function() {
-                    mpUpdateStatus('error', 'Connection error');
+                state.mp.ws.onerror = function(e) {
+                    console.error('WebSocket error:', e);
+                    mpUpdateStatus('error', 'Connection failed - check console');
                 };
                 
                 state.mp.ws.onmessage = function(e) {
                     try {
                         var msg = JSON.parse(e.data);
+                        console.log('Received:', msg.type);
                         mpHandleMessage(msg);
                     } catch (err) {
                         console.error('Failed to parse message:', err);
@@ -2118,7 +2135,7 @@
                 };
             } catch (err) {
                 console.error('WebSocket connection failed:', err);
-                mpUpdateStatus('error', 'Failed to connect');
+                mpUpdateStatus('error', 'Failed to connect: ' + err.message);
             }
         }
         
@@ -2209,16 +2226,23 @@
             elements.mpPlayerList.innerHTML = html;
         }
         
+        var pendingAction = null;
+        
         function mpCreateRoom() {
             var name = elements.mpCreateName.value.trim();
             if (!name) {
                 setStatus('Please enter your name', 'error');
                 return;
             }
-            mpConnect();
-            setTimeout(function() {
-                mpSend({ type: 'create-room', playerName: name });
-            }, 500);
+            
+            pendingAction = { type: 'create-room', playerName: name };
+            
+            if (state.mp.ws && state.mp.ws.readyState === WebSocket.OPEN) {
+                mpSend(pendingAction);
+                pendingAction = null;
+            } else {
+                mpConnect();
+            }
         }
         
         function mpJoinRoom() {
@@ -2232,10 +2256,15 @@
                 setStatus('Please enter a valid 6-character room code', 'error');
                 return;
             }
-            mpConnect();
-            setTimeout(function() {
-                mpSend({ type: 'join-room', roomCode: code, playerName: name });
-            }, 500);
+            
+            pendingAction = { type: 'join-room', roomCode: code, playerName: name };
+            
+            if (state.mp.ws && state.mp.ws.readyState === WebSocket.OPEN) {
+                mpSend(pendingAction);
+                pendingAction = null;
+            } else {
+                mpConnect();
+            }
         }
         
         function mpLeaveRoom() {
