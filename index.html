@@ -274,14 +274,41 @@
         
         #game { width: 100%; height: 500px; }
         
-        /* Hide EmulatorJS's built-in virtual gamepad - we use our own custom touch overlay */
+        .btn-back-to-library {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(15, 15, 35, 0.9);
+            border: 1px solid rgba(228, 63, 90, 0.5);
+            border-radius: 8px;
+            color: #fff;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(4px);
+        }
+        .btn-back-to-library:hover {
+            background: rgba(228, 63, 90, 0.3);
+            border-color: #E43F5A;
+            transform: translateY(-2px);
+        }
+        .btn-back-to-library svg {
+            stroke: #E43F5A;
+        }
+        
+        /* EmulatorJS virtual gamepad styling */
         .ejs-gamepad,
         .ejs-virtual-gamepad,
         [class*="ejs_virtualGamepad"],
         [class*="ejs_gamepad"] {
-            display: none !important;
-            visibility: hidden !important;
-            pointer-events: none !important;
+            /* Let EmulatorJS handle virtual gamepad display on mobile */
         }
         
         /* Input Mode Tabs */
@@ -830,7 +857,13 @@
                 <input type="file" id="file-upload" accept=".z64,.n64,.v64,.rom,.zip" />
             </div>
             
-            <div id="emulator-container"><div id="game"></div></div>
+            <div id="emulator-container">
+                <div id="game"></div>
+                <button class="btn-back-to-library" id="btnBackToLibrary">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                    Back to Library
+                </button>
+            </div>
         </div>
         
         <!-- Controls Content -->
@@ -1199,6 +1232,7 @@
             elements.statusText = document.getElementById('statusText');
             elements.emulatorContainer = document.getElementById('emulator-container');
             elements.btnNewGame = document.getElementById('btnNewGame');
+            elements.btnBackToLibrary = document.getElementById('btnBackToLibrary');
             elements.tabKeyboard = document.getElementById('tabKeyboard');
             elements.tabGamepad = document.getElementById('tabGamepad');
             elements.tabMobile = document.getElementById('tabMobile');
@@ -2062,8 +2096,7 @@
             window.EJS_color = '#E43F5A';
             window.EJS_backgroundColor = '#0F0F23';
             
-            // Disable EmulatorJS's built-in virtual gamepad - we use our own custom touch overlay
-            window.EJS_VirtualGamepadSettings = [];
+            // Enable EmulatorJS's built-in virtual gamepad for mobile
             window.EJS_Buttons = {
                 playPause: true,
                 restart: true,
@@ -2073,7 +2106,7 @@
                 saveState: true,
                 loadState: true,
                 screenRecord: false,
-                gamepad: false,
+                gamepad: true,
                 cheat: false,
                 volume: true,
                 quickSave: false,
@@ -2474,8 +2507,11 @@
             detectGamepads();
             loadGames();
             
-            // Wire up New Game button to return to library
+            // Wire up buttons to return to library
             elements.btnNewGame.addEventListener('click', function() {
+                showLibrary();
+            });
+            elements.btnBackToLibrary.addEventListener('click', function() {
                 showLibrary();
             });
         }
