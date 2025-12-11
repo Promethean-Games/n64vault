@@ -738,6 +738,56 @@
         
         .hidden { display: none !important; }
         
+        /* Toast Notification Styles */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            pointer-events: none;
+        }
+        .toast {
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 12px 16px;
+            min-width: 280px;
+            max-width: 400px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s;
+            pointer-events: auto;
+        }
+        .toast.success { border-color: var(--success); }
+        .toast.error { border-color: var(--error); }
+        .toast-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .toast.success .toast-icon { background: rgba(16,185,129,0.2); color: var(--success); }
+        .toast.error .toast-icon { background: rgba(239,68,68,0.2); color: var(--error); }
+        .toast-content { flex: 1; }
+        .toast-title { font-weight: 600; color: var(--text); font-size: 0.95rem; }
+        .toast-message { color: var(--text-muted); font-size: 0.85rem; margin-top: 2px; }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        
         /* Multiplayer Styles */
         .mp-tabs { display: flex; gap: 4px; margin-bottom: 20px; }
         .mp-tab {
@@ -1127,6 +1177,9 @@
         <p>For personal use only. Please use legally obtained ROM files.</p>
     </div>
     
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+    
     <script>
     (function() {
         'use strict';
@@ -1325,6 +1378,29 @@
             elements.statusText.textContent = text;
             elements.statusIndicator.className = 'status-indicator';
             if (statusClass) elements.statusIndicator.classList.add(statusClass);
+        }
+        
+        function showToast(title, message, type) {
+            type = type || 'success';
+            var container = document.getElementById('toastContainer');
+            var toast = document.createElement('div');
+            toast.className = 'toast ' + type;
+            
+            var iconSvg = type === 'success' 
+                ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+                : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+            
+            toast.innerHTML = '<div class="toast-icon">' + iconSvg + '</div>' +
+                '<div class="toast-content">' +
+                '<div class="toast-title">' + title + '</div>' +
+                (message ? '<div class="toast-message">' + message + '</div>' : '') +
+                '</div>';
+            
+            container.appendChild(toast);
+            
+            setTimeout(function() {
+                toast.remove();
+            }, 3000);
         }
         
         // Game library state
@@ -2215,6 +2291,7 @@
             document.getElementById('saveKeyboard').addEventListener('click', function() {
                 saveMap(STORAGE_KEY_KEYBOARD, state.keyboardMap);
                 setStatus('Keyboard mappings saved!', 'ready');
+                showToast('Controls Saved', 'Your keyboard mappings have been saved.', 'success');
             });
             
             document.getElementById('wizardGamepad').addEventListener('click', function() { startWizard('gamepad'); });
@@ -2230,6 +2307,7 @@
                 saveMap(STORAGE_KEY_GAMEPAD_PREFIX + idx, state.gamepadMaps[idx]);
                 var playerLabel = state.connectedGamepads.length > 1 ? 'Player ' + (idx + 1) + ' ' : '';
                 setStatus(playerLabel + 'controller mappings saved!', 'ready');
+                showToast('Controls Saved', (playerLabel || 'Your ') + 'gamepad mappings have been saved.', 'success');
             });
             
             // Debug toggle
@@ -2286,7 +2364,10 @@
             elements.mainTabMultiplayer.addEventListener('click', function() { switchMainTab('multiplayer'); });
             elements.mpTabCreate.addEventListener('click', function() { switchMpTab('create'); });
             elements.mpTabJoin.addEventListener('click', function() { switchMpTab('join'); });
-            elements.mpBtnCreate.addEventListener('click', mpCreateRoom);
+            elements.mpBtnCreate.addEventListener('click', function(e) {
+                console.log('Create Room button clicked', e);
+                mpCreateRoom();
+            });
             elements.mpBtnJoin.addEventListener('click', mpJoinRoom);
             elements.mpBtnLeave.addEventListener('click', mpLeaveRoom);
             elements.mpRoomCode.addEventListener('click', function() {
@@ -2446,18 +2527,25 @@
         var pendingAction = null;
         
         function mpCreateRoom() {
+            console.log('mpCreateRoom called');
             var name = elements.mpCreateName.value.trim();
+            console.log('Player name:', name);
             if (!name) {
                 setStatus('Please enter your name', 'error');
+                mpUpdateStatus('error', 'Please enter your name');
                 return;
             }
             
             pendingAction = { type: 'create-room', playerName: name };
+            console.log('Pending action set:', pendingAction);
             
             if (state.mp.ws && state.mp.ws.readyState === WebSocket.OPEN) {
+                console.log('WebSocket already open, sending directly');
                 mpSend(pendingAction);
                 pendingAction = null;
             } else {
+                console.log('WebSocket not open, connecting...');
+                mpUpdateStatus('', 'Connecting...');
                 mpConnect();
             }
         }
