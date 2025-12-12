@@ -1175,6 +1175,7 @@
     <div class="footer">
         <p>N64 Vault - Powered by <a href="https://emulatorjs.org" target="_blank">EmulatorJS</a></p>
         <p>For personal use only. Please use legally obtained ROM files.</p>
+        <p><button id="clearCacheBtn" style="background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Clear Cache & Refresh</button></p>
     </div>
     
     <!-- Toast Container -->
@@ -1408,20 +1409,23 @@
         var selectedGame = null;
         
         function loadGames() {
+            console.log('[N64Vault] loadGames() called');
             elements.gameGrid.innerHTML = '<div class="game-grid-loading">Loading games...</div>';
             
             fetch('/api/games')
                 .then(function(res) {
+                    console.log('[N64Vault] /api/games response status:', res.status);
                     if (!res.ok) throw new Error('Failed to load games');
                     return res.json();
                 })
                 .then(function(data) {
+                    console.log('[N64Vault] Games loaded:', data.length, 'games', data);
                     games = data;
                     renderGameGrid();
                 })
                 .catch(function(err) {
-                    console.error('Failed to load games:', err);
-                    elements.gameGrid.innerHTML = '';
+                    console.error('[N64Vault] Failed to load games:', err);
+                    elements.gameGrid.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 40px;">Failed to load games. Try clicking "Clear Cache & Refresh" below.</div>';
                 });
         }
         
@@ -2610,6 +2614,27 @@
             init();
         }
     })();
+    
+    // Clear cache button handler
+    document.getElementById('clearCacheBtn').addEventListener('click', function() {
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+            var messageChannel = new MessageChannel();
+            messageChannel.port1.onmessage = function() {
+                caches.keys().then(function(names) {
+                    return Promise.all(names.map(function(name) { return caches.delete(name); }));
+                }).then(function() {
+                    window.location.reload(true);
+                });
+            };
+            navigator.serviceWorker.controller.postMessage({ type: 'CLEAR_CACHE' }, [messageChannel.port2]);
+        } else {
+            caches.keys().then(function(names) {
+                return Promise.all(names.map(function(name) { return caches.delete(name); }));
+            }).then(function() {
+                window.location.reload(true);
+            });
+        }
+    });
     
     // Register Service Worker for PWA
     if ('serviceWorker' in navigator) {
