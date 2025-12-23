@@ -1408,9 +1408,42 @@
         var games = [];
         var selectedGame = null;
         
+        var BUNDLED_HOMEBREW = [
+            {
+                id: 'homebrew-controller-test',
+                title: 'N64 Controller Test',
+                filename: 'controller_test.z64',
+                fileSize: 2097152,
+                region: 'World',
+                genre: 'Utility',
+                romUrl: '../homebrew/controller_test.z64',
+                playCount: 0,
+                lastPlayed: null,
+                coverArt: null
+            },
+            {
+                id: 'homebrew-bird-kart',
+                title: 'Bird Kart',
+                filename: 'Bird Kart.z64',
+                fileSize: 2632992,
+                region: 'World',
+                genre: 'Racing',
+                romUrl: '../homebrew/Bird Kart.z64',
+                playCount: 0,
+                lastPlayed: null,
+                coverArt: null
+            }
+        ];
+        
         function loadGames() {
             console.log('[N64Vault] loadGames() called');
             elements.gameGrid.innerHTML = '<div class="game-grid-loading">Loading games...</div>';
+            
+            var savedGames = [];
+            try {
+                var saved = localStorage.getItem('n64vault_games');
+                if (saved) savedGames = JSON.parse(saved);
+            } catch (e) {}
             
             fetch('/api/games')
                 .then(function(res) {
@@ -1419,13 +1452,15 @@
                     return res.json();
                 })
                 .then(function(data) {
-                    console.log('[N64Vault] Games loaded:', data.length, 'games', data);
+                    console.log('[N64Vault] Games loaded from API:', data.length, 'games');
                     games = data;
                     renderGameGrid();
                 })
                 .catch(function(err) {
-                    console.error('[N64Vault] Failed to load games:', err);
-                    elements.gameGrid.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 40px;">Failed to load games. Try clicking "Clear Cache & Refresh" below.</div>';
+                    console.log('[N64Vault] API unavailable, using bundled homebrew + local games');
+                    games = BUNDLED_HOMEBREW.concat(savedGames);
+                    console.log('[N64Vault] Total games:', games.length);
+                    renderGameGrid();
                 });
         }
         
@@ -1489,20 +1524,41 @@
             elements.emulatorContainer.style.display = 'block';
             elements.btnNewGame.style.display = 'flex';
             
-            // Fetch ROM and start emulator
-            fetch('/api/games/' + game.id + '/rom')
-                .then(function(res) {
-                    if (!res.ok) throw new Error('Failed to load ROM');
-                    return res.arrayBuffer();
-                })
-                .then(function(romData) {
-                    startEmulator(romData, game.filename || game.title);
-                })
-                .catch(function(err) {
-                    console.error('Failed to load ROM:', err);
-                    setStatus('Failed to load ROM: ' + err.message, 'error');
-                    showLibrary();
-                });
+            // Check if game has a direct ROM URL (bundled homebrew) or local ROM data
+            if (game.romUrl) {
+                console.log('[N64Vault] Loading ROM from URL:', game.romUrl);
+                fetch(game.romUrl)
+                    .then(function(res) {
+                        if (!res.ok) throw new Error('Failed to fetch ROM from URL');
+                        return res.arrayBuffer();
+                    })
+                    .then(function(romData) {
+                        startEmulator(romData, game.filename || game.title);
+                    })
+                    .catch(function(err) {
+                        console.error('[N64Vault] Failed to load ROM from URL:', err);
+                        setStatus('Failed to load ROM: ' + err.message, 'error');
+                        showLibrary();
+                    });
+            } else if (game.romData) {
+                console.log('[N64Vault] Loading ROM from local storage');
+                startEmulator(game.romData, game.filename || game.title);
+            } else {
+                // Fetch ROM from API (when running with backend)
+                fetch('/api/games/' + game.id + '/rom')
+                    .then(function(res) {
+                        if (!res.ok) throw new Error('Failed to load ROM');
+                        return res.arrayBuffer();
+                    })
+                    .then(function(romData) {
+                        startEmulator(romData, game.filename || game.title);
+                    })
+                    .catch(function(err) {
+                        console.error('[N64Vault] Failed to load ROM:', err);
+                        setStatus('Failed to load ROM: ' + err.message, 'error');
+                        showLibrary();
+                    });
+            }
         }
         
         function showLibrary() {
@@ -2154,6 +2210,21 @@
             }
         }
         
+        function startEmulator(romData, romName) {
+            var blob;
+            if (romData instanceof Blob) {
+                blob = romData;
+            } else if (romData instanceof ArrayBuffer) {
+                blob = new Blob([romData], { type: 'application/octet-stream' });
+            } else {
+                console.error('[N64Vault] Invalid ROM data type');
+                setStatus('Failed to load ROM: Invalid data', 'error');
+                showLibrary();
+                return;
+            }
+            loadEmulator(blob, romName);
+        }
+        
         function loadEmulator(romBlob, romName) {
             if (emulatorLoaded) {
                 window.location.reload();
@@ -2195,39 +2266,104 @@
                 cacheManager: false
             };
             
-            // Default control mappings for up to 4 players (matches n64js/index.html)
-            // Control IDs: 0=B, 1=A, 2=Start, 3-6=C-buttons, 7-10=Analog, 11-14=D-pad, 15=L, 16=R, 17=Z
-            var defaultControlMapping = {
-                0: { 'value': 'x', 'value2': 'FACE_1' },
-                1: { 'value': 'z', 'value2': 'FACE_2' },
-                2: { 'value': 'enter', 'value2': 'START' },
-                3: { 'value': 'i', 'value2': 'FACE_4' },
-                4: { 'value': 'k', 'value2': 'FACE_3' },
-                5: { 'value': 'j', 'value2': 'LEFT_STICK_BUTTON' },
-                6: { 'value': 'l', 'value2': 'RIGHT_STICK_BUTTON' },
-                7: { 'value': 'w' },
-                8: { 'value': 's' },
-                9: { 'value': 'a' },
-                10: { 'value': 'd' },
-                11: { 'value': 'arrowup', 'value2': 'DPAD_UP' },
-                12: { 'value': 'arrowdown', 'value2': 'DPAD_DOWN' },
-                13: { 'value': 'arrowleft', 'value2': 'DPAD_LEFT' },
-                14: { 'value': 'arrowright', 'value2': 'DPAD_RIGHT' },
-                15: { 'value': 'q', 'value2': 'LEFT_SHOULDER' },
-                16: { 'value': 'e', 'value2': 'RIGHT_SHOULDER' },
-                17: { 'value': 'shift', 'value2': 'LEFT_TRIGGER' },
-                24: { 'value2': 'LEFT_STICK_X:+1' },
-                25: { 'value2': 'LEFT_STICK_X:-1' },
-                26: { 'value2': 'LEFT_STICK_Y:+1' },
-                27: { 'value2': 'LEFT_STICK_Y:-1' }
+            // Build control mappings from saved user preferences
+            // EmulatorJS Control IDs: 0=B, 1=A, 2=Start, 3=C-Up, 4=C-Down, 5=C-Left, 6=C-Right, 
+            // 7-10=Analog (up/down/left/right), 11-14=D-pad, 15=L, 16=R, 17=Z
+            var n64ToEjsMap = {
+                'b': 0, 'a': 1, 'start': 2,
+                'cUp': 3, 'cDown': 4, 'cLeft': 5, 'cRight': 6,
+                'stickUp': 7, 'stickDown': 8, 'stickLeft': 9, 'stickRight': 10,
+                'dUp': 11, 'dDown': 12, 'dLeft': 13, 'dRight': 14,
+                'l': 15, 'r': 16, 'z': 17
             };
             
+            function keyCodeToEjsKey(keyCode) {
+                if (!keyCode) return null;
+                var map = {
+                    'KeyA': 'a', 'KeyB': 'b', 'KeyC': 'c', 'KeyD': 'd', 'KeyE': 'e',
+                    'KeyF': 'f', 'KeyG': 'g', 'KeyH': 'h', 'KeyI': 'i', 'KeyJ': 'j',
+                    'KeyK': 'k', 'KeyL': 'l', 'KeyM': 'm', 'KeyN': 'n', 'KeyO': 'o',
+                    'KeyP': 'p', 'KeyQ': 'q', 'KeyR': 'r', 'KeyS': 's', 'KeyT': 't',
+                    'KeyU': 'u', 'KeyV': 'v', 'KeyW': 'w', 'KeyX': 'x', 'KeyY': 'y', 'KeyZ': 'z',
+                    'Digit0': '0', 'Digit1': '1', 'Digit2': '2', 'Digit3': '3', 'Digit4': '4',
+                    'Digit5': '5', 'Digit6': '6', 'Digit7': '7', 'Digit8': '8', 'Digit9': '9',
+                    'Enter': 'enter', 'Space': 'space', 'Tab': 'tab', 'Escape': 'escape',
+                    'ShiftLeft': 'shift', 'ShiftRight': 'shift',
+                    'ControlLeft': 'ctrl', 'ControlRight': 'ctrl',
+                    'AltLeft': 'alt', 'AltRight': 'alt',
+                    'ArrowUp': 'arrowup', 'ArrowDown': 'arrowdown',
+                    'ArrowLeft': 'arrowleft', 'ArrowRight': 'arrowright',
+                    'Backspace': 'backspace', 'Delete': 'delete',
+                    'Comma': ',', 'Period': '.', 'Slash': '/', 'Semicolon': ';',
+                    'Quote': "'", 'BracketLeft': '[', 'BracketRight': ']',
+                    'Backquote': '`', 'Minus': '-', 'Equal': '='
+                };
+                return map[keyCode] || keyCode.toLowerCase().replace('key', '');
+            }
+            
+            function gamepadBindingToEjs(binding) {
+                if (!binding) return null;
+                if (binding.startsWith('Button:')) {
+                    var btnNum = parseInt(binding.split(':')[1]);
+                    var btnMap = {
+                        0: 'FACE_1', 1: 'FACE_2', 2: 'FACE_3', 3: 'FACE_4',
+                        4: 'LEFT_SHOULDER', 5: 'RIGHT_SHOULDER',
+                        6: 'LEFT_TRIGGER', 7: 'RIGHT_TRIGGER',
+                        8: 'SELECT', 9: 'START',
+                        10: 'LEFT_STICK_BUTTON', 11: 'RIGHT_STICK_BUTTON',
+                        12: 'DPAD_UP', 13: 'DPAD_DOWN', 14: 'DPAD_LEFT', 15: 'DPAD_RIGHT'
+                    };
+                    return btnMap[btnNum] || null;
+                }
+                if (binding.startsWith('Axis:')) {
+                    var parts = binding.split(':');
+                    var axis = parseInt(parts[1]);
+                    var dir = parts[2];
+                    if (axis === 0) return 'LEFT_STICK_X:' + (dir === '+' ? '+1' : '-1');
+                    if (axis === 1) return 'LEFT_STICK_Y:' + (dir === '+' ? '+1' : '-1');
+                    if (axis === 2) return 'RIGHT_STICK_X:' + (dir === '+' ? '+1' : '-1');
+                    if (axis === 3) return 'RIGHT_STICK_Y:' + (dir === '+' ? '+1' : '-1');
+                }
+                return null;
+            }
+            
+            function buildPlayerControls(playerIndex) {
+                var controls = {};
+                var kbMap = state.keyboardMap;
+                var gpMap = state.gamepadMaps[playerIndex] || state.gamepadMaps[0];
+                
+                for (var n64Btn in n64ToEjsMap) {
+                    var ejsId = n64ToEjsMap[n64Btn];
+                    var ctrl = {};
+                    
+                    var kbKey = keyCodeToEjsKey(kbMap[n64Btn]);
+                    if (kbKey) ctrl.value = kbKey;
+                    
+                    var gpBtn = gamepadBindingToEjs(gpMap[n64Btn]);
+                    if (gpBtn) ctrl.value2 = gpBtn;
+                    
+                    if (ctrl.value || ctrl.value2) {
+                        controls[ejsId] = ctrl;
+                    }
+                }
+                
+                // Add analog stick axes for gamepad (these are always the same)
+                controls[24] = { 'value2': 'LEFT_STICK_X:+1' };
+                controls[25] = { 'value2': 'LEFT_STICK_X:-1' };
+                controls[26] = { 'value2': 'LEFT_STICK_Y:+1' };
+                controls[27] = { 'value2': 'LEFT_STICK_Y:-1' };
+                
+                return controls;
+            }
+            
             window.EJS_defaultControls = {
-                0: Object.assign({}, defaultControlMapping),
-                1: Object.assign({}, defaultControlMapping),
-                2: Object.assign({}, defaultControlMapping),
-                3: Object.assign({}, defaultControlMapping)
+                0: buildPlayerControls(0),
+                1: buildPlayerControls(1),
+                2: buildPlayerControls(2),
+                3: buildPlayerControls(3)
             };
+            
+            console.log('[N64Vault] Applied control mappings:', window.EJS_defaultControls);
             
             window.EJS_onGameStart = function() {
                 setStatus('Playing: ' + romName, 'ready');
