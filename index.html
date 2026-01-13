@@ -13,7 +13,7 @@
     <script>
         window.N64_VAULT_CONFIG = {
             // ========== VERSION (for cache busting) ==========
-            version: '2.0.12-debug-sdp-candidates',
+            version: '2.0.13-wait-ice-gathering',
             
             // ========== MULTIPLAYER BACKEND ==========
             // Set to your backend URL for multiplayer support
@@ -3323,10 +3323,33 @@
                 console.log('[RTC] ICE connection state with guest:', pc.iceConnectionState);
             };
             
-            // Create offer
+            // Create offer and wait for ICE gathering to complete before sending
             pc.createOffer().then(function(offer) {
                 return pc.setLocalDescription(offer);
             }).then(function() {
+                // Wait for ICE gathering to complete before sending offer
+                return new Promise(function(resolve) {
+                    if (pc.iceGatheringState === 'complete') {
+                        resolve();
+                    } else {
+                        var checkState = function() {
+                            console.log('[RTC] Host waiting for ICE gathering, state:', pc.iceGatheringState);
+                            if (pc.iceGatheringState === 'complete') {
+                                pc.removeEventListener('icegatheringstatechange', checkState);
+                                resolve();
+                            }
+                        };
+                        pc.addEventListener('icegatheringstatechange', checkState);
+                        // Also set a timeout fallback
+                        setTimeout(function() {
+                            console.log('[RTC] ICE gathering timeout, sending offer anyway');
+                            pc.removeEventListener('icegatheringstatechange', checkState);
+                            resolve();
+                        }, 5000);
+                    }
+                });
+            }).then(function() {
+                console.log('[RTC] Host ICE gathering done, candidates in SDP:', pc.localDescription.sdp.includes('a=candidate'));
                 mpSend({
                     type: 'rtc-offer',
                     targetId: guestId,
@@ -3460,17 +3483,37 @@
                 console.log('[RTC] ICE gathering state:', pc.iceGatheringState);
             };
             
-            // Set remote description and create answer
+            // Set remote description and create answer, wait for ICE gathering
             pc.setRemoteDescription(new RTCSessionDescription(sdp)).then(function() {
                 console.log('[RTC] Remote description set, creating answer...');
                 return pc.createAnswer();
             }).then(function(answer) {
                 console.log('[RTC] Answer created, setting local description...');
-                console.log('[RTC] Answer SDP has candidates:', answer.sdp.includes('a=candidate'));
                 return pc.setLocalDescription(answer);
             }).then(function() {
-                console.log('[RTC] Local description set, gathering state:', pc.iceGatheringState);
-                console.log('[RTC] Final answer has candidates:', pc.localDescription.sdp.includes('a=candidate'));
+                // Wait for ICE gathering to complete before sending answer
+                return new Promise(function(resolve) {
+                    if (pc.iceGatheringState === 'complete') {
+                        resolve();
+                    } else {
+                        var checkState = function() {
+                            console.log('[RTC] Guest waiting for ICE gathering, state:', pc.iceGatheringState);
+                            if (pc.iceGatheringState === 'complete') {
+                                pc.removeEventListener('icegatheringstatechange', checkState);
+                                resolve();
+                            }
+                        };
+                        pc.addEventListener('icegatheringstatechange', checkState);
+                        // Timeout fallback
+                        setTimeout(function() {
+                            console.log('[RTC] ICE gathering timeout, sending answer anyway');
+                            pc.removeEventListener('icegatheringstatechange', checkState);
+                            resolve();
+                        }, 5000);
+                    }
+                });
+            }).then(function() {
+                console.log('[RTC] Guest ICE gathering done, candidates in SDP:', pc.localDescription.sdp.includes('a=candidate'));
                 mpSend({
                     type: 'rtc-answer',
                     targetId: hostId,
