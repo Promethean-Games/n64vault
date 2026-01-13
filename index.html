@@ -992,7 +992,12 @@
     <div class="header">
         <h1>N64 Vault</h1>
         <p>Web-Based Nintendo 64 Emulator</p>
+        <span id="versionBadge" data-testid="text-build-version" style="position:absolute;top:5px;right:10px;font-size:10px;color:#666;font-family:monospace;"></span>
     </div>
+    <script>
+        // Display version badge immediately
+        document.getElementById('versionBadge').textContent = 'v' + (window.N64_VAULT_CONFIG?.version || 'unknown');
+    </script>
     
     <div class="container">
         <!-- Main Navigation Tabs -->
