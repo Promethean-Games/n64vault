@@ -13,7 +13,7 @@
     <script>
         window.N64_VAULT_CONFIG = {
             // ========== VERSION (for cache busting) ==========
-            version: '2.0.5-host-protect',
+            version: '2.0.7-debug-rtc',
             
             // ========== MULTIPLAYER BACKEND ==========
             // Set to your backend URL for multiplayer support
@@ -1575,15 +1575,28 @@
         var selectedGame = null;
         
         // Calculate homebrew base URL dynamically
-        // If page is at /Netcade/emulator/index_standalone.html, homebrew is at /Netcade/homebrew/
+        // Works whether page is at /Netcade/, /Netcade/index.html, or /Netcade/emulator/index_standalone.html
         function getHomebrewBaseUrl() {
-            var pathParts = window.location.pathname.split('/');
-            // Remove the filename (index_standalone.html) and the 'emulator' directory
-            pathParts.pop(); // Remove filename
-            pathParts.pop(); // Remove 'emulator' directory
-            var basePath = pathParts.join('/') || '';
-            var baseUrl = window.location.origin + basePath + '/homebrew/';
-            console.log('[N64Vault] Computed homebrew base URL:', baseUrl);
+            var pathname = window.location.pathname;
+            
+            // Remove trailing filename if present (anything after the last / that contains a .)
+            var lastSlash = pathname.lastIndexOf('/');
+            var afterSlash = pathname.substring(lastSlash + 1);
+            if (afterSlash.indexOf('.') !== -1) {
+                // Has a file extension, remove the filename
+                pathname = pathname.substring(0, lastSlash + 1);
+            } else if (!pathname.endsWith('/')) {
+                // No file extension and doesn't end with /, add trailing slash
+                pathname = pathname + '/';
+            }
+            
+            // If we're in the 'emulator' subdirectory, go up one level
+            if (pathname.indexOf('/emulator/') !== -1) {
+                pathname = pathname.replace('/emulator/', '/');
+            }
+            
+            var baseUrl = window.location.origin + pathname + 'homebrew/';
+            console.log('[N64Vault] Computed homebrew base URL:', baseUrl, '(from pathname:', window.location.pathname + ')');
             return baseUrl;
         }
         
@@ -3176,13 +3189,32 @@
         // HOST: Start streaming video to all guests
         function rtcStartHostStream() {
             console.log('[RTC] Host starting stream');
+            console.log('[RTC] Emulator container display:', elements.emulatorContainer.style.display);
+            console.log('[RTC] emulatorLoaded:', emulatorLoaded);
+            
+            var attempts = 0;
             
             // Wait for EmulatorJS to initialize and create the canvas
             var checkCanvas = setInterval(function() {
-                var canvas = document.querySelector('#game canvas');
-                if (canvas) {
+                attempts++;
+                
+                // Try multiple selectors - EmulatorJS creates canvas in different ways
+                var canvas = document.querySelector('#game canvas') || 
+                             document.querySelector('.ejs_canvas') ||
+                             document.querySelector('canvas');
+                
+                // Debug: list all canvas elements
+                var allCanvases = document.querySelectorAll('canvas');
+                if (attempts % 4 === 0) { // Log every 2 seconds
+                    console.log('[RTC] Canvas search attempt', attempts, '- found', allCanvases.length, 'canvas elements');
+                    allCanvases.forEach(function(c, i) {
+                        console.log('[RTC]   Canvas', i, ':', c.id || '(no id)', c.className || '(no class)', c.width + 'x' + c.height);
+                    });
+                }
+                
+                if (canvas && canvas.width > 0 && canvas.height > 0) {
                     clearInterval(checkCanvas);
-                    console.log('[RTC] Found emulator canvas:', canvas.width, 'x', canvas.height);
+                    console.log('[RTC] Found valid emulator canvas:', canvas.width, 'x', canvas.height);
                     
                     try {
                         // Capture the canvas at 30fps
@@ -3193,11 +3225,16 @@
                         
                         // Create peer connections for all guests
                         if (state.mp.room && state.mp.room.players) {
+                            var guestCount = 0;
                             state.mp.room.players.forEach(function(player) {
                                 if (player.id !== state.mp.localPlayer.id) {
+                                    guestCount++;
                                     rtcCreatePeerForGuest(player.id);
                                 }
                             });
+                            console.log('[RTC] Creating connections for', guestCount, 'guests');
+                        } else {
+                            console.warn('[RTC] No room or players to stream to');
                         }
                     } catch (e) {
                         console.error('[RTC] Failed to capture canvas:', e);
@@ -3205,8 +3242,13 @@
                 }
             }, 500);
             
-            // Stop checking after 10 seconds
-            setTimeout(function() { clearInterval(checkCanvas); }, 10000);
+            // Stop checking after 15 seconds
+            setTimeout(function() { 
+                clearInterval(checkCanvas);
+                if (!state.mp.isStreaming) {
+                    console.error('[RTC] Failed to find canvas after 15 seconds');
+                }
+            }, 15000);
         }
         
         function rtcCreatePeerForGuest(guestId) {
