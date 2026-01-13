@@ -1,8 +1,11 @@
-const CACHE_NAME = 'n64vault-v1';
+const CACHE_NAME = 'n64vault-standalone-v3-mp';
 const STATIC_ASSETS = [
-  '/',
-  '/favicon.png',
-  '/manifest.json'
+  './manifest.json'
+];
+
+const NEVER_CACHE = [
+  'index_standalone.html',
+  'index.html'
 ];
 
 const EMULATOR_CDN = 'https://cdn.emulatorjs.org/stable/data/';
@@ -29,8 +32,36 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+  if (event.data && event.data.type === 'CLEAR_CACHE') {
+    caches.delete(CACHE_NAME).then(() => {
+      event.ports[0].postMessage({ success: true });
+    });
+  }
+});
+
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
+  
+  // Never cache API calls
+  if (url.pathname.startsWith('/api/')) {
+    return;
+  }
+  
+  // Never cache WebSocket upgrades
+  if (url.pathname.startsWith('/ws/')) {
+    return;
+  }
+  
+  // Never cache HTML files - always fetch fresh for updates
+  const filename = url.pathname.split('/').pop();
+  if (NEVER_CACHE.some(f => filename === f || url.pathname.endsWith('.html'))) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
   
   if (url.href.startsWith(EMULATOR_CDN)) {
     event.respondWith(
@@ -58,7 +89,7 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        if (response.ok && url.origin === self.location.origin) {
+        if (response.ok && !url.pathname.endsWith('.html')) {
           const responseClone = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
             cache.put(event.request, responseClone);
