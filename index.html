@@ -3,40 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Netcade - Nintendo 64 Emulator</title>
+    <title>N64 Vault - Nintendo 64 Emulator</title>
     <meta name="description" content="Play classic Nintendo 64 games directly in your browser with our sleek, modern emulator">
     
     <!-- ============================================
-         NETCADE CONFIGURATION
+         N64 VAULT CONFIGURATION
          Edit these settings to customize your deployment
          ============================================ -->
     <script>
         window.N64_VAULT_CONFIG = {
-            // ========== GOOGLE ADSENSE ==========
-            // Get your Publisher ID from: https://adsense.google.com
-            // Format: ca-pub-XXXXXXXXXXXXXXXX
-            adsenseEnabled: false,
-            adsensePublisherId: 'ca-pub-XXXXXXXXXXXXXXXX',
-            
-            // Ad slot IDs (create these in your AdSense dashboard)
-            adSlots: {
-                header: '1234567890',    // 728x90 Leaderboard
-                sidebar: '0987654321',   // 300x250 Medium Rectangle
-                footer: '1122334455'     // 728x90 Leaderboard
-            },
-            
             // ========== MULTIPLAYER BACKEND ==========
             // Set to your backend URL for multiplayer support
             // Leave empty or null for static hosting (no multiplayer)
             // Examples:
-            //   '' or null = Disabled (GitHub Pages)
+            //   '' or null = Disabled (GitHub Pages without backend)
             //   'wss://your-server.onrender.com' = Render deployment
             //   'wss://your-server.fly.dev' = Fly.io deployment
             //   null = Auto-detect (uses current host if backend is available)
             multiplayerBackendUrl: 'https://netcade-multiplayer.onrender.com',
             
             // ========== BRANDING ==========
-            siteName: 'Netcade',
+            siteName: 'N64 Vault',
             siteTagline: 'Play classic Nintendo 64 games in your browser',
             
             // ========== FEATURES ==========
@@ -53,7 +40,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Netcade">
+    <meta name="apple-mobile-web-app-title" content="N64 Vault">
     <meta name="theme-color" content="#E43F5A">
     <meta name="msapplication-TileColor" content="#0F0F23">
     
@@ -705,411 +692,6 @@
             justify-content: center;
         }
         
-        /* Tutorial Carousel Modal */
-        .tutorial-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.9);
-            backdrop-filter: blur(8px);
-            z-index: 2000;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
-        }
-        .tutorial-overlay.active { display: flex; }
-        
-        .tutorial-modal {
-            background: linear-gradient(135deg, var(--bg-card) 0%, rgba(22, 36, 71, 0.9) 100%);
-            border: 2px solid rgba(228, 63, 90, 0.4);
-            border-radius: 24px;
-            padding: 40px;
-            max-width: 560px;
-            width: 100%;
-            text-align: center;
-            box-shadow: 0 0 60px rgba(228, 63, 90, 0.2);
-            position: relative;
-            overflow: hidden;
-        }
-        .tutorial-modal::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(228, 63, 90, 0.1) 0%, transparent 50%);
-            animation: tutorialGlow 8s ease-in-out infinite;
-            pointer-events: none;
-        }
-        @keyframes tutorialGlow {
-            0%, 100% { transform: rotate(0deg); }
-            50% { transform: rotate(180deg); }
-        }
-        
-        .tutorial-slide { display: none; position: relative; z-index: 1; }
-        .tutorial-slide.active { display: block; }
-        
-        .tutorial-icon {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 24px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 30px var(--primary-glow);
-        }
-        .tutorial-icon svg {
-            width: 40px;
-            height: 40px;
-            color: white;
-        }
-        
-        .tutorial-title {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.75rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 16px;
-        }
-        
-        .tutorial-content {
-            font-family: 'Rajdhani', sans-serif;
-            color: var(--text);
-            font-size: 1.1rem;
-            line-height: 1.7;
-            margin-bottom: 24px;
-        }
-        .tutorial-content strong { color: var(--primary); }
-        .tutorial-content .highlight {
-            display: inline-block;
-            background: rgba(228, 63, 90, 0.2);
-            padding: 2px 10px;
-            border-radius: 6px;
-            color: var(--primary);
-            font-weight: 600;
-        }
-        
-        .tutorial-features {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin: 20px 0;
-            text-align: left;
-        }
-        .tutorial-feature {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 10px;
-            font-family: 'Rajdhani', sans-serif;
-            font-size: 0.95rem;
-        }
-        .tutorial-public-rooms {
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 12px;
-            padding: 16px;
-            margin: 16px 0;
-        }
-        .tutorial-room-codes {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-        }
-        .tutorial-room-code {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background: linear-gradient(135deg, rgba(236, 72, 153, 0.15), rgba(139, 92, 246, 0.15));
-            border: 1px solid rgba(236, 72, 153, 0.3);
-            border-radius: 10px;
-            padding: 10px 16px;
-            min-width: 110px;
-        }
-        .room-code-value {
-            font-family: 'Roboto Mono', monospace;
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--primary);
-            letter-spacing: 0.1em;
-        }
-        .room-code-desc {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-top: 4px;
-        }
-        .tutorial-feature svg {
-            width: 20px;
-            height: 20px;
-            color: var(--success);
-            flex-shrink: 0;
-        }
-        
-        .tutorial-legal-box {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            border-radius: 12px;
-            padding: 16px;
-            margin: 16px 0;
-            text-align: left;
-        }
-        .tutorial-legal-box h4 {
-            font-family: 'Rajdhani', sans-serif;
-            color: #ef4444;
-            font-size: 1rem;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .tutorial-legal-box ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        .tutorial-legal-box li {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            padding: 4px 0;
-            padding-left: 20px;
-            position: relative;
-        }
-        .tutorial-legal-box li::before {
-            content: '\2717';
-            position: absolute;
-            left: 0;
-            color: #ef4444;
-        }
-        
-        .tutorial-ok-box {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            border-radius: 12px;
-            padding: 16px;
-            margin: 16px 0;
-            text-align: left;
-        }
-        .tutorial-ok-box h4 {
-            font-family: 'Rajdhani', sans-serif;
-            color: var(--success);
-            font-size: 1rem;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .tutorial-ok-box ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        .tutorial-ok-box li {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            padding: 4px 0;
-            padding-left: 20px;
-            position: relative;
-        }
-        .tutorial-ok-box li::before {
-            content: '\2713';
-            position: absolute;
-            left: 0;
-            color: var(--success);
-        }
-        
-        .tutorial-dots {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 24px;
-        }
-        .tutorial-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: var(--bg-element);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .tutorial-dot.active {
-            background: var(--primary);
-            box-shadow: 0 0 10px var(--primary-glow);
-            transform: scale(1.2);
-        }
-        
-        .tutorial-actions {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-        }
-        .tutorial-actions .btn { min-width: 120px; }
-        
-        .tutorial-skip {
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            background: transparent;
-            border: none;
-            color: var(--text-dim);
-            font-family: 'Rajdhani', sans-serif;
-            font-size: 0.9rem;
-            cursor: pointer;
-            padding: 8px 16px;
-            border-radius: 6px;
-            transition: all 0.2s;
-            z-index: 10;
-        }
-        .tutorial-skip:hover {
-            color: var(--text);
-            background: rgba(255, 255, 255, 0.05);
-        }
-        
-        @media (max-width: 500px) {
-            .tutorial-modal { padding: 28px 20px; }
-            .tutorial-title { font-size: 1.4rem; }
-            .tutorial-content { font-size: 1rem; }
-            .tutorial-features { grid-template-columns: 1fr; }
-        }
-        
-        /* Legal Modal */
-        .legal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(4px);
-            z-index: 1500;
-            align-items: flex-start;
-            justify-content: center;
-            padding: 40px 24px;
-            overflow-y: auto;
-        }
-        .legal-overlay.active { display: flex; }
-        
-        .legal-modal {
-            background: var(--bg-card);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 32px;
-            max-width: 700px;
-            width: 100%;
-            position: relative;
-            margin: auto;
-        }
-        
-        .legal-close {
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 6px;
-            transition: all 0.2s;
-        }
-        .legal-close:hover { color: var(--text); background: rgba(255,255,255,0.05); }
-        .legal-close svg { width: 24px; height: 24px; }
-        
-        .legal-title {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--primary);
-            margin-bottom: 24px;
-        }
-        
-        .legal-content {
-            font-family: 'Roboto', sans-serif;
-            font-size: 0.95rem;
-            color: var(--text-muted);
-            line-height: 1.7;
-        }
-        .legal-content h3 {
-            font-family: 'Rajdhani', sans-serif;
-            font-size: 1.1rem;
-            color: var(--text);
-            margin: 20px 0 10px;
-        }
-        .legal-content p { margin-bottom: 12px; }
-        .legal-content ul { margin: 10px 0 10px 20px; }
-        .legal-content li { margin-bottom: 6px; }
-        .legal-content a { color: var(--primary); text-decoration: none; }
-        .legal-content a:hover { text-decoration: underline; }
-        
-        .footer-links {
-            display: flex;
-            gap: 16px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-bottom: 8px;
-        }
-        .footer-links a {
-            color: var(--text-dim);
-            font-size: 0.85rem;
-            text-decoration: none;
-            transition: color 0.2s;
-            cursor: pointer;
-        }
-        .footer-links a:hover { color: var(--primary); }
-        
-        /* Ad Containers */
-        .ad-container {
-            display: none;
-            text-align: center;
-            margin: 16px auto;
-            overflow: hidden;
-        }
-        .ad-container.enabled { display: block; }
-        .ad-header { margin-bottom: 24px; }
-        .ad-footer { margin-top: 24px; margin-bottom: 16px; }
-        @media (max-width: 750px) {
-            .ad-container ins { width: 100% !important; max-width: 728px; }
-        }
-        
-        /* Content with Sidebar Layout */
-        .content-with-sidebar {
-            display: flex;
-            gap: 24px;
-        }
-        .content-with-sidebar .game-grid {
-            flex: 1;
-        }
-        .ad-sidebar {
-            flex-shrink: 0;
-            width: 300px;
-            display: none;
-        }
-        .ad-sidebar.enabled { display: block; }
-        .ad-sidebar .ad-placeholder {
-            width: 300px;
-            height: 250px;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px dashed rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: rgba(255, 255, 255, 0.3);
-        }
-        .ad-sidebar.enabled .ad-placeholder { display: none; }
-        @media (max-width: 900px) {
-            .content-with-sidebar { flex-direction: column; }
-            .ad-sidebar { width: 100%; display: none; }
-            .ad-sidebar.enabled { display: block; }
-            .ad-sidebar .ad-placeholder { width: 100%; max-width: 300px; margin: 0 auto; }
-        }
-        
         /* Mobile Info */
         .mobile-info {
             text-align: center;
@@ -1310,16 +892,8 @@
 </head>
 <body>
     <div class="header">
-        <img src="netcade-logo.png" alt="Netcade" class="header-logo" style="max-height: 80px; margin-bottom: 8px;">
+        <h1>N64 Vault</h1>
         <p>Web-Based Nintendo 64 Emulator</p>
-    </div>
-    
-    <!-- Header Ad Banner (728x90) -->
-    <div class="ad-container ad-header" id="adHeader">
-        <ins class="adsbygoogle"
-             style="display:inline-block;width:728px;height:90px"
-             data-ad-client=""
-             data-ad-slot=""></ins>
     </div>
     
     <div class="container">
@@ -1350,22 +924,8 @@
                 </button>
             </div>
             
-            <!-- Game Grid with Sidebar Ad -->
-            <div class="content-with-sidebar">
-                <div class="game-grid" id="gameGrid"></div>
-                
-                <!-- Sidebar Ad (300x250) -->
-                <div class="ad-sidebar" id="adSidebar" data-testid="ad-sidebar">
-                    <ins class="adsbygoogle"
-                         style="display:inline-block;width:300px;height:250px"
-                         data-ad-client=""
-                         data-ad-slot=""></ins>
-                    <div class="ad-placeholder">
-                        <span>Advertisement</span>
-                        <small>300x250</small>
-                    </div>
-                </div>
-            </div>
+            <!-- Game Grid -->
+            <div class="game-grid" id="gameGrid"></div>
             
             <div class="upload-zone" id="uploadZone">
                 <div class="upload-icon">
@@ -1574,36 +1134,13 @@
                             <label>Your Name</label>
                             <input type="text" class="mp-input" id="mpCreateName" placeholder="Enter your name" maxlength="20">
                         </div>
-                        <div class="mp-input-group">
-                            <label>Room Code <span style="color: var(--text-muted); font-weight: 400;">(optional - leave blank for random)</span></label>
-                            <input type="text" class="mp-input" id="mpCustomCode" placeholder="e.g. KART64, SMASH!, or leave blank" maxlength="6" style="text-transform: uppercase; letter-spacing: 0.1em; font-family: 'Roboto Mono', monospace;" data-testid="input-custom-room-code">
-                        </div>
                         <p style="color: var(--text-muted); margin-bottom: 16px; font-size: 0.9rem;">
-                            Create your own memorable code or get a random one. You'll be the host.
+                            Create a room and share the code with friends. You'll be the host and run the emulator.
                         </p>
-                        <button class="btn btn-primary" id="mpBtnCreate" style="width: 100%;" data-testid="button-create-room">
+                        <button class="btn btn-primary" id="mpBtnCreate" style="width: 100%;">
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                             Create Room
                         </button>
-                        
-                        <!-- Featured Rooms Quick Join -->
-                        <div class="mp-featured-rooms" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
-                            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px; text-align: center;">Or join a public lobby:</p>
-                            <div class="mp-quick-join-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
-                                <button class="btn btn-secondary mp-quick-join" data-room="KART64" data-testid="button-join-kart64" style="padding: 8px 4px; font-size: 0.8rem;">
-                                    <span style="display: block; font-family: 'Roboto Mono', monospace; font-weight: 700; color: var(--primary);">KART64</span>
-                                    <span style="display: block; font-size: 0.7rem; color: var(--text-muted);">Mario Kart</span>
-                                </button>
-                                <button class="btn btn-secondary mp-quick-join" data-room="SMASH!" data-testid="button-join-smash" style="padding: 8px 4px; font-size: 0.8rem;">
-                                    <span style="display: block; font-family: 'Roboto Mono', monospace; font-weight: 700; color: var(--primary);">SMASH!</span>
-                                    <span style="display: block; font-size: 0.7rem; color: var(--text-muted);">Smash Bros</span>
-                                </button>
-                                <button class="btn btn-secondary mp-quick-join" data-room="GOLD07" data-testid="button-join-goldeneye" style="padding: 8px 4px; font-size: 0.8rem;">
-                                    <span style="display: block; font-family: 'Roboto Mono', monospace; font-weight: 700; color: var(--primary);">GOLD07</span>
-                                    <span style="display: block; font-size: 0.7rem; color: var(--text-muted);">GoldenEye</span>
-                                </button>
-                            </div>
-                        </div>
                     </div>
                     
                     <!-- Join Panel -->
@@ -1666,323 +1203,10 @@
         </div>
     </div>
     
-    <!-- Tutorial Carousel Modal -->
-    <div class="tutorial-overlay" id="tutorialOverlay">
-        <div class="tutorial-modal">
-            <button class="tutorial-skip" id="tutorialSkipBtn">Skip Tutorial</button>
-            
-            <!-- Slide 1: Welcome -->
-            <div class="tutorial-slide active" data-slide="0">
-                <div class="tutorial-icon">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                </div>
-                <h2 class="tutorial-title">Welcome to Netcade!</h2>
-                <div class="tutorial-content">
-                    <p>Your portal to relive the <strong>golden era of gaming</strong>. We've built the ultimate browser-based Nintendo 64 experience - no downloads, no installations, just pure nostalgia.</p>
-                </div>
-                <div class="tutorial-features">
-                    <div class="tutorial-feature">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                        Play in your browser
-                    </div>
-                    <div class="tutorial-feature">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                        Keyboard & Gamepad
-                    </div>
-                    <div class="tutorial-feature">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                        Save States
-                    </div>
-                    <div class="tutorial-feature">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                        Multiplayer Ready
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Slide 2: Controls -->
-            <div class="tutorial-slide" data-slide="1">
-                <div class="tutorial-icon">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
-                </div>
-                <h2 class="tutorial-title">Master Your Controls</h2>
-                <div class="tutorial-content">
-                    <p>We've got you covered whether you're a <strong>keyboard warrior</strong> or prefer a classic gamepad feel.</p>
-                    <p style="margin-top: 12px;">Head to the <span class="highlight">Controls</span> tab to customize your button mappings. Click any button and press your preferred key - it's that easy!</p>
-                    <p style="margin-top: 12px;">Got a USB controller? We'll detect it automatically. Up to <strong>4 controllers</strong> supported for that authentic couch co-op experience.</p>
-                </div>
-            </div>
-            
-            <!-- Slide 3: Legal -->
-            <div class="tutorial-slide" data-slide="2">
-                <div class="tutorial-icon" style="background: linear-gradient(135deg, #f59e0b, #ef4444);">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                </div>
-                <h2 class="tutorial-title">The Legal Stuff</h2>
-                <div class="tutorial-content">
-                    <p>Let's keep it real - emulators are <strong>100% legal</strong>. They're just software that mimics hardware. What matters is how you use them.</p>
-                </div>
-                <div class="tutorial-legal-box">
-                    <h4>
-                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                        What's NOT okay
-                    </h4>
-                    <ul>
-                        <li>Downloading ROMs you don't own</li>
-                        <li>Sharing copyrighted game files</li>
-                        <li>Pirating games (obviously!)</li>
-                    </ul>
-                </div>
-                <div class="tutorial-ok-box">
-                    <h4>
-                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                        What's totally fine
-                    </h4>
-                    <ul>
-                        <li>Playing games you legally own</li>
-                        <li>Creating personal backups of your cartridges</li>
-                        <li>Playing homebrew & fan-made games</li>
-                    </ul>
-                </div>
-                <div class="tutorial-content" style="font-size: 0.95rem; color: var(--text-muted);">
-                    By using Netcade, you confirm that all ROM files you upload are legally obtained backups of games you own.
-                </div>
-            </div>
-            
-            <!-- Slide 4: Multiplayer -->
-            <div class="tutorial-slide" data-slide="3">
-                <div class="tutorial-icon" style="background: linear-gradient(135deg, #10b981, #06b6d4);">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                </div>
-                <h2 class="tutorial-title">Multiplayer Magic</h2>
-                <div class="tutorial-content">
-                    <p>Remember fighting over the N64 controller with your friends? Now you can do it <strong>across the internet!</strong></p>
-                    <p style="margin-top: 12px;">Create your own room or jump into a <strong>public lobby</strong> - there's always someone ready to race!</p>
-                </div>
-                <div class="tutorial-public-rooms">
-                    <p style="color: var(--primary); font-weight: 600; margin-bottom: 8px;">Featured Public Rooms:</p>
-                    <div class="tutorial-room-codes">
-                        <div class="tutorial-room-code">
-                            <span class="room-code-value">KART64</span>
-                            <span class="room-code-desc">24/7 Mario Kart</span>
-                        </div>
-                        <div class="tutorial-room-code">
-                            <span class="room-code-value">SMASH!</span>
-                            <span class="room-code-desc">Smash Bros Arena</span>
-                        </div>
-                        <div class="tutorial-room-code">
-                            <span class="room-code-value">GOLD07</span>
-                            <span class="room-code-desc">GoldenEye Deathmatches</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="tutorial-features" style="margin-top: 16px;">
-                    <div class="tutorial-feature">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                        Up to 4 players
-                    </div>
-                    <div class="tutorial-feature">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                        Custom room codes
-                    </div>
-                    <div class="tutorial-feature">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                        Low latency WebRTC
-                    </div>
-                    <div class="tutorial-feature">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                        Cross-device play
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Navigation Dots -->
-            <div class="tutorial-dots">
-                <div class="tutorial-dot active" data-slide="0"></div>
-                <div class="tutorial-dot" data-slide="1"></div>
-                <div class="tutorial-dot" data-slide="2"></div>
-                <div class="tutorial-dot" data-slide="3"></div>
-            </div>
-            
-            <!-- Actions -->
-            <div class="tutorial-actions">
-                <button class="btn btn-secondary" id="tutorialPrevBtn" style="display: none;">Back</button>
-                <button class="btn btn-primary" id="tutorialNextBtn">Next</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Footer Ad Banner (728x90) -->
-    <div class="ad-container ad-footer" id="adFooter">
-        <ins class="adsbygoogle"
-             style="display:inline-block;width:728px;height:90px"
-             data-ad-client=""
-             data-ad-slot=""></ins>
-    </div>
-    
     <div class="footer">
-        <p>Netcade - Powered by <a href="https://emulatorjs.org" target="_blank">EmulatorJS</a></p>
-        <div class="footer-links">
-            <a data-legal="about">About</a>
-            <a data-legal="privacy">Privacy Policy</a>
-            <a data-legal="terms">Terms of Service</a>
-            <a data-legal="contact">Contact</a>
-        </div>
-        <p>
-            <button id="showTutorialBtn" style="background: transparent; border: 1px solid var(--text-dim); color: var(--text-muted); padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; margin-right: 8px;">Help</button>
-            <button id="clearCacheBtn" style="background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Clear Cache</button>
-        </p>
-    </div>
-    
-    <!-- Legal Modals -->
-    <div class="legal-overlay" id="legalOverlay">
-        <div class="legal-modal">
-            <button class="legal-close" id="legalCloseBtn">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
-            
-            <!-- About -->
-            <div class="legal-page" id="legalAbout" style="display: none;">
-                <h2 class="legal-title">About Netcade</h2>
-                <div class="legal-content">
-                    <p><strong>Netcade</strong> is a free, open-source web-based Nintendo 64 emulator that lets you relive the golden era of gaming directly in your browser.</p>
-                    
-                    <h3>Our Mission</h3>
-                    <p>We believe classic games should be preserved and accessible. Netcade provides a legal way to play your personal game backups without installing software or hunting for sketchy downloads.</p>
-                    
-                    <h3>Features</h3>
-                    <ul>
-                        <li>Play N64 games directly in your browser</li>
-                        <li>Full keyboard and gamepad support with customizable controls</li>
-                        <li>Save states to pick up where you left off</li>
-                        <li>Multiplayer support for up to 4 players via WebRTC</li>
-                        <li>Works on desktop and mobile devices</li>
-                        <li>Progressive Web App - install it on your home screen</li>
-                    </ul>
-                    
-                    <h3>Technology</h3>
-                    <p>Netcade is powered by <a href="https://emulatorjs.org" target="_blank">EmulatorJS</a>, an open-source emulator framework. The emulator runs entirely in your browser using WebAssembly for near-native performance.</p>
-                    
-                    <h3>Open Source</h3>
-                    <p>Netcade is open source and community-driven. We welcome contributions, bug reports, and feature suggestions.</p>
-                </div>
-            </div>
-            
-            <!-- Privacy Policy -->
-            <div class="legal-page" id="legalPrivacy" style="display: none;">
-                <h2 class="legal-title">Privacy Policy</h2>
-                <div class="legal-content">
-                    <p><em>Last updated: January 2026</em></p>
-                    
-                    <h3>Information We Collect</h3>
-                    <p>Netcade is designed with privacy in mind. We collect minimal data:</p>
-                    <ul>
-                        <li><strong>Local Storage:</strong> Your control mappings, preferences, and uploaded ROMs are stored locally in your browser. We do not upload or store your game files on our servers.</li>
-                        <li><strong>Analytics:</strong> We may use anonymous analytics to understand how our site is used. This data is aggregated and cannot identify you personally.</li>
-                    </ul>
-                    
-                    <h3>Cookies</h3>
-                    <p>We use essential cookies only for:</p>
-                    <ul>
-                        <li>Remembering your preferences</li>
-                        <li>Maintaining session state for multiplayer features</li>
-                    </ul>
-                    
-                    <h3>Third-Party Services</h3>
-                    <p>Our site may include:</p>
-                    <ul>
-                        <li><strong>Google AdSense:</strong> Displays relevant advertisements. Google may use cookies to personalize ads based on your browsing history. You can opt out of personalized advertising at <a href="https://www.google.com/settings/ads" target="_blank">Google Ad Settings</a>.</li>
-                        <li><strong>EmulatorJS CDN:</strong> Emulator core files are loaded from the EmulatorJS content delivery network.</li>
-                    </ul>
-                    
-                    <h3>Data Security</h3>
-                    <p>Your game files and save states remain on your device. We use HTTPS to encrypt all data transmitted between your browser and our servers.</p>
-                    
-                    <h3>Your Rights</h3>
-                    <p>You can clear all locally stored data at any time by clicking "Clear Cache" in the footer or clearing your browser's site data.</p>
-                    
-                    <h3>Contact</h3>
-                    <p>For privacy-related inquiries, please use our contact form.</p>
-                </div>
-            </div>
-            
-            <!-- Terms of Service -->
-            <div class="legal-page" id="legalTerms" style="display: none;">
-                <h2 class="legal-title">Terms of Service</h2>
-                <div class="legal-content">
-                    <p><em>Last updated: January 2026</em></p>
-                    
-                    <h3>Acceptance of Terms</h3>
-                    <p>By using Netcade, you agree to these Terms of Service. If you do not agree, please do not use our service.</p>
-                    
-                    <h3>Emulator Legality</h3>
-                    <p>Emulators are legal software. Netcade provides the emulation software only - we do not provide, host, or distribute any copyrighted game ROMs.</p>
-                    
-                    <h3>Your Responsibilities</h3>
-                    <p>You agree that:</p>
-                    <ul>
-                        <li>You will only upload and play ROM files that you have legally obtained</li>
-                        <li>You own the original game cartridge for any ROM you play</li>
-                        <li>You will not use this service for piracy or copyright infringement</li>
-                        <li>You are responsible for complying with the laws of your jurisdiction</li>
-                    </ul>
-                    
-                    <h3>Intellectual Property</h3>
-                    <p>Nintendo 64, N64, and all related trademarks are property of Nintendo Co., Ltd. Netcade is not affiliated with, endorsed by, or sponsored by Nintendo.</p>
-                    
-                    <h3>Disclaimer</h3>
-                    <p>Netcade is provided "as is" without warranties of any kind. We are not responsible for:</p>
-                    <ul>
-                        <li>Game compatibility issues</li>
-                        <li>Data loss or corruption</li>
-                        <li>Any damages arising from use of the service</li>
-                    </ul>
-                    
-                    <h3>DMCA</h3>
-                    <p>If you believe content on our platform infringes your copyright, please contact us with details and we will respond promptly.</p>
-                    
-                    <h3>Changes to Terms</h3>
-                    <p>We may update these terms from time to time. Continued use of Netcade after changes constitutes acceptance of the new terms.</p>
-                </div>
-            </div>
-            
-            <!-- Contact -->
-            <div class="legal-page" id="legalContact" style="display: none;">
-                <h2 class="legal-title">Contact Us</h2>
-                <div class="legal-content">
-                    <p>Have questions, feedback, or found a bug? We'd love to hear from you!</p>
-                    
-                    <h3>General Inquiries</h3>
-                    <p>For general questions about Netcade, feature requests, or feedback, please reach out through our GitHub repository.</p>
-                    
-                    <h3>Bug Reports</h3>
-                    <p>Found a bug? Please include:</p>
-                    <ul>
-                        <li>Your browser and version</li>
-                        <li>Steps to reproduce the issue</li>
-                        <li>Any error messages you see</li>
-                        <li>Screenshots if applicable</li>
-                    </ul>
-                    
-                    <h3>Legal Inquiries</h3>
-                    <p>For DMCA notices, privacy concerns, or other legal matters, please email us with "Legal" in the subject line.</p>
-                    
-                    <h3>Contributing</h3>
-                    <p>Netcade is open source! If you're a developer interested in contributing, check out our GitHub repository to get started.</p>
-                    
-                    <h3>Support the Project</h3>
-                    <p>Netcade is free and ad-supported. If you enjoy using it, consider:</p>
-                    <ul>
-                        <li>Sharing it with friends who love retro gaming</li>
-                        <li>Starring our GitHub repository</li>
-                        <li>Reporting bugs and suggesting features</li>
-                        <li>Disabling ad blockers to support development</li>
-                    </ul>
-                    
-                    <p style="margin-top: 24px; text-align: center; color: var(--primary);">Thank you for using Netcade!</p>
-                </div>
-            </div>
-        </div>
+        <p>N64 Vault - Powered by <a href="https://emulatorjs.org" target="_blank">EmulatorJS</a></p>
+        <p>For personal use only. Please use legally obtained ROM files.</p>
+        <p><button id="clearCacheBtn" style="background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Clear Cache & Refresh</button></p>
     </div>
     
     <!-- Toast Container -->
@@ -2133,11 +1357,9 @@
             elements.mpPanelCreate = document.getElementById('mpPanelCreate');
             elements.mpPanelJoin = document.getElementById('mpPanelJoin');
             elements.mpCreateName = document.getElementById('mpCreateName');
-            elements.mpCustomCode = document.getElementById('mpCustomCode');
             elements.mpJoinName = document.getElementById('mpJoinName');
             elements.mpJoinCode = document.getElementById('mpJoinCode');
             elements.mpBtnCreate = document.getElementById('mpBtnCreate');
-            elements.mpQuickJoinBtns = document.querySelectorAll('.mp-quick-join');
             elements.mpBtnJoin = document.getElementById('mpBtnJoin');
             elements.mpJoinCreate = document.getElementById('mpJoinCreate');
             elements.mpLobby = document.getElementById('mpLobby');
@@ -2327,6 +1549,28 @@
             selectedGame = game;
             setStatus('Loading ' + game.title + '...', 'loading');
             
+            // If we're the host in a multiplayer room, notify other players
+            if (state.mp.isHost && state.mp.room) {
+                console.log('[MP] Host starting game, notifying players:', game.title);
+                // Convert relative URL to absolute URL for cross-device multiplayer
+                var absoluteRomUrl = null;
+                if (game.romUrl) {
+                    try {
+                        absoluteRomUrl = new URL(game.romUrl, window.location.href).href;
+                        console.log('[MP] Converted ROM URL to absolute:', absoluteRomUrl);
+                    } catch (e) {
+                        console.warn('[MP] Could not convert ROM URL:', e);
+                        absoluteRomUrl = game.romUrl;
+                    }
+                }
+                mpSend({
+                    type: 'start-game',
+                    gameId: game.id,
+                    gameName: game.title,
+                    romUrl: absoluteRomUrl
+                });
+            }
+            
             // Hide upload zone, show emulator
             elements.uploadZone.style.display = 'none';
             elements.gameGrid.style.display = 'none';
@@ -2490,15 +1734,8 @@
             
             if (mode === 'keyboard') {
                 state.keyboardMap[key] = code;
-                // Save immediately to localStorage
-                saveMap(STORAGE_KEY_KEYBOARD, state.keyboardMap);
-                console.log('[N64Vault] Saved keyboard mapping:', key, '=', code);
             } else {
-                var gpIdx = state.selectedGamepadIndex;
-                state.gamepadMaps[gpIdx][key] = code;
-                // Save immediately to localStorage
-                saveMap(STORAGE_KEY_GAMEPAD_PREFIX + gpIdx, state.gamepadMaps[gpIdx]);
-                console.log('[N64Vault] Saved gamepad', gpIdx, 'mapping:', key, '=', code);
+                state.gamepadMaps[state.selectedGamepadIndex][key] = code;
             }
             
             if (state.wizard.active) {
@@ -3153,7 +2390,7 @@
                         10: 'LEFT_STICK_BUTTON', 11: 'RIGHT_STICK_BUTTON',
                         12: 'DPAD_UP', 13: 'DPAD_DOWN', 14: 'DPAD_LEFT', 15: 'DPAD_RIGHT'
                     };
-                    return btnMap[btnNum] || 'FACE_1';
+                    return btnMap[btnNum] || null;
                 }
                 if (binding.startsWith('Axis:')) {
                     var parts = binding.split(':');
@@ -3189,11 +2426,11 @@
                     controls[ejsId] = ctrl;
                 }
                 
-                // Analog stick axes (always same for all players)
+                // Add analog stick axes for gamepad (these are always the same)
                 controls[24] = { 'value2': 'LEFT_STICK_X:+1' };
                 controls[25] = { 'value2': 'LEFT_STICK_X:-1' };
-                controls[26] = { 'value2': 'LEFT_STICK_Y:-1' };
-                controls[27] = { 'value2': 'LEFT_STICK_Y:+1' };
+                controls[26] = { 'value2': 'LEFT_STICK_Y:+1' };
+                controls[27] = { 'value2': 'LEFT_STICK_Y:-1' };
                 
                 return controls;
             }
@@ -3205,7 +2442,7 @@
                 3: buildPlayerControls(3)
             };
             
-            console.log('[N64Vault] Final EJS_defaultControls:', JSON.stringify(window.EJS_defaultControls, null, 2));
+            console.log('[N64Vault] Applied control mappings:', window.EJS_defaultControls);
             
             window.EJS_onGameStart = function() {
                 setStatus('Playing: ' + romName, 'ready');
@@ -3358,44 +2595,41 @@
                     setStatus('Room code copied!', 'ready');
                 }
             });
-            
-            // Quick join buttons for featured rooms
-            elements.mpQuickJoinBtns.forEach(function(btn) {
-                btn.addEventListener('click', function() {
-                    var roomCode = btn.getAttribute('data-room');
-                    if (roomCode) {
-                        mpQuickJoin(roomCode);
-                    }
-                });
-            });
         }
         
         // ===== Multiplayer Functions =====
         function getWsUrl() {
             var config = window.N64_VAULT_CONFIG || {};
             
-            // Check if a custom backend URL is configured
+            // Check for configured external backend URL
             if (config.multiplayerBackendUrl) {
-                // Use the configured URL (already includes wss:// protocol)
-                var url = config.multiplayerBackendUrl;
-                if (!url.endsWith('/ws/multiplayer')) {
-                    url = url.replace(/\/$/, '') + '/ws/multiplayer';
+                var backendUrl = config.multiplayerBackendUrl;
+                // Ensure it ends with the WebSocket path
+                if (backendUrl.indexOf('/ws/multiplayer') === -1) {
+                    backendUrl = backendUrl.replace(/\/$/, '') + '/ws/multiplayer';
                 }
-                return url;
+                console.log('[N64Vault] Using configured multiplayer backend:', backendUrl);
+                return backendUrl;
             }
             
-            // Auto-detect: use current host (works for Replit, self-hosted)
+            // Auto-detect: use current host (for Replit or self-hosted backend)
             var protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            return protocol + '//' + window.location.host + '/ws/multiplayer';
+            var autoUrl = protocol + '//' + window.location.host + '/ws/multiplayer';
+            console.log('[N64Vault] Using auto-detected multiplayer backend:', autoUrl);
+            return autoUrl;
         }
         
         function isMultiplayerAvailable() {
             var config = window.N64_VAULT_CONFIG || {};
-            // If features.multiplayer is explicitly false, disable it
-            if (config.features && config.features.multiplayer === false) {
-                return false;
-            }
-            return true;
+            // Multiplayer is available if:
+            // 1. External backend is configured, OR
+            // 2. We're running on localhost (local dev), OR
+            // 3. We're not on a static-only host like GitHub Pages
+            if (config.multiplayerBackendUrl) return true;
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') return true;
+            if (window.location.hostname.indexOf('repl') !== -1) return true;
+            if (window.location.hostname.indexOf('github.io') !== -1) return false;
+            return true; // Assume backend available for other hosts
         }
         
         function mpConnect() {
@@ -3489,10 +2723,66 @@
                     mpShowJoinCreate();
                     setStatus('Room was closed', 'ready');
                     break;
+                
+                case 'game-started':
+                    console.log('[MP] Game started by host:', msg.gameName || msg.gameId);
+                    state.mp.room = msg.room;
+                    if (msg.romUrl) {
+                        mpLoadGameFromUrl(msg.romUrl, msg.gameName || 'Multiplayer Game');
+                    } else if (msg.gameId) {
+                        mpLoadGameById(msg.gameId, msg.gameName);
+                    }
+                    break;
                     
                 case 'error':
-                    setStatus(msg.message || 'An error occurred', 'error');
+                    setStatus(msg.message || msg.error || 'An error occurred', 'error');
                     break;
+            }
+        }
+        
+        function mpLoadGameFromUrl(romUrl, gameName) {
+            console.log('[MP] Loading game from URL:', romUrl);
+            setStatus('Loading game: ' + gameName, 'loading');
+            
+            // Switch to library tab and show emulator container
+            switchTab('library');
+            elements.uploadZone.style.display = 'none';
+            elements.gameGrid.style.display = 'none';
+            elements.emulatorContainer.style.display = 'block';
+            elements.btnNewGame.style.display = 'flex';
+            
+            fetch(romUrl)
+                .then(function(response) {
+                    if (!response.ok) throw new Error('Failed to fetch ROM: ' + response.status);
+                    return response.arrayBuffer();
+                })
+                .then(function(romData) {
+                    console.log('[MP] ROM loaded, starting emulator, size:', romData.byteLength);
+                    startEmulator(romData, gameName);
+                })
+                .catch(function(err) {
+                    console.error('[MP] Failed to load ROM:', err);
+                    setStatus('Failed to load game: ' + err.message, 'error');
+                    showLibrary();
+                });
+        }
+        
+        function mpLoadGameById(gameId, gameName) {
+            console.log('[MP] Loading game by ID:', gameId);
+            var game = state.games.find(function(g) { return g.id === gameId; });
+            if (game) {
+                playGame(game);
+            } else {
+                // Game not found locally - try to find by name in bundled games
+                var bundledGame = state.games.find(function(g) { 
+                    return g.title === gameName; 
+                });
+                if (bundledGame) {
+                    console.log('[MP] Found game by name:', bundledGame.title);
+                    playGame(bundledGame);
+                } else {
+                    setStatus('Game not available on this device', 'error');
+                }
             }
         }
         
@@ -3540,25 +2830,17 @@
         
         var pendingAction = null;
         
-        function mpCreateRoom(customCode) {
+        function mpCreateRoom() {
             console.log('mpCreateRoom called');
             var name = elements.mpCreateName.value.trim();
-            var roomCode = customCode || (elements.mpCustomCode ? elements.mpCustomCode.value.trim().toUpperCase() : '');
-            console.log('Player name:', name, 'Custom code:', roomCode);
+            console.log('Player name:', name);
             if (!name) {
                 setStatus('Please enter your name', 'error');
                 mpUpdateStatus('error', 'Please enter your name');
                 return;
             }
             
-            // Validate custom code if provided (1-6 alphanumeric chars)
-            if (roomCode && !/^[A-Z0-9!@#$%]{1,6}$/i.test(roomCode)) {
-                setStatus('Room code must be 1-6 characters', 'error');
-                mpUpdateStatus('error', 'Invalid room code format');
-                return;
-            }
-            
-            pendingAction = { type: 'create-room', playerName: name, customCode: roomCode || null };
+            pendingAction = { type: 'create-room', playerName: name };
             console.log('Pending action set:', pendingAction);
             
             if (state.mp.ws && state.mp.ws.readyState === WebSocket.OPEN) {
@@ -3567,28 +2849,6 @@
                 pendingAction = null;
             } else {
                 console.log('WebSocket not open, connecting...');
-                mpUpdateStatus('', 'Connecting...');
-                mpConnect();
-            }
-        }
-        
-        function mpQuickJoin(roomCode) {
-            var name = elements.mpCreateName.value.trim() || elements.mpJoinName.value.trim();
-            if (!name) {
-                // Prompt for name
-                setStatus('Please enter your name first', 'error');
-                mpUpdateStatus('error', 'Please enter your name');
-                return;
-            }
-            
-            // Try to join the room first, if it doesn't exist, create it
-            pendingAction = { type: 'join-room', roomCode: roomCode, playerName: name };
-            console.log('Quick join to room:', roomCode);
-            
-            if (state.mp.ws && state.mp.ws.readyState === WebSocket.OPEN) {
-                mpSend(pendingAction);
-                pendingAction = null;
-            } else {
                 mpUpdateStatus('', 'Connecting...');
                 mpConnect();
             }
@@ -3624,89 +2884,6 @@
             mpShowJoinCreate();
         }
         
-        // ===== Tutorial Carousel =====
-        var TUTORIAL_STORAGE_KEY = 'n64vault_tutorial_shown';
-        var tutorialCurrentSlide = 0;
-        var tutorialTotalSlides = 4;
-        
-        function showTutorial() {
-            var overlay = document.getElementById('tutorialOverlay');
-            overlay.classList.add('active');
-            updateTutorialSlide(0);
-        }
-        
-        function closeTutorial() {
-            var overlay = document.getElementById('tutorialOverlay');
-            overlay.classList.remove('active');
-            localStorage.setItem(TUTORIAL_STORAGE_KEY, 'true');
-        }
-        
-        function updateTutorialSlide(index) {
-            tutorialCurrentSlide = index;
-            
-            var slides = document.querySelectorAll('.tutorial-slide');
-            var dots = document.querySelectorAll('.tutorial-dot');
-            var prevBtn = document.getElementById('tutorialPrevBtn');
-            var nextBtn = document.getElementById('tutorialNextBtn');
-            
-            slides.forEach(function(slide, i) {
-                slide.classList.toggle('active', i === index);
-            });
-            
-            dots.forEach(function(dot, i) {
-                dot.classList.toggle('active', i === index);
-            });
-            
-            prevBtn.style.display = index === 0 ? 'none' : 'inline-flex';
-            
-            if (index === tutorialTotalSlides - 1) {
-                nextBtn.textContent = "Let's Play!";
-            } else {
-                nextBtn.textContent = 'Next';
-            }
-        }
-        
-        function initTutorial() {
-            var overlay = document.getElementById('tutorialOverlay');
-            var skipBtn = document.getElementById('tutorialSkipBtn');
-            var prevBtn = document.getElementById('tutorialPrevBtn');
-            var nextBtn = document.getElementById('tutorialNextBtn');
-            var dots = document.querySelectorAll('.tutorial-dot');
-            
-            skipBtn.addEventListener('click', closeTutorial);
-            
-            prevBtn.addEventListener('click', function() {
-                if (tutorialCurrentSlide > 0) {
-                    updateTutorialSlide(tutorialCurrentSlide - 1);
-                }
-            });
-            
-            nextBtn.addEventListener('click', function() {
-                if (tutorialCurrentSlide < tutorialTotalSlides - 1) {
-                    updateTutorialSlide(tutorialCurrentSlide + 1);
-                } else {
-                    closeTutorial();
-                }
-            });
-            
-            dots.forEach(function(dot) {
-                dot.addEventListener('click', function() {
-                    var slideIndex = parseInt(dot.getAttribute('data-slide'), 10);
-                    updateTutorialSlide(slideIndex);
-                });
-            });
-            
-            overlay.addEventListener('click', function(e) {
-                if (e.target === overlay) {
-                    closeTutorial();
-                }
-            });
-            
-            if (!localStorage.getItem(TUTORIAL_STORAGE_KEY)) {
-                setTimeout(showTutorial, 500);
-            }
-        }
-        
         // ===== Init =====
         function init() {
             initElements();
@@ -3721,7 +2898,6 @@
             bindEvents();
             detectGamepads();
             loadGames();
-            initTutorial();
             
             // Wire up buttons to return to library
             elements.btnNewGame.addEventListener('click', function() {
@@ -3737,56 +2913,6 @@
         } else {
             init();
         }
-    })();
-    
-    // Help button handler (show tutorial)
-    document.getElementById('showTutorialBtn').addEventListener('click', function() {
-        var overlay = document.getElementById('tutorialOverlay');
-        overlay.classList.add('active');
-        var slides = document.querySelectorAll('.tutorial-slide');
-        var dots = document.querySelectorAll('.tutorial-dot');
-        slides.forEach(function(s, i) { s.classList.toggle('active', i === 0); });
-        dots.forEach(function(d, i) { d.classList.toggle('active', i === 0); });
-        document.getElementById('tutorialPrevBtn').style.display = 'none';
-        document.getElementById('tutorialNextBtn').textContent = 'Next';
-    });
-    
-    // Legal modal handlers
-    (function() {
-        var legalOverlay = document.getElementById('legalOverlay');
-        var legalCloseBtn = document.getElementById('legalCloseBtn');
-        var legalPages = {
-            about: document.getElementById('legalAbout'),
-            privacy: document.getElementById('legalPrivacy'),
-            terms: document.getElementById('legalTerms'),
-            contact: document.getElementById('legalContact')
-        };
-        
-        function showLegalPage(pageId) {
-            Object.keys(legalPages).forEach(function(key) {
-                legalPages[key].style.display = key === pageId ? 'block' : 'none';
-            });
-            legalOverlay.classList.add('active');
-        }
-        
-        function closeLegalModal() {
-            legalOverlay.classList.remove('active');
-        }
-        
-        document.querySelectorAll('[data-legal]').forEach(function(link) {
-            link.addEventListener('click', function() {
-                var pageId = link.getAttribute('data-legal');
-                showLegalPage(pageId);
-            });
-        });
-        
-        legalCloseBtn.addEventListener('click', closeLegalModal);
-        
-        legalOverlay.addEventListener('click', function(e) {
-            if (e.target === legalOverlay) {
-                closeLegalModal();
-            }
-        });
     })();
     
     // Clear cache button handler
@@ -3809,73 +2935,6 @@
             });
         }
     });
-    
-    // Initialize Google AdSense based on configuration
-    (function() {
-        var config = window.N64_VAULT_CONFIG || {};
-        if (!config.adsenseEnabled || !config.adsensePublisherId || config.adsensePublisherId === 'ca-pub-XXXXXXXXXXXXXXXX') {
-            return;
-        }
-        
-        var adSlots = config.adSlots || {};
-        var pubId = config.adsensePublisherId;
-        
-        // Helper to check if a slot ID is valid (not placeholder)
-        function isValidSlot(slotId) {
-            return slotId && 
-                   typeof slotId === 'string' && 
-                   slotId.length > 0 && 
-                   !slotId.includes('YOUR_') && 
-                   !slotId.includes('SLOT_ID');
-        }
-        
-        var headerAd = document.querySelector('#adHeader ins');
-        var footerAd = document.querySelector('#adFooter ins');
-        var sidebarAd = document.querySelector('#adSidebar ins');
-        
-        var hasValidHeader = headerAd && isValidSlot(adSlots.header);
-        var hasValidFooter = footerAd && isValidSlot(adSlots.footer);
-        var hasValidSidebar = sidebarAd && isValidSlot(adSlots.sidebar);
-        
-        // Only proceed if at least one valid slot exists
-        if (!hasValidHeader && !hasValidFooter && !hasValidSidebar) {
-            return;
-        }
-        
-        if (hasValidHeader) {
-            headerAd.setAttribute('data-ad-client', pubId);
-            headerAd.setAttribute('data-ad-slot', adSlots.header);
-            document.getElementById('adHeader').classList.add('enabled');
-        }
-        
-        if (hasValidFooter) {
-            footerAd.setAttribute('data-ad-client', pubId);
-            footerAd.setAttribute('data-ad-slot', adSlots.footer);
-            document.getElementById('adFooter').classList.add('enabled');
-        }
-        
-        if (hasValidSidebar) {
-            sidebarAd.setAttribute('data-ad-client', pubId);
-            sidebarAd.setAttribute('data-ad-slot', adSlots.sidebar);
-            document.getElementById('adSidebar').classList.add('enabled');
-        }
-        
-        var script = document.createElement('script');
-        script.async = true;
-        script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + pubId;
-        script.crossOrigin = 'anonymous';
-        document.head.appendChild(script);
-        
-        script.onload = function() {
-            try {
-                if (hasValidHeader) (window.adsbygoogle = window.adsbygoogle || []).push({});
-                if (hasValidSidebar) (window.adsbygoogle = window.adsbygoogle || []).push({});
-                if (hasValidFooter) (window.adsbygoogle = window.adsbygoogle || []).push({});
-            } catch (e) {
-                console.log('AdSense initialization error:', e);
-            }
-        };
-    })();
     
     // Register Service Worker for PWA
     if ('serviceWorker' in navigator) {
