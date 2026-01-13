@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>N64 Vault - Nintendo 64 Emulator</title>
+    <title>Netcade - Nintendo 64 Emulator</title>
     <meta name="description" content="Play classic Nintendo 64 games directly in your browser with our sleek, modern emulator">
     
     <!-- ============================================
-         N64 VAULT CONFIGURATION
+         NETCADE CONFIGURATION
          Edit these settings to customize your deployment
          ============================================ -->
     <script>
-        window.N64_VAULT_CONFIG = {
+        window.NETCADE_CONFIG = {
             // ========== VERSION (for cache busting) ==========
-            version: '2.0.13-wait-ice-gathering',
+            version: '3.0.0-netcade-vaporwave',
             
             // ========== MULTIPLAYER BACKEND ==========
             // Set to your backend URL for multiplayer support
@@ -26,7 +26,7 @@
             multiplayerBackendUrl: 'https://netcade-multiplayer.onrender.com',
             
             // ========== BRANDING ==========
-            siteName: 'N64 Vault',
+            siteName: 'Netcade',
             siteTagline: 'Play classic Nintendo 64 games in your browser',
             
             // ========== FEATURES ==========
@@ -39,13 +39,13 @@
             }
         };
         // Log version on load to verify cache is cleared
-        console.log('[N64Vault] Version:', window.N64_VAULT_CONFIG.version);
+        console.log('[Netcade] Version:', window.NETCADE_CONFIG.version);
     </script>
     
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="N64 Vault">
+    <meta name="apple-mobile-web-app-title" content="Netcade">
     <meta name="theme-color" content="#E43F5A">
     <meta name="msapplication-TileColor" content="#0F0F23">
     
@@ -57,7 +57,72 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
-        :root {
+        /* Vaporwave Theme System */
+        :root, [data-theme="vaporwave"] {
+            --primary: #FF6B9D;
+            --primary-glow: rgba(255, 107, 157, 0.4);
+            --secondary: #00D9FF;
+            --bg-dark: #0F0F23;
+            --bg-card: #1A1A2E;
+            --bg-element: #16213E;
+            --accent: #2D1B4E;
+            --text: #ffffff;
+            --text-muted: #B8A9C9;
+            --text-dim: #6B5B7A;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+        }
+        
+        [data-theme="synthwave"] {
+            --primary: #F72585;
+            --primary-glow: rgba(247, 37, 133, 0.4);
+            --secondary: #7209B7;
+            --bg-dark: #10002B;
+            --bg-card: #240046;
+            --bg-element: #3C096C;
+            --accent: #5A189A;
+            --text-muted: #C77DFF;
+            --text-dim: #9D4EDD;
+        }
+        
+        [data-theme="neon"] {
+            --primary: #39FF14;
+            --primary-glow: rgba(57, 255, 20, 0.4);
+            --secondary: #FF1493;
+            --bg-dark: #0A0A0F;
+            --bg-card: #151520;
+            --bg-element: #1A1A28;
+            --accent: #222235;
+            --text-muted: #9FEFB0;
+            --text-dim: #4A7C59;
+        }
+        
+        [data-theme="sunset"] {
+            --primary: #FF6B35;
+            --primary-glow: rgba(255, 107, 53, 0.4);
+            --secondary: #F7931E;
+            --bg-dark: #1A0A2E;
+            --bg-card: #2D1B4E;
+            --bg-element: #3D2B5E;
+            --accent: #4D3B6E;
+            --text-muted: #FFB88C;
+            --text-dim: #A67C52;
+        }
+        
+        [data-theme="ocean"] {
+            --primary: #00CED1;
+            --primary-glow: rgba(0, 206, 209, 0.4);
+            --secondary: #20B2AA;
+            --bg-dark: #0A192F;
+            --bg-card: #112240;
+            --bg-element: #1D3557;
+            --accent: #233D5E;
+            --text-muted: #8BCDCD;
+            --text-dim: #5B8B8B;
+        }
+        
+        [data-theme="retro"] {
             --primary: #E43F5A;
             --primary-glow: rgba(228, 63, 90, 0.4);
             --secondary: #E94560;
@@ -65,12 +130,8 @@
             --bg-card: #1B1B2F;
             --bg-element: #16213E;
             --accent: #162447;
-            --text: #ffffff;
             --text-muted: #8892a0;
             --text-dim: #5a6270;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --error: #ef4444;
         }
         
         body {
@@ -856,6 +917,172 @@
         .info-box p { color: var(--text-muted); font-size: 0.9rem; margin: 0; }
         .info-box strong { color: var(--primary); }
         
+        /* Settings Modal */
+        .settings-btn {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            z-index: 100;
+        }
+        .settings-btn:hover { background: var(--bg-element); color: var(--primary); transform: rotate(45deg); }
+        .settings-btn svg { width: 20px; height: 20px; }
+        
+        .settings-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .settings-modal.active { display: flex; }
+        
+        .settings-panel {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .settings-header h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            color: var(--primary);
+        }
+        .settings-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px;
+        }
+        .settings-close:hover { color: var(--primary); }
+        
+        .settings-content { padding: 20px; }
+        
+        .settings-section { margin-bottom: 24px; }
+        .settings-section-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+            margin-bottom: 12px;
+        }
+        
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+        
+        .theme-option {
+            background: var(--bg-element);
+            border: 2px solid transparent;
+            border-radius: 8px;
+            padding: 12px 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .theme-option:hover { border-color: rgba(255, 255, 255, 0.2); }
+        .theme-option.active { border-color: var(--primary); }
+        
+        .theme-preview {
+            display: flex;
+            gap: 4px;
+            justify-content: center;
+            margin-bottom: 6px;
+        }
+        .theme-preview span {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+        }
+        .theme-option-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-family: 'Rajdhani', sans-serif;
+        }
+        
+        .settings-footer {
+            padding: 12px 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+        .settings-footer p {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            font-family: 'Roboto Mono', monospace;
+        }
+        
+        /* Spinner Animation */
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .connecting-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            z-index: 10;
+            border-radius: 12px;
+        }
+        .connecting-overlay p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
         .footer {
             margin-top: auto;
             padding-top: 32px;
@@ -989,14 +1216,104 @@
     </style>
 </head>
 <body>
+    <!-- Settings Button -->
+    <button class="settings-btn" id="settingsBtn" data-testid="button-settings" aria-label="Settings">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+    </button>
+    
+    <!-- Settings Modal -->
+    <div class="settings-modal" id="settingsModal">
+        <div class="settings-panel">
+            <div class="settings-header">
+                <h2>Settings</h2>
+                <button class="settings-close" id="settingsClose" data-testid="button-settings-close">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="settings-content">
+                <div class="settings-section">
+                    <div class="settings-section-title">Color Theme</div>
+                    <div class="theme-grid" id="themeGrid">
+                        <button class="theme-option active" data-theme="vaporwave" data-testid="theme-vaporwave">
+                            <div class="theme-preview">
+                                <span style="background: #FF6B9D;"></span>
+                                <span style="background: #00D9FF;"></span>
+                            </div>
+                            <span class="theme-option-label">Vaporwave</span>
+                        </button>
+                        <button class="theme-option" data-theme="synthwave" data-testid="theme-synthwave">
+                            <div class="theme-preview">
+                                <span style="background: #F72585;"></span>
+                                <span style="background: #7209B7;"></span>
+                            </div>
+                            <span class="theme-option-label">Synthwave</span>
+                        </button>
+                        <button class="theme-option" data-theme="neon" data-testid="theme-neon">
+                            <div class="theme-preview">
+                                <span style="background: #39FF14;"></span>
+                                <span style="background: #FF1493;"></span>
+                            </div>
+                            <span class="theme-option-label">Neon</span>
+                        </button>
+                        <button class="theme-option" data-theme="sunset" data-testid="theme-sunset">
+                            <div class="theme-preview">
+                                <span style="background: #FF6B35;"></span>
+                                <span style="background: #F7931E;"></span>
+                            </div>
+                            <span class="theme-option-label">Sunset</span>
+                        </button>
+                        <button class="theme-option" data-theme="ocean" data-testid="theme-ocean">
+                            <div class="theme-preview">
+                                <span style="background: #00CED1;"></span>
+                                <span style="background: #20B2AA;"></span>
+                            </div>
+                            <span class="theme-option-label">Ocean</span>
+                        </button>
+                        <button class="theme-option" data-theme="retro" data-testid="theme-retro">
+                            <div class="theme-preview">
+                                <span style="background: #E43F5A;"></span>
+                                <span style="background: #E94560;"></span>
+                            </div>
+                            <span class="theme-option-label">Retro</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="settings-footer">
+                <p id="settingsVersion">Netcade v<span id="versionText"></span></p>
+            </div>
+        </div>
+    </div>
+    
     <div class="header">
-        <h1>N64 Vault</h1>
+        <h1>Netcade</h1>
         <p>Web-Based Nintendo 64 Emulator</p>
-        <span id="versionBadge" data-testid="text-build-version" style="position:absolute;top:5px;right:10px;font-size:10px;color:#666;font-family:monospace;"></span>
     </div>
     <script>
-        // Display version badge immediately
-        document.getElementById('versionBadge').textContent = 'v' + (window.N64_VAULT_CONFIG?.version || 'unknown');
+        // Initialize version and theme
+        document.getElementById('versionText').textContent = window.NETCADE_CONFIG?.version || 'unknown';
+        
+        // Theme system
+        (function() {
+            var savedTheme = localStorage.getItem('netcade_theme') || 'vaporwave';
+            document.body.setAttribute('data-theme', savedTheme);
+            
+            // Update active state
+            var options = document.querySelectorAll('.theme-option');
+            options.forEach(function(opt) {
+                if (opt.getAttribute('data-theme') === savedTheme) {
+                    opt.classList.add('active');
+                } else {
+                    opt.classList.remove('active');
+                }
+            });
+        })();
     </script>
     
     <div class="container">
@@ -1250,7 +1567,7 @@
                     </div>
                     
                     <!-- Create Panel -->
-                    <div class="mp-panel active" id="mpPanelCreate">
+                    <div class="mp-panel active" id="mpPanelCreate" style="position: relative;">
                         <div class="mp-input-group">
                             <label>Your Name</label>
                             <input type="text" class="mp-input" id="mpCreateName" placeholder="Enter your name" maxlength="20">
@@ -1262,6 +1579,12 @@
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                             Create Room
                         </button>
+                        <!-- Connecting Overlay -->
+                        <div class="connecting-overlay" id="mpConnectingOverlay" style="display: none;">
+                            <div class="spinner"></div>
+                            <p>Connecting to server...</p>
+                            <p style="font-size: 0.8rem; opacity: 0.7;">This may take a moment</p>
+                        </div>
                     </div>
                     
                     <!-- Join Panel -->
@@ -1325,7 +1648,7 @@
     </div>
     
     <div class="footer">
-        <p>N64 Vault - Powered by <a href="https://emulatorjs.org" target="_blank">EmulatorJS</a></p>
+        <p>Netcade</p>
         <p>For personal use only. Please use legally obtained ROM files.</p>
         <p><button id="clearCacheBtn" style="background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Clear Cache & Refresh</button></p>
     </div>
@@ -1338,8 +1661,8 @@
         'use strict';
         
         // ===== Constants =====
-        var STORAGE_KEY_KEYBOARD = 'n64vault_mappings_keyboard';
-        var STORAGE_KEY_GAMEPAD_PREFIX = 'n64vault_mappings_gamepad_';
+        var STORAGE_KEY_KEYBOARD = 'netcade_mappings_keyboard';
+        var STORAGE_KEY_GAMEPAD_PREFIX = 'netcade_mappings_gamepad_';
         var MAX_CONTROLLERS = 4;
         
         var defaultKeyboardMap = {
@@ -1596,7 +1919,7 @@
             }
             
             var baseUrl = window.location.origin + pathname + 'homebrew/';
-            console.log('[N64Vault] Computed homebrew base URL:', baseUrl, '(from pathname:', window.location.pathname + ')');
+            console.log('[Netcade] Computed homebrew base URL:', baseUrl, '(from pathname:', window.location.pathname + ')');
             return baseUrl;
         }
         
@@ -1630,30 +1953,30 @@
         ];
         
         function loadGames() {
-            console.log('[N64Vault] loadGames() called');
+            console.log('[Netcade] loadGames() called');
             elements.gameGrid.innerHTML = '<div class="game-grid-loading">Loading games...</div>';
             
             var savedGames = [];
             try {
-                var saved = localStorage.getItem('n64vault_games');
+                var saved = localStorage.getItem('netcade_games');
                 if (saved) savedGames = JSON.parse(saved);
             } catch (e) {}
             
             fetch('/api/games')
                 .then(function(res) {
-                    console.log('[N64Vault] /api/games response status:', res.status);
+                    console.log('[Netcade] /api/games response status:', res.status);
                     if (!res.ok) throw new Error('Failed to load games');
                     return res.json();
                 })
                 .then(function(data) {
-                    console.log('[N64Vault] Games loaded from API:', data.length, 'games');
+                    console.log('[Netcade] Games loaded from API:', data.length, 'games');
                     games = data;
                     renderGameGrid();
                 })
                 .catch(function(err) {
-                    console.log('[N64Vault] API unavailable, using bundled homebrew + local games');
+                    console.log('[Netcade] API unavailable, using bundled homebrew + local games');
                     games = BUNDLED_HOMEBREW.concat(savedGames);
-                    console.log('[N64Vault] Total games:', games.length);
+                    console.log('[Netcade] Total games:', games.length);
                     renderGameGrid();
                 });
         }
@@ -1684,17 +2007,17 @@
             
             // Add click handlers
             var cards = document.querySelectorAll('.game-card');
-            console.log('[N64Vault] Adding click handlers to', cards.length, 'game cards');
+            console.log('[Netcade] Adding click handlers to', cards.length, 'game cards');
             cards.forEach(function(card) {
                 card.addEventListener('click', function(e) {
-                    console.log('[N64Vault] Game card clicked!', card.getAttribute('data-game-id'));
+                    console.log('[Netcade] Game card clicked!', card.getAttribute('data-game-id'));
                     var gameId = card.getAttribute('data-game-id');
                     var game = games.find(function(g) { return g.id === gameId; });
                     if (game) {
-                        console.log('[N64Vault] Found game, calling playGame:', game.title);
+                        console.log('[Netcade] Found game, calling playGame:', game.title);
                         playGame(game);
                     } else {
-                        console.error('[N64Vault] Game not found for id:', gameId);
+                        console.error('[Netcade] Game not found for id:', gameId);
                     }
                 });
             });
@@ -1718,7 +2041,7 @@
             selectedGame = game;
             setStatus('Loading ' + game.title + '...', 'loading');
             
-            console.log('[N64Vault] playGame called, mp state:', {
+            console.log('[Netcade] playGame called, mp state:', {
                 isHost: state.mp.isHost,
                 hasRoom: !!state.mp.room,
                 roomCode: state.mp.room ? state.mp.room.code : null,
@@ -1758,7 +2081,7 @@
             
             // Check if game has a direct ROM URL (bundled homebrew) or local ROM data
             if (game.romUrl) {
-                console.log('[N64Vault] Loading ROM from URL:', game.romUrl);
+                console.log('[Netcade] Loading ROM from URL:', game.romUrl);
                 fetch(game.romUrl)
                     .then(function(res) {
                         if (!res.ok) throw new Error('Failed to fetch ROM from URL');
@@ -1768,12 +2091,12 @@
                         startEmulator(romData, game.filename || game.title);
                     })
                     .catch(function(err) {
-                        console.error('[N64Vault] Failed to load ROM from URL:', err);
+                        console.error('[Netcade] Failed to load ROM from URL:', err);
                         setStatus('Failed to load ROM: ' + err.message, 'error');
                         showLibrary();
                     });
             } else if (game.romData) {
-                console.log('[N64Vault] Loading ROM from local storage');
+                console.log('[Netcade] Loading ROM from local storage');
                 startEmulator(game.romData, game.filename || game.title);
             } else {
                 // Fetch ROM from API (when running with backend)
@@ -1786,7 +2109,7 @@
                         startEmulator(romData, game.filename || game.title);
                     })
                     .catch(function(err) {
-                        console.error('[N64Vault] Failed to load ROM:', err);
+                        console.error('[Netcade] Failed to load ROM:', err);
                         setStatus('Failed to load ROM: ' + err.message, 'error');
                         showLibrary();
                     });
@@ -1794,12 +2117,12 @@
         }
         
         function showLibrary() {
-            console.log('[N64Vault] showLibrary() called - isHost:', state.mp.isHost, 'emulatorLoaded:', emulatorLoaded);
-            console.log('[N64Vault] showLibrary stack trace:', new Error().stack);
+            console.log('[Netcade] showLibrary() called - isHost:', state.mp.isHost, 'emulatorLoaded:', emulatorLoaded);
+            console.log('[Netcade] showLibrary stack trace:', new Error().stack);
             
             // SAFETY: If host has emulator running in multiplayer, don't hide it!
             if (state.mp.isHost && emulatorLoaded && state.mp.room) {
-                console.warn('[N64Vault] showLibrary() blocked - host has active emulator in multiplayer!');
+                console.warn('[Netcade] showLibrary() blocked - host has active emulator in multiplayer!');
                 return;
             }
             
@@ -2493,7 +2816,7 @@
             } else if (romData instanceof ArrayBuffer) {
                 blob = new Blob([romData], { type: 'application/octet-stream' });
             } else {
-                console.error('[N64Vault] Invalid ROM data type');
+                console.error('[Netcade] Invalid ROM data type');
                 setStatus('Failed to load ROM: Invalid data', 'error');
                 showLibrary();
                 return;
@@ -2632,7 +2955,7 @@
                 var kbMap = state.keyboardMap || {};
                 var gpMap = state.gamepadMaps[playerIndex] || state.gamepadMaps[0] || {};
                 
-                console.log('[N64Vault] Building controls for player', playerIndex, 'kbMap:', kbMap, 'gpMap:', gpMap);
+                console.log('[Netcade] Building controls for player', playerIndex, 'kbMap:', kbMap, 'gpMap:', gpMap);
                 
                 for (var n64Btn in n64ToEjsMap) {
                     var ejsId = n64ToEjsMap[n64Btn];
@@ -2665,7 +2988,7 @@
                 3: buildPlayerControls(3)
             };
             
-            console.log('[N64Vault] Applied control mappings:', window.EJS_defaultControls);
+            console.log('[Netcade] Applied control mappings:', window.EJS_defaultControls);
             
             window.EJS_onGameStart = function() {
                 setStatus('Playing: ' + romName, 'ready');
@@ -2707,7 +3030,7 @@
                     isUploaded: true
                 };
                 
-                console.log('[N64Vault] Uploaded ROM, routing through playGame:', file.name);
+                console.log('[Netcade] Uploaded ROM, routing through playGame:', file.name);
                 playGame(uploadedGame);
             };
             reader.onerror = function() { setStatus('Failed to read file', 'error'); };
@@ -2716,6 +3039,35 @@
         
         // ===== Event Bindings =====
         function bindEvents() {
+            // Settings modal
+            document.getElementById('settingsBtn').addEventListener('click', function() {
+                document.getElementById('settingsModal').classList.add('active');
+            });
+            document.getElementById('settingsClose').addEventListener('click', function() {
+                document.getElementById('settingsModal').classList.remove('active');
+            });
+            document.getElementById('settingsModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                }
+            });
+            
+            // Theme switching
+            document.getElementById('themeGrid').addEventListener('click', function(e) {
+                var option = e.target.closest('.theme-option');
+                if (option) {
+                    var theme = option.getAttribute('data-theme');
+                    document.body.setAttribute('data-theme', theme);
+                    localStorage.setItem('netcade_theme', theme);
+                    
+                    // Update active states
+                    document.querySelectorAll('.theme-option').forEach(function(opt) {
+                        opt.classList.remove('active');
+                    });
+                    option.classList.add('active');
+                }
+            });
+            
             // Main tab switching
             elements.mainTabLibrary.addEventListener('click', function() { switchMainTab('library'); });
             elements.mainTabControls.addEventListener('click', function() { switchMainTab('controls'); });
@@ -2832,7 +3184,7 @@
         
         // ===== Multiplayer Functions =====
         function getWsUrl() {
-            var config = window.N64_VAULT_CONFIG || {};
+            var config = window.NETCADE_CONFIG || {};
             
             // Check for configured external backend URL
             if (config.multiplayerBackendUrl) {
@@ -2841,19 +3193,19 @@
                 if (backendUrl.indexOf('/ws/multiplayer') === -1) {
                     backendUrl = backendUrl.replace(/\/$/, '') + '/ws/multiplayer';
                 }
-                console.log('[N64Vault] Using configured multiplayer backend:', backendUrl);
+                console.log('[Netcade] Using configured multiplayer backend:', backendUrl);
                 return backendUrl;
             }
             
             // Auto-detect: use current host (for Replit or self-hosted backend)
             var protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
             var autoUrl = protocol + '//' + window.location.host + '/ws/multiplayer';
-            console.log('[N64Vault] Using auto-detected multiplayer backend:', autoUrl);
+            console.log('[Netcade] Using auto-detected multiplayer backend:', autoUrl);
             return autoUrl;
         }
         
         function isMultiplayerAvailable() {
-            var config = window.N64_VAULT_CONFIG || {};
+            var config = window.NETCADE_CONFIG || {};
             // Multiplayer is available if:
             // 1. External backend is configured, OR
             // 2. We're running on localhost (local dev), OR
@@ -2896,11 +3248,13 @@
                     state.mp.ws = null;
                     mpUpdateStatus('', 'Disconnected');
                     mpShowJoinCreate();
+                    mpHideConnectingOverlay();
                 };
                 
                 state.mp.ws.onerror = function(e) {
                     console.error('WebSocket error:', e);
                     mpUpdateStatus('error', 'Connection failed - check console');
+                    mpHideConnectingOverlay();
                 };
                 
                 state.mp.ws.onmessage = function(e) {
@@ -2928,10 +3282,16 @@
             }
         }
         
+        function mpHideConnectingOverlay() {
+            var overlay = document.getElementById('mpConnectingOverlay');
+            if (overlay) overlay.style.display = 'none';
+        }
+        
         function mpHandleMessage(msg) {
             switch (msg.type) {
                 case 'room-created':
                 case 'room-joined':
+                    mpHideConnectingOverlay();
                     state.mp.room = msg.room;
                     state.mp.localPlayer = msg.player;
                     state.mp.isHost = msg.player.role === 'host';
@@ -3011,6 +3371,7 @@
                     break;
                     
                 case 'error':
+                    mpHideConnectingOverlay();
                     setStatus(msg.message || msg.error || 'An error occurred', 'error');
                     break;
             }
@@ -3116,6 +3477,10 @@
                 return;
             }
             
+            // Show connecting spinner
+            var overlay = document.getElementById('mpConnectingOverlay');
+            if (overlay) overlay.style.display = 'flex';
+            
             pendingAction = { type: 'create-room', playerName: name };
             console.log('Pending action set:', pendingAction);
             
@@ -3123,6 +3488,7 @@
                 console.log('WebSocket already open, sending directly');
                 mpSend(pendingAction);
                 pendingAction = null;
+                if (overlay) overlay.style.display = 'none';
             } else {
                 console.log('WebSocket not open, connecting...');
                 mpUpdateStatus('', 'Connecting...');
@@ -3641,6 +4007,7 @@
         
         // ===== Init =====
         function init() {
+            console.log('%c[Netcade] Version: ' + window.NETCADE_CONFIG.version, 'color: #E43F5A; font-weight: bold; font-size: 14px;');
             initElements();
             
             state.isMobile = isMobileDevice();
