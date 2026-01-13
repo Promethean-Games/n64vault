@@ -334,6 +334,99 @@
             stroke: #E43F5A;
         }
         
+        /* Guest Video Stream */
+        #guest-stream-container {
+            display: none;
+            width: 100%;
+            min-height: 500px;
+            margin-bottom: 24px;
+            position: relative;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        #guest-stream-container.active {
+            display: block;
+        }
+        #guest-video {
+            width: 100%;
+            height: 500px;
+            object-fit: contain;
+            background: #000;
+        }
+        .stream-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(15, 15, 35, 0.9);
+            z-index: 10;
+        }
+        .stream-overlay.hidden {
+            display: none;
+        }
+        .stream-overlay .spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid rgba(228, 63, 90, 0.2);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .stream-overlay p {
+            margin-top: 16px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.1rem;
+            color: var(--text-muted);
+        }
+        .stream-status {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 6px 12px;
+            background: rgba(15, 15, 35, 0.8);
+            border: 1px solid rgba(228, 63, 90, 0.5);
+            border-radius: 20px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            z-index: 20;
+        }
+        .stream-status .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--warning);
+        }
+        .stream-status .status-dot.connected {
+            background: var(--success);
+        }
+        .input-hint {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 8px 16px;
+            background: rgba(15, 15, 35, 0.9);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            z-index: 20;
+        }
+        
         /* EmulatorJS virtual gamepad styling */
         .ejs-gamepad,
         .ejs-virtual-gamepad,
@@ -945,6 +1038,24 @@
                     Back to Library
                 </button>
             </div>
+            
+            <!-- Guest Video Stream Container -->
+            <div id="guest-stream-container">
+                <div class="stream-overlay" id="streamOverlay">
+                    <div class="spinner"></div>
+                    <p id="streamOverlayText">Waiting for host to stream...</p>
+                </div>
+                <div class="stream-status" id="streamStatus">
+                    <div class="status-dot" id="streamStatusDot"></div>
+                    <span id="streamStatusText">Connecting...</span>
+                </div>
+                <video id="guest-video" autoplay playsinline muted></video>
+                <div class="input-hint" id="inputHint">Your controller inputs are being sent to the host</div>
+                <button class="btn-back-to-library" id="btnBackFromStream">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                    Leave Game
+                </button>
+            </div>
         </div>
         
         <!-- Controls Content -->
@@ -1289,8 +1400,11 @@
                 connected: false,
                 room: null,
                 localPlayer: null,
-                peers: new Map(),
-                isHost: false
+                peers: {},           // peerId -> { pc, dataChannel, videoTrack }
+                isHost: false,
+                isStreaming: false,
+                videoStream: null,   // MediaStream for host's canvas capture
+                inputsEnabled: false // Whether guest is sending inputs
             }
         };
         
@@ -1366,6 +1480,17 @@
             elements.mpRoomCode = document.getElementById('mpRoomCode');
             elements.mpPlayerList = document.getElementById('mpPlayerList');
             elements.mpBtnLeave = document.getElementById('mpBtnLeave');
+            
+            // Guest stream elements
+            elements.guestStreamContainer = document.getElementById('guest-stream-container');
+            elements.guestVideo = document.getElementById('guest-video');
+            elements.streamOverlay = document.getElementById('streamOverlay');
+            elements.streamOverlayText = document.getElementById('streamOverlayText');
+            elements.streamStatus = document.getElementById('streamStatus');
+            elements.streamStatusDot = document.getElementById('streamStatusDot');
+            elements.streamStatusText = document.getElementById('streamStatusText');
+            elements.inputHint = document.getElementById('inputHint');
+            elements.btnBackFromStream = document.getElementById('btnBackFromStream');
         }
         
         var debugMode = false;
@@ -1549,7 +1674,7 @@
             selectedGame = game;
             setStatus('Loading ' + game.title + '...', 'loading');
             
-            // If we're the host in a multiplayer room, notify other players
+            // If we're the host in a multiplayer room, notify other players and start streaming
             if (state.mp.isHost && state.mp.room) {
                 console.log('[MP] Host starting game, notifying players:', game.title);
                 // Convert relative URL to absolute URL for cross-device multiplayer
@@ -1569,6 +1694,9 @@
                     gameName: game.title,
                     romUrl: absoluteRomUrl
                 });
+                
+                // Start streaming to guests after emulator loads
+                setTimeout(rtcStartHostStream, 1000);
             }
             
             // Hide upload zone, show emulator
@@ -2211,7 +2339,9 @@
         }
         
         function handleGameKeyDown(e) {
-            if (!state.gameRunning) return;
+            // Allow input when game is running OR when guest is watching stream
+            var guestWatching = state.mp.inputsEnabled && !state.mp.isHost;
+            if (!state.gameRunning && !guestWatching) return;
             if (state.listeningKey) return; // In mapping mode
             
             var targetTag = e.target.tagName.toLowerCase();
@@ -2225,20 +2355,26 @@
                 e.stopPropagation();
                 pressedGameKeys[e.code] = true;
                 
-                if (stickButtons.indexOf(n64Button) !== -1) {
-                    if (n64Button === 'stickUp') stickState.up = true;
-                    else if (n64Button === 'stickDown') stickState.down = true;
-                    else if (n64Button === 'stickLeft') stickState.left = true;
-                    else if (n64Button === 'stickRight') stickState.right = true;
-                    updateStickSimulation();
+                // If guest, send input to host instead of simulating locally
+                if (guestWatching) {
+                    rtcSendInput({ type: 'button', button: n64Button, action: 'press' });
                 } else {
-                    simulateEmulatorKey(n64Button, 'keydown');
+                    if (stickButtons.indexOf(n64Button) !== -1) {
+                        if (n64Button === 'stickUp') stickState.up = true;
+                        else if (n64Button === 'stickDown') stickState.down = true;
+                        else if (n64Button === 'stickLeft') stickState.left = true;
+                        else if (n64Button === 'stickRight') stickState.right = true;
+                        updateStickSimulation();
+                    } else {
+                        simulateEmulatorKey(n64Button, 'keydown');
+                    }
                 }
             }
         }
         
         function handleGameKeyUp(e) {
-            if (!state.gameRunning) return;
+            var guestWatching = state.mp.inputsEnabled && !state.mp.isHost;
+            if (!state.gameRunning && !guestWatching) return;
             
             var targetTag = e.target.tagName.toLowerCase();
             if (targetTag === 'input' || targetTag === 'textarea') return;
@@ -2251,14 +2387,19 @@
                 e.stopPropagation();
                 delete pressedGameKeys[e.code];
                 
-                if (stickButtons.indexOf(n64Button) !== -1) {
-                    if (n64Button === 'stickUp') stickState.up = false;
-                    else if (n64Button === 'stickDown') stickState.down = false;
-                    else if (n64Button === 'stickLeft') stickState.left = false;
-                    else if (n64Button === 'stickRight') stickState.right = false;
-                    updateStickSimulation();
+                // If guest, send input to host instead of simulating locally
+                if (guestWatching) {
+                    rtcSendInput({ type: 'button', button: n64Button, action: 'release' });
                 } else {
-                    simulateEmulatorKey(n64Button, 'keyup');
+                    if (stickButtons.indexOf(n64Button) !== -1) {
+                        if (n64Button === 'stickUp') stickState.up = false;
+                        else if (n64Button === 'stickDown') stickState.down = false;
+                        else if (n64Button === 'stickLeft') stickState.left = false;
+                        else if (n64Button === 'stickRight') stickState.right = false;
+                        updateStickSimulation();
+                    } else {
+                        simulateEmulatorKey(n64Button, 'keyup');
+                    }
                 }
             }
         }
@@ -2703,6 +2844,23 @@
                     break;
                     
                 case 'player-joined':
+                    if (msg.room) {
+                        state.mp.room = msg.room;
+                        var updated = msg.room.players.find(function(p) { return p.id === state.mp.localPlayer.id; });
+                        if (updated) {
+                            state.mp.localPlayer = updated;
+                            state.mp.isHost = updated.role === 'host';
+                        }
+                        mpRenderPlayers();
+                        
+                        // If host is already streaming, create peer for new guest
+                        if (state.mp.isHost && state.mp.isStreaming && msg.player) {
+                            console.log('[MP] New player joined while streaming, creating peer for:', msg.player.id);
+                            rtcCreatePeerForGuest(msg.player.id);
+                        }
+                    }
+                    break;
+                    
                 case 'player-left':
                 case 'room-updated':
                     if (msg.room) {
@@ -2727,11 +2885,25 @@
                 case 'game-started':
                     console.log('[MP] Game started by host:', msg.gameName || msg.gameId);
                     state.mp.room = msg.room;
-                    if (msg.romUrl) {
-                        mpLoadGameFromUrl(msg.romUrl, msg.gameName || 'Multiplayer Game');
-                    } else if (msg.gameId) {
-                        mpLoadGameById(msg.gameId, msg.gameName);
+                    // Only guests should show the stream viewer - host already has the emulator
+                    if (!state.mp.isHost) {
+                        rtcShowGuestStream(msg.gameName || 'Multiplayer Game');
                     }
+                    break;
+                
+                // WebRTC signaling
+                case 'rtc-offer':
+                    console.log('[MP] Received RTC offer from:', msg.fromId);
+                    rtcHandleOffer(msg.fromId, msg.sdp);
+                    break;
+                    
+                case 'rtc-answer':
+                    console.log('[MP] Received RTC answer from:', msg.fromId);
+                    rtcHandleAnswer(msg.fromId, msg.sdp);
+                    break;
+                    
+                case 'rtc-ice':
+                    rtcHandleIce(msg.fromId, msg.candidate);
                     break;
                     
                 case 'error':
@@ -2878,10 +3050,301 @@
         
         function mpLeaveRoom() {
             mpSend({ type: 'leave-room' });
+            rtcCleanup();
             state.mp.room = null;
             state.mp.localPlayer = null;
             state.mp.isHost = false;
             mpShowJoinCreate();
+        }
+        
+        // ===== WebRTC Functions =====
+        var RTC_CONFIG = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+        };
+        
+        function rtcCleanup() {
+            console.log('[RTC] Cleaning up');
+            // Stop all peer connections
+            Object.keys(state.mp.peers).forEach(function(peerId) {
+                var peer = state.mp.peers[peerId];
+                if (peer.pc) peer.pc.close();
+            });
+            state.mp.peers = {};
+            
+            // Stop video stream
+            if (state.mp.videoStream) {
+                state.mp.videoStream.getTracks().forEach(function(track) { track.stop(); });
+                state.mp.videoStream = null;
+            }
+            
+            state.mp.isStreaming = false;
+            state.mp.inputsEnabled = false;
+            
+            // Hide guest stream container
+            if (elements.guestStreamContainer) {
+                elements.guestStreamContainer.classList.remove('active');
+            }
+            if (elements.guestVideo) {
+                elements.guestVideo.srcObject = null;
+            }
+        }
+        
+        // HOST: Start streaming video to all guests
+        function rtcStartHostStream() {
+            console.log('[RTC] Host starting stream');
+            
+            // Wait for EmulatorJS to initialize and create the canvas
+            var checkCanvas = setInterval(function() {
+                var canvas = document.querySelector('#game canvas');
+                if (canvas) {
+                    clearInterval(checkCanvas);
+                    console.log('[RTC] Found emulator canvas:', canvas.width, 'x', canvas.height);
+                    
+                    try {
+                        // Capture the canvas at 30fps
+                        var stream = canvas.captureStream(30);
+                        state.mp.videoStream = stream;
+                        state.mp.isStreaming = true;
+                        console.log('[RTC] Canvas stream created, tracks:', stream.getTracks().length);
+                        
+                        // Create peer connections for all guests
+                        if (state.mp.room && state.mp.room.players) {
+                            state.mp.room.players.forEach(function(player) {
+                                if (player.id !== state.mp.localPlayer.id) {
+                                    rtcCreatePeerForGuest(player.id);
+                                }
+                            });
+                        }
+                    } catch (e) {
+                        console.error('[RTC] Failed to capture canvas:', e);
+                    }
+                }
+            }, 500);
+            
+            // Stop checking after 10 seconds
+            setTimeout(function() { clearInterval(checkCanvas); }, 10000);
+        }
+        
+        function rtcCreatePeerForGuest(guestId) {
+            console.log('[RTC] Creating peer connection for guest:', guestId);
+            
+            var pc = new RTCPeerConnection(RTC_CONFIG);
+            state.mp.peers[guestId] = { pc: pc, dataChannel: null };
+            
+            // Add video track
+            if (state.mp.videoStream) {
+                state.mp.videoStream.getTracks().forEach(function(track) {
+                    pc.addTrack(track, state.mp.videoStream);
+                    console.log('[RTC] Added track:', track.kind);
+                });
+            }
+            
+            // Create data channel for receiving guest inputs
+            var dc = pc.createDataChannel('inputs', { ordered: false, maxRetransmits: 0 });
+            dc.onopen = function() { 
+                console.log('[RTC] Data channel open for guest:', guestId);
+            };
+            dc.onmessage = function(e) {
+                try {
+                    var input = JSON.parse(e.data);
+                    console.log('[RTC] Received input from guest:', guestId, input);
+                    rtcHandleRemoteInput(guestId, input);
+                } catch (err) {
+                    console.error('[RTC] Failed to parse input:', err);
+                }
+            };
+            dc.onerror = function(e) {
+                console.error('[RTC] Data channel error for guest:', guestId, e);
+            };
+            state.mp.peers[guestId].dataChannel = dc;
+            
+            // ICE candidate handling
+            pc.onicecandidate = function(e) {
+                if (e.candidate) {
+                    mpSend({
+                        type: 'rtc-ice',
+                        targetId: guestId,
+                        candidate: e.candidate
+                    });
+                }
+            };
+            
+            pc.onconnectionstatechange = function() {
+                console.log('[RTC] Connection state with', guestId, ':', pc.connectionState);
+            };
+            
+            // Create offer
+            pc.createOffer().then(function(offer) {
+                return pc.setLocalDescription(offer);
+            }).then(function() {
+                mpSend({
+                    type: 'rtc-offer',
+                    targetId: guestId,
+                    sdp: pc.localDescription
+                });
+                console.log('[RTC] Sent offer to guest:', guestId);
+            }).catch(function(e) {
+                console.error('[RTC] Failed to create offer:', e);
+            });
+        }
+        
+        // GUEST: Handle incoming offer from host
+        function rtcHandleOffer(hostId, sdp) {
+            console.log('[RTC] Received offer from host');
+            
+            var pc = new RTCPeerConnection(RTC_CONFIG);
+            state.mp.peers[hostId] = { pc: pc, dataChannel: null };
+            
+            // Handle incoming video track
+            pc.ontrack = function(e) {
+                console.log('[RTC] Received track:', e.track.kind);
+                if (e.streams && e.streams[0]) {
+                    elements.guestVideo.srcObject = e.streams[0];
+                    elements.streamOverlay.classList.add('hidden');
+                    elements.streamStatusDot.classList.add('connected');
+                    elements.streamStatusText.textContent = 'Connected to host';
+                    state.mp.inputsEnabled = true;
+                }
+            };
+            
+            // Handle incoming data channel
+            pc.ondatachannel = function(e) {
+                console.log('[RTC] Received data channel');
+                var dc = e.channel;
+                dc.onopen = function() {
+                    console.log('[RTC] Data channel open, can send inputs');
+                    state.mp.inputsEnabled = true;
+                };
+                state.mp.peers[hostId].dataChannel = dc;
+            };
+            
+            // ICE candidate handling
+            pc.onicecandidate = function(e) {
+                if (e.candidate) {
+                    mpSend({
+                        type: 'rtc-ice',
+                        targetId: hostId,
+                        candidate: e.candidate
+                    });
+                }
+            };
+            
+            pc.onconnectionstatechange = function() {
+                console.log('[RTC] Connection state with host:', pc.connectionState);
+                if (pc.connectionState === 'connected') {
+                    elements.streamStatusDot.classList.add('connected');
+                    elements.streamStatusText.textContent = 'Connected';
+                } else if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
+                    elements.streamStatusDot.classList.remove('connected');
+                    elements.streamStatusText.textContent = 'Disconnected';
+                }
+            };
+            
+            // Set remote description and create answer
+            pc.setRemoteDescription(new RTCSessionDescription(sdp)).then(function() {
+                return pc.createAnswer();
+            }).then(function(answer) {
+                return pc.setLocalDescription(answer);
+            }).then(function() {
+                mpSend({
+                    type: 'rtc-answer',
+                    targetId: hostId,
+                    sdp: pc.localDescription
+                });
+                console.log('[RTC] Sent answer to host');
+            }).catch(function(e) {
+                console.error('[RTC] Failed to handle offer:', e);
+            });
+        }
+        
+        // HOST: Handle answer from guest
+        function rtcHandleAnswer(guestId, sdp) {
+            console.log('[RTC] Received answer from guest:', guestId);
+            var peer = state.mp.peers[guestId];
+            if (peer && peer.pc) {
+                peer.pc.setRemoteDescription(new RTCSessionDescription(sdp)).catch(function(e) {
+                    console.error('[RTC] Failed to set remote description:', e);
+                });
+            }
+        }
+        
+        // Handle ICE candidate from peer
+        function rtcHandleIce(peerId, candidate) {
+            var peer = state.mp.peers[peerId];
+            if (peer && peer.pc) {
+                peer.pc.addIceCandidate(new RTCIceCandidate(candidate)).catch(function(e) {
+                    console.error('[RTC] Failed to add ICE candidate:', e);
+                });
+            }
+        }
+        
+        // HOST: Handle input from remote guest
+        function rtcHandleRemoteInput(guestId, input) {
+            // Find guest's port number
+            var guestPlayer = null;
+            if (state.mp.room && state.mp.room.players) {
+                guestPlayer = state.mp.room.players.find(function(p) { return p.id === guestId; });
+            }
+            var port = guestPlayer ? guestPlayer.port : 2;
+            
+            // Inject input into emulator
+            // EmulatorJS handles multi-controller via the control ID mapping
+            if (input.type === 'button') {
+                simulateRemoteButton(port, input.button, input.action);
+            } else if (input.type === 'joystick') {
+                simulateRemoteJoystick(port, input.x, input.y);
+            }
+        }
+        
+        function simulateRemoteButton(port, button, action) {
+            // For now, log the input - full implementation needs EmulatorJS multi-controller support
+            console.log('[RTC] Remote input P' + port + ':', button, action);
+            // EmulatorJS exposes EJS_emulator for direct control in some versions
+            // This needs testing with actual EmulatorJS API
+        }
+        
+        function simulateRemoteJoystick(port, x, y) {
+            console.log('[RTC] Remote joystick P' + port + ':', x, y);
+        }
+        
+        // GUEST: Send input to host
+        function rtcSendInput(input) {
+            if (!state.mp.inputsEnabled) return;
+            
+            // Find host's peer connection
+            var hostId = null;
+            if (state.mp.room && state.mp.room.players) {
+                var host = state.mp.room.players.find(function(p) { return p.role === 'host'; });
+                if (host) hostId = host.id;
+            }
+            
+            if (hostId && state.mp.peers[hostId] && state.mp.peers[hostId].dataChannel) {
+                var dc = state.mp.peers[hostId].dataChannel;
+                if (dc.readyState === 'open') {
+                    dc.send(JSON.stringify(input));
+                }
+            }
+        }
+        
+        // GUEST: Show stream viewer and wait for video
+        function rtcShowGuestStream(gameName) {
+            console.log('[RTC] Showing guest stream view for:', gameName);
+            
+            switchTab('library');
+            elements.uploadZone.style.display = 'none';
+            elements.gameGrid.style.display = 'none';
+            elements.emulatorContainer.style.display = 'none';
+            elements.guestStreamContainer.classList.add('active');
+            
+            elements.streamOverlay.classList.remove('hidden');
+            elements.streamOverlayText.textContent = 'Connecting to host...';
+            elements.streamStatusDot.classList.remove('connected');
+            elements.streamStatusText.textContent = 'Connecting...';
+            
+            setStatus('Watching: ' + gameName, 'ready');
         }
         
         // ===== Init =====
@@ -2906,6 +3369,16 @@
             elements.btnBackToLibrary.addEventListener('click', function() {
                 showLibrary();
             });
+            
+            // Guest stream back button
+            if (elements.btnBackFromStream) {
+                elements.btnBackFromStream.addEventListener('click', function() {
+                    rtcCleanup();
+                    elements.guestStreamContainer.classList.remove('active');
+                    showLibrary();
+                    mpLeaveRoom();
+                });
+            }
         }
         
         if (document.readyState === 'loading') {
