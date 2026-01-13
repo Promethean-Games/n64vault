@@ -13,7 +13,7 @@
     <script>
         window.NETCADE_CONFIG = {
             // ========== VERSION (for cache busting) ==========
-            version: '3.0.0-netcade-vaporwave',
+            version: '3.0.1-ice-fix',
             
             // ========== MULTIPLAYER BACKEND ==========
             // Set to your backend URL for multiplayer support
@@ -2647,6 +2647,12 @@
             elements.mainContentLibrary.classList.toggle('active', tab === 'library');
             elements.mainContentControls.classList.toggle('active', tab === 'controls');
             elements.mainContentMultiplayer.classList.toggle('active', tab === 'multiplayer');
+            
+            // Run ICE test when first switching to multiplayer tab
+            if (tab === 'multiplayer' && !iceTestRun) {
+                iceTestRun = true;
+                rtcTestIceGathering();
+            }
         }
         
         function switchMode(mode) {
@@ -3531,9 +3537,78 @@
         var RTC_CONFIG = {
             iceServers: [
                 { urls: 'stun:stun.l.google.com:19302' },
-                { urls: 'stun:stun1.l.google.com:19302' }
-            ]
+                { urls: 'stun:stun1.l.google.com:19302' },
+                { urls: 'stun:stun2.l.google.com:19302' },
+                { urls: 'stun:stun3.l.google.com:19302' },
+                { urls: 'stun:stun4.l.google.com:19302' },
+                { urls: 'stun:stun.stunprotocol.org:3478' },
+                // Free TURN server from Open Relay Project (for NAT traversal)
+                {
+                    urls: 'turn:openrelay.metered.ca:80',
+                    username: 'openrelayproject',
+                    credential: 'openrelayproject'
+                },
+                {
+                    urls: 'turn:openrelay.metered.ca:443',
+                    username: 'openrelayproject',
+                    credential: 'openrelayproject'
+                },
+                {
+                    urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+                    username: 'openrelayproject',
+                    credential: 'openrelayproject'
+                }
+            ],
+            iceCandidatePoolSize: 10
         };
+        
+        // Test ICE gathering capability on page load
+        function rtcTestIceGathering() {
+            console.log('[RTC] Testing ICE gathering capability...');
+            var testPc = new RTCPeerConnection(RTC_CONFIG);
+            var candidatesFound = [];
+            
+            testPc.onicecandidate = function(e) {
+                if (e.candidate) {
+                    var type = e.candidate.candidate.includes('typ host') ? 'host' :
+                               e.candidate.candidate.includes('typ srflx') ? 'srflx' :
+                               e.candidate.candidate.includes('typ relay') ? 'relay' : 'unknown';
+                    candidatesFound.push(type);
+                    console.log('[RTC] Test found candidate type:', type);
+                }
+            };
+            
+            testPc.onicegatheringstatechange = function() {
+                if (testPc.iceGatheringState === 'complete') {
+                    console.log('[RTC] ICE test complete. Candidates found:', candidatesFound.length, candidatesFound);
+                    if (candidatesFound.length === 0) {
+                        console.warn('[RTC] WARNING: No ICE candidates could be gathered. WebRTC may not work.');
+                        console.warn('[RTC] This could be due to: VPN, firewall, browser privacy settings, or network restrictions.');
+                    }
+                    testPc.close();
+                }
+            };
+            
+            // Create a data channel to trigger ICE gathering
+            testPc.createDataChannel('test');
+            testPc.createOffer().then(function(offer) {
+                return testPc.setLocalDescription(offer);
+            }).catch(function(e) {
+                console.error('[RTC] ICE test failed:', e);
+                testPc.close();
+            });
+            
+            // Cleanup after 10 seconds
+            setTimeout(function() {
+                if (testPc.iceGatheringState !== 'complete') {
+                    console.log('[RTC] ICE test timeout. Candidates found so far:', candidatesFound.length, candidatesFound);
+                }
+                try { testPc.close(); } catch(e) {}
+            }, 10000);
+        }
+        
+        // Run ICE test when multiplayer panel opens
+        var iceTestRun = false;
         
         function rtcCleanup() {
             console.log('[RTC] Cleaning up');
