@@ -13,7 +13,7 @@
     <script>
         window.N64_VAULT_CONFIG = {
             // ========== VERSION (for cache busting) ==========
-            version: '2.0.3-debug-showlib',
+            version: '2.0.5-host-protect',
             
             // ========== MULTIPLAYER BACKEND ==========
             // Set to your backend URL for multiplayer support
@@ -1574,6 +1574,21 @@
         var games = [];
         var selectedGame = null;
         
+        // Calculate homebrew base URL dynamically
+        // If page is at /Netcade/emulator/index_standalone.html, homebrew is at /Netcade/homebrew/
+        function getHomebrewBaseUrl() {
+            var pathParts = window.location.pathname.split('/');
+            // Remove the filename (index_standalone.html) and the 'emulator' directory
+            pathParts.pop(); // Remove filename
+            pathParts.pop(); // Remove 'emulator' directory
+            var basePath = pathParts.join('/') || '';
+            var baseUrl = window.location.origin + basePath + '/homebrew/';
+            console.log('[N64Vault] Computed homebrew base URL:', baseUrl);
+            return baseUrl;
+        }
+        
+        var HOMEBREW_BASE_URL = getHomebrewBaseUrl();
+        
         var BUNDLED_HOMEBREW = [
             {
                 id: 'homebrew-controller-test',
@@ -1582,7 +1597,7 @@
                 fileSize: 2097152,
                 region: 'World',
                 genre: 'Utility',
-                romUrl: '../homebrew/controller_test.z64',
+                romUrl: HOMEBREW_BASE_URL + 'controller_test.z64',
                 playCount: 0,
                 lastPlayed: null,
                 coverArt: null
@@ -1594,7 +1609,7 @@
                 fileSize: 2632992,
                 region: 'World',
                 genre: 'Racing',
-                romUrl: '../homebrew/Bird Kart.z64',
+                romUrl: HOMEBREW_BASE_URL + encodeURIComponent('Bird Kart.z64'),
                 playCount: 0,
                 lastPlayed: null,
                 coverArt: null
@@ -1766,7 +1781,15 @@
         }
         
         function showLibrary() {
-            console.log('[N64Vault] showLibrary() called - stack trace:', new Error().stack);
+            console.log('[N64Vault] showLibrary() called - isHost:', state.mp.isHost, 'emulatorLoaded:', emulatorLoaded);
+            console.log('[N64Vault] showLibrary stack trace:', new Error().stack);
+            
+            // SAFETY: If host has emulator running in multiplayer, don't hide it!
+            if (state.mp.isHost && emulatorLoaded && state.mp.room) {
+                console.warn('[N64Vault] showLibrary() blocked - host has active emulator in multiplayer!');
+                return;
+            }
+            
             elements.uploadZone.style.display = 'block';
             elements.gameGrid.style.display = 'grid';
             elements.emulatorContainer.style.display = 'none';
@@ -3389,7 +3412,13 @@
         
         // GUEST: Show stream viewer and wait for video
         function rtcShowGuestStream(gameName) {
-            console.log('[RTC] Showing guest stream view for:', gameName);
+            console.log('[RTC] rtcShowGuestStream called for:', gameName, 'isHost:', state.mp.isHost);
+            
+            // SAFETY: Never hide emulator for host!
+            if (state.mp.isHost) {
+                console.error('[RTC] BUG: rtcShowGuestStream called for HOST! Ignoring.');
+                return;
+            }
             
             // Switch to library tab (hides multiplayer section)
             switchMainTab('library');
