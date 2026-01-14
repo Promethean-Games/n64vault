@@ -1612,6 +1612,215 @@
             bottom: 80px;
         }
         
+        /* ============================================
+           GUEST TOUCH CONTROLS
+           ============================================ */
+        .guest-touch-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            top: 60px;
+            pointer-events: none;
+            z-index: 50;
+            display: none;
+        }
+        .guest-touch-controls.active {
+            display: block;
+        }
+        
+        /* D-Pad */
+        .guest-dpad {
+            position: absolute;
+            left: 20px;
+            bottom: 20px;
+            width: 120px;
+            height: 120px;
+            pointer-events: auto;
+        }
+        .guest-dpad-btn {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 18px;
+            touch-action: none;
+            user-select: none;
+            transition: background 0.1s;
+        }
+        .guest-dpad-btn:active, .guest-dpad-btn.pressed {
+            background: rgba(228, 63, 90, 0.6);
+            border-color: var(--primary);
+        }
+        .guest-dpad-up { top: 0; left: 40px; }
+        .guest-dpad-down { bottom: 0; left: 40px; }
+        .guest-dpad-left { top: 40px; left: 0; }
+        .guest-dpad-right { top: 40px; right: 0; }
+        .guest-dpad-btn svg {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+            fill: none;
+        }
+        
+        /* Action Buttons */
+        .guest-action-btns {
+            position: absolute;
+            right: 20px;
+            bottom: 20px;
+            width: 140px;
+            height: 140px;
+            pointer-events: auto;
+        }
+        .guest-btn {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.8);
+            touch-action: none;
+            user-select: none;
+            transition: background 0.1s;
+        }
+        .guest-btn:active, .guest-btn.pressed {
+            background: rgba(228, 63, 90, 0.6);
+            border-color: var(--primary);
+        }
+        .guest-btn-a { bottom: 0; left: 45px; background: rgba(228, 63, 90, 0.3); border-color: rgba(228, 63, 90, 0.5); }
+        .guest-btn-b { bottom: 45px; left: 0; background: rgba(0, 217, 255, 0.3); border-color: rgba(0, 217, 255, 0.5); }
+        .guest-btn-start { top: 0; left: 45px; width: 50px; height: 30px; border-radius: 15px; font-size: 10px; }
+        
+        /* Shoulder Buttons */
+        .guest-shoulder-btns {
+            position: absolute;
+            top: 10px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            pointer-events: auto;
+        }
+        .guest-shoulder {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8);
+            touch-action: none;
+            user-select: none;
+            transition: background 0.1s;
+        }
+        .guest-shoulder:active, .guest-shoulder.pressed {
+            background: rgba(228, 63, 90, 0.6);
+            border-color: var(--primary);
+        }
+        
+        /* Virtual Joystick */
+        .guest-joystick {
+            position: absolute;
+            left: 20px;
+            bottom: 160px;
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            pointer-events: auto;
+            touch-action: none;
+        }
+        .guest-joystick-knob {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            background: rgba(228, 63, 90, 0.5);
+            border: 2px solid var(--primary);
+            border-radius: 50%;
+            transition: background 0.1s;
+        }
+        .guest-joystick.active .guest-joystick-knob {
+            background: rgba(228, 63, 90, 0.8);
+        }
+        
+        /* C-Buttons */
+        .guest-c-btns {
+            position: absolute;
+            right: 20px;
+            bottom: 160px;
+            width: 80px;
+            height: 80px;
+            pointer-events: auto;
+        }
+        .guest-c-btn {
+            position: absolute;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(255, 200, 0, 0.3);
+            border: 2px solid rgba(255, 200, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Roboto', sans-serif;
+            font-size: 10px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8);
+            touch-action: none;
+            user-select: none;
+            transition: background 0.1s;
+        }
+        .guest-c-btn:active, .guest-c-btn.pressed {
+            background: rgba(255, 200, 0, 0.7);
+        }
+        .guest-c-up { top: 0; left: 26px; }
+        .guest-c-down { bottom: 0; left: 26px; }
+        .guest-c-left { top: 26px; left: 0; }
+        .guest-c-right { top: 26px; right: 0; }
+        
+        /* Z Trigger */
+        .guest-z-trigger {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 20px;
+            padding: 10px 30px;
+            background: rgba(128, 128, 128, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8);
+            pointer-events: auto;
+            touch-action: none;
+            user-select: none;
+            transition: background 0.1s;
+        }
+        .guest-z-trigger:active, .guest-z-trigger.pressed {
+            background: rgba(228, 63, 90, 0.6);
+            border-color: var(--primary);
+        }
+        
         /* Mobile optimizations for tutorial */
         @media (max-width: 480px) {
             .tutorial-container {
@@ -1816,6 +2025,54 @@
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                     Leave Game
                 </button>
+                
+                <!-- Guest Touch Controls Overlay -->
+                <div class="guest-touch-controls" id="guestTouchControls">
+                    <!-- Shoulder Buttons -->
+                    <div class="guest-shoulder-btns">
+                        <div class="guest-shoulder" data-btn="l" data-testid="guest-btn-l">L</div>
+                        <div class="guest-shoulder" data-btn="r" data-testid="guest-btn-r">R</div>
+                    </div>
+                    
+                    <!-- Virtual Joystick -->
+                    <div class="guest-joystick" id="guestJoystick" data-testid="guest-joystick">
+                        <div class="guest-joystick-knob" id="guestJoystickKnob"></div>
+                    </div>
+                    
+                    <!-- D-Pad -->
+                    <div class="guest-dpad">
+                        <div class="guest-dpad-btn guest-dpad-up" data-btn="dUp" data-testid="guest-btn-dpad-up">
+                            <svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                        </div>
+                        <div class="guest-dpad-btn guest-dpad-down" data-btn="dDown" data-testid="guest-btn-dpad-down">
+                            <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </div>
+                        <div class="guest-dpad-btn guest-dpad-left" data-btn="dLeft" data-testid="guest-btn-dpad-left">
+                            <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                        </div>
+                        <div class="guest-dpad-btn guest-dpad-right" data-btn="dRight" data-testid="guest-btn-dpad-right">
+                            <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </div>
+                    </div>
+                    
+                    <!-- C-Buttons -->
+                    <div class="guest-c-btns">
+                        <div class="guest-c-btn guest-c-up" data-btn="cUp" data-testid="guest-btn-c-up">C</div>
+                        <div class="guest-c-btn guest-c-down" data-btn="cDown" data-testid="guest-btn-c-down">C</div>
+                        <div class="guest-c-btn guest-c-left" data-btn="cLeft" data-testid="guest-btn-c-left">C</div>
+                        <div class="guest-c-btn guest-c-right" data-btn="cRight" data-testid="guest-btn-c-right">C</div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="guest-action-btns">
+                        <div class="guest-btn guest-btn-start" data-btn="start" data-testid="guest-btn-start">START</div>
+                        <div class="guest-btn guest-btn-a" data-btn="a" data-testid="guest-btn-a">A</div>
+                        <div class="guest-btn guest-btn-b" data-btn="b" data-testid="guest-btn-b">B</div>
+                    </div>
+                    
+                    <!-- Z Trigger -->
+                    <div class="guest-z-trigger" data-btn="z" data-testid="guest-btn-z">Z</div>
+                </div>
             </div>
         </div>
         
@@ -4529,6 +4786,8 @@
                 }
             }
         }
+        // Expose globally for guest touch controls
+        window.rtcSendInput = rtcSendInput;
         
         // GUEST: Show stream viewer and wait for video - forces UI to stream view from anywhere in app
         function rtcShowGuestStream(gameName, isNewGame) {
@@ -4583,6 +4842,15 @@
             
             // Enable input forwarding
             state.mp.inputsEnabled = true;
+            
+            // 6. Show touch controls on mobile
+            if (isMobileDevice()) {
+                var touchControls = document.getElementById('guestTouchControls');
+                if (touchControls) {
+                    touchControls.classList.add('active');
+                    console.log('[RTC] Guest touch controls enabled for mobile');
+                }
+            }
             
             // 5. Request a fresh offer from the host (in case host already sent offers before we were ready)
             if (isNewGame && state.mp.room) {
@@ -4674,6 +4942,9 @@
                 elements.btnBackFromStream.addEventListener('click', function() {
                     rtcCleanup();
                     elements.guestStreamContainer.classList.remove('active');
+                    // Hide touch controls
+                    var touchControls = document.getElementById('guestTouchControls');
+                    if (touchControls) touchControls.classList.remove('active');
                     showLibrary();
                     mpLeaveRoom();
                 });
@@ -4720,6 +4991,196 @@
                 });
         });
     }
+    </script>
+    
+    <!-- Guest Touch Controls Script -->
+    <script>
+    (function() {
+        // Guest touch controls state
+        var touchState = {
+            joystickActive: false,
+            joystickStartX: 0,
+            joystickStartY: 0,
+            joystickCenterX: 0,
+            joystickCenterY: 0,
+            pressedButtons: new Set()
+        };
+        
+        // Button name mapping (data-btn to n64 button)
+        var buttonMap = {
+            'a': 'a',
+            'b': 'b',
+            'start': 'start',
+            'z': 'z',
+            'l': 'l',
+            'r': 'r',
+            'dUp': 'dUp',
+            'dDown': 'dDown',
+            'dLeft': 'dLeft',
+            'dRight': 'dRight',
+            'cUp': 'cUp',
+            'cDown': 'cDown',
+            'cLeft': 'cLeft',
+            'cRight': 'cRight'
+        };
+        
+        // Get rtcSendInput function from global scope
+        function sendInput(input) {
+            // Access the rtcSendInput function from the main IIFE scope
+            if (window.rtcSendInput) {
+                window.rtcSendInput(input);
+            }
+        }
+        
+        // Handle button press
+        function handleButtonPress(btn, element) {
+            if (touchState.pressedButtons.has(btn)) return;
+            touchState.pressedButtons.add(btn);
+            element.classList.add('pressed');
+            
+            var mappedBtn = buttonMap[btn] || btn;
+            sendInput({ type: 'button', button: mappedBtn, action: 'press' });
+            console.log('[GuestTouch] Button press:', mappedBtn);
+        }
+        
+        // Handle button release
+        function handleButtonRelease(btn, element) {
+            if (!touchState.pressedButtons.has(btn)) return;
+            touchState.pressedButtons.delete(btn);
+            element.classList.remove('pressed');
+            
+            var mappedBtn = buttonMap[btn] || btn;
+            sendInput({ type: 'button', button: mappedBtn, action: 'release' });
+            console.log('[GuestTouch] Button release:', mappedBtn);
+        }
+        
+        // Handle joystick movement
+        function handleJoystickMove(x, y) {
+            // Clamp values between -1 and 1
+            x = Math.max(-1, Math.min(1, x));
+            y = Math.max(-1, Math.min(1, y));
+            
+            sendInput({ type: 'joystick', x: x, y: y });
+        }
+        
+        // Initialize touch controls
+        function initGuestTouchControls() {
+            var controls = document.getElementById('guestTouchControls');
+            if (!controls) return;
+            
+            var joystick = document.getElementById('guestJoystick');
+            var joystickKnob = document.getElementById('guestJoystickKnob');
+            
+            // Set up button touch events
+            var buttons = controls.querySelectorAll('[data-btn]');
+            buttons.forEach(function(button) {
+                var btn = button.getAttribute('data-btn');
+                
+                button.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    handleButtonPress(btn, button);
+                }, { passive: false });
+                
+                button.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    handleButtonRelease(btn, button);
+                }, { passive: false });
+                
+                button.addEventListener('touchcancel', function(e) {
+                    handleButtonRelease(btn, button);
+                }, { passive: true });
+                
+                // Mouse events for testing on desktop
+                button.addEventListener('mousedown', function(e) {
+                    handleButtonPress(btn, button);
+                });
+                
+                button.addEventListener('mouseup', function(e) {
+                    handleButtonRelease(btn, button);
+                });
+                
+                button.addEventListener('mouseleave', function(e) {
+                    handleButtonRelease(btn, button);
+                });
+            });
+            
+            // Set up joystick touch events
+            if (joystick && joystickKnob) {
+                var joystickRadius = 50;
+                var knobRadius = 20;
+                var maxDistance = joystickRadius - knobRadius;
+                
+                joystick.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    touchState.joystickActive = true;
+                    joystick.classList.add('active');
+                    
+                    var rect = joystick.getBoundingClientRect();
+                    touchState.joystickCenterX = rect.left + rect.width / 2;
+                    touchState.joystickCenterY = rect.top + rect.height / 2;
+                    
+                    updateJoystick(e.touches[0]);
+                }, { passive: false });
+                
+                joystick.addEventListener('touchmove', function(e) {
+                    e.preventDefault();
+                    if (touchState.joystickActive) {
+                        updateJoystick(e.touches[0]);
+                    }
+                }, { passive: false });
+                
+                joystick.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    touchState.joystickActive = false;
+                    joystick.classList.remove('active');
+                    
+                    // Reset knob position
+                    joystickKnob.style.transform = 'translate(-50%, -50%)';
+                    handleJoystickMove(0, 0);
+                }, { passive: false });
+                
+                joystick.addEventListener('touchcancel', function(e) {
+                    touchState.joystickActive = false;
+                    joystick.classList.remove('active');
+                    joystickKnob.style.transform = 'translate(-50%, -50%)';
+                    handleJoystickMove(0, 0);
+                }, { passive: true });
+                
+                function updateJoystick(touch) {
+                    var dx = touch.clientX - touchState.joystickCenterX;
+                    var dy = touch.clientY - touchState.joystickCenterY;
+                    
+                    // Calculate distance from center
+                    var distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    // Clamp to max distance
+                    if (distance > maxDistance) {
+                        var scale = maxDistance / distance;
+                        dx *= scale;
+                        dy *= scale;
+                    }
+                    
+                    // Update knob position
+                    joystickKnob.style.transform = 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + dy + 'px))';
+                    
+                    // Calculate normalized values (-1 to 1)
+                    var normalizedX = dx / maxDistance;
+                    var normalizedY = -dy / maxDistance; // Invert Y for game coordinates
+                    
+                    handleJoystickMove(normalizedX, normalizedY);
+                }
+            }
+            
+            console.log('[GuestTouch] Guest touch controls initialized');
+        }
+        
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initGuestTouchControls);
+        } else {
+            initGuestTouchControls();
+        }
+    })();
     </script>
     
     <!-- Tutorial Modal -->
