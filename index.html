@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Netcade - Nintendo 64 Emulator</title>
-    <meta name="description" content="Play classic Nintendo 64 games directly in your browser with our sleek, modern emulator">
+    <title>Netcade - Multi-Console Retro Emulator</title>
+    <meta name="description" content="Play classic N64, SNES, and Genesis games directly in your browser with our sleek, modern emulator">
     
     <!-- ============================================
          NETCADE CONFIGURATION
@@ -27,7 +27,7 @@
             
             // ========== BRANDING ==========
             siteName: 'Netcade',
-            siteTagline: 'Play classic Nintendo 64 games in your browser',
+            siteTagline: 'Play classic N64, SNES & Genesis games in your browser',
             
             // ========== FEATURES ==========
             // Enable/disable features for your deployment
@@ -41,6 +41,9 @@
         // Log version on load to verify cache is cleared
         console.log('[Netcade] Version:', window.NETCADE_CONFIG.version);
     </script>
+    
+    <!-- JSZip for extracting ROMs from zip files -->
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
     
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -281,6 +284,7 @@
             border-color: #E43F5A;
         }
         .game-card-cover {
+            position: relative;
             width: 100%;
             aspect-ratio: 4/3;
             background: linear-gradient(135deg, #162447 0%, #1B1B2F 100%);
@@ -322,10 +326,65 @@
             font-size: 10px;
             font-weight: 600;
         }
+        .game-card-console {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .game-card-console.console-n64 {
+            background: rgba(228, 63, 90, 0.9);
+            color: #fff;
+        }
+        .game-card-console.console-snes {
+            background: rgba(128, 90, 213, 0.9);
+            color: #fff;
+        }
+        .game-card-console.console-segaMD {
+            background: rgba(45, 140, 210, 0.9);
+            color: #fff;
+        }
         .game-grid-empty {
             text-align: center;
             padding: 32px;
             color: rgba(255,255,255,0.5);
+        }
+        
+        /* Console Filter Tabs */
+        .console-filter {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .console-filter-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: rgba(255,255,255,0.7);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .console-filter-btn:hover {
+            background: rgba(255,255,255,0.15);
+            color: rgba(255,255,255,0.9);
+        }
+        .console-filter-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+        }
+        .console-filter-btn .count {
+            margin-left: 4px;
+            opacity: 0.7;
         }
         .game-grid-loading {
             text-align: center;
@@ -1987,6 +2046,14 @@
                 </button>
             </div>
             
+            <!-- Console Filter Tabs -->
+            <div class="console-filter" id="consoleFilter">
+                <button class="console-filter-btn active" data-console="all" data-testid="filter-all">All</button>
+                <button class="console-filter-btn" data-console="n64" data-testid="filter-n64">N64</button>
+                <button class="console-filter-btn" data-console="snes" data-testid="filter-snes">SNES</button>
+                <button class="console-filter-btn" data-console="segaMD" data-testid="filter-genesis">Genesis</button>
+            </div>
+            
             <!-- Game Grid -->
             <div class="game-grid" id="gameGrid"></div>
             
@@ -1997,8 +2064,8 @@
                     </svg>
                 </div>
                 <div class="upload-text">Drop your ROM file here or click to browse</div>
-                <div class="upload-hint">Supports .z64, .n64, .v64, .rom, .zip files</div>
-                <input type="file" id="file-upload" accept=".z64,.n64,.v64,.rom,.zip" />
+                <div class="upload-hint">Supports N64, SNES, Genesis ROMs and ZIP files</div>
+                <input type="file" id="file-upload" accept=".z64,.n64,.v64,.rom,.smc,.sfc,.fig,.swc,.md,.gen,.bin,.smd,.zip" />
             </div>
             
             <div id="emulator-container">
@@ -2515,9 +2582,13 @@
             elements.streamStatusText = document.getElementById('streamStatusText');
             elements.inputHint = document.getElementById('inputHint');
             elements.btnBackFromStream = document.getElementById('btnBackFromStream');
+            
+            // Console filter
+            elements.consoleFilter = document.getElementById('consoleFilter');
         }
         
         var debugMode = false;
+        var currentConsoleFilter = 'all';
         
         // ===== Utilities =====
         function loadMap(key, defaultMap) {
@@ -2678,12 +2749,33 @@
                 return;
             }
             
+            // Filter games by console
+            var filteredGames = games;
+            if (currentConsoleFilter !== 'all') {
+                filteredGames = games.filter(function(game) {
+                    return (game.console || 'n64') === currentConsoleFilter;
+                });
+            }
+            
+            // Update filter button counts
+            updateFilterCounts();
+            
+            if (filteredGames.length === 0) {
+                elements.gameGrid.innerHTML = '<div class="game-grid-empty">No ' + getConsoleShortName(currentConsoleFilter) + ' games found</div>';
+                return;
+            }
+            
             var html = '';
-            games.forEach(function(game) {
+            filteredGames.forEach(function(game) {
                 var sizeStr = game.fileSize ? formatFileSize(game.fileSize) : '';
-                html += '<div class="game-card" data-game-id="' + game.id + '">' +
+                var gameConsole = game.console || 'n64';
+                var consoleBadge = getConsoleShortName(gameConsole);
+                var consoleClass = 'console-' + gameConsole;
+                var safeId = (game.id || '').toString().toLowerCase().replace(/[^a-z0-9]/g, '-');
+                html += '<div class="game-card" data-game-id="' + game.id + '" data-testid="game-card-' + safeId + '">' +
                     '<div class="game-card-cover">' +
                         '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>' +
+                        '<span class="game-card-console ' + consoleClass + '">' + consoleBadge + '</span>' +
                     '</div>' +
                     '<div class="game-card-info">' +
                         '<div class="game-card-title">' + escapeHtml(game.title) + '</div>' +
@@ -2711,6 +2803,21 @@
                         console.error('[Netcade] Game not found for id:', gameId);
                     }
                 });
+            });
+        }
+        
+        function updateFilterCounts() {
+            var counts = { all: games.length, n64: 0, snes: 0, segaMD: 0 };
+            games.forEach(function(game) {
+                var c = game.console || 'n64';
+                if (counts[c] !== undefined) counts[c]++;
+            });
+            
+            document.querySelectorAll('.console-filter-btn').forEach(function(btn) {
+                var console = btn.getAttribute('data-console');
+                var count = counts[console] || 0;
+                var label = console === 'all' ? 'All' : getConsoleShortName(console);
+                btn.innerHTML = label + ' <span class="count">(' + count + ')</span>';
             });
         }
         
@@ -3537,10 +3644,20 @@
             
             var romUrl = URL.createObjectURL(romBlob);
             
+            // Map console ID to EmulatorJS core name
+            var coreMap = {
+                n64: 'n64',
+                snes: 'snes',
+                segaMD: 'segaMD'
+            };
+            var gameConsole = state.currentGame && state.currentGame.console ? state.currentGame.console : 'n64';
+            var coreName = coreMap[gameConsole] || 'n64';
+            var consoleName = getConsoleName(gameConsole);
+            
             window.EJS_player = '#game';
-            window.EJS_core = 'n64';
+            window.EJS_core = coreName;
             window.EJS_gameUrl = romUrl;
-            window.EJS_gameName = romName || 'N64 Game';
+            window.EJS_gameName = romName || consoleName + ' Game';
             window.EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
             window.EJS_startOnLoaded = true;
             window.EJS_color = '#E43F5A';
@@ -3707,8 +3824,54 @@
             document.body.appendChild(script);
         }
         
+        // Console detection from file extension
+        var consoleExtensions = {
+            n64: ['.z64', '.n64', '.v64', '.rom'],
+            snes: ['.smc', '.sfc', '.fig', '.swc'],
+            segaMD: ['.md', '.gen', '.bin', '.smd']
+        };
+        
+        function detectConsole(filename) {
+            if (!filename) return null;
+            var lowerFilename = filename.toLowerCase();
+            var ext = lowerFilename.substring(lowerFilename.lastIndexOf('.'));
+            for (var consoleName in consoleExtensions) {
+                if (consoleExtensions[consoleName].indexOf(ext) !== -1) {
+                    return consoleName;
+                }
+            }
+            return null;
+        }
+        
+        function getAllRomExtensions() {
+            var all = [];
+            for (var console in consoleExtensions) {
+                all = all.concat(consoleExtensions[console]);
+            }
+            return all;
+        }
+        
+        function getConsoleName(consoleId) {
+            var names = {
+                n64: 'Nintendo 64',
+                snes: 'Super Nintendo',
+                segaMD: 'Sega Genesis'
+            };
+            return names[consoleId] || consoleId;
+        }
+        
+        function getConsoleShortName(consoleId) {
+            var names = {
+                n64: 'N64',
+                snes: 'SNES',
+                segaMD: 'Genesis'
+            };
+            return names[consoleId] || consoleId;
+        }
+        
         function handleFile(file) {
-            var validExt = ['.z64', '.n64', '.v64', '.rom', '.zip'];
+            var romExtensions = getAllRomExtensions();
+            var validExt = romExtensions.concat(['.zip']);
             var ext = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
             
             if (validExt.indexOf(ext) === -1) {
@@ -3718,23 +3881,83 @@
             
             setStatus('Reading: ' + file.name, 'loading');
             
+            // Handle ZIP files
+            if (ext === '.zip') {
+                handleZipFile(file);
+                return;
+            }
+            
             var reader = new FileReader();
             reader.onload = function(e) {
-                // Create a game object for this uploaded ROM and route through playGame()
-                // This ensures multiplayer RTC streaming is triggered
-                var uploadedGame = {
-                    id: 'uploaded-' + Date.now(),
-                    title: file.name.replace(/\.[^.]+$/, ''),
-                    filename: file.name,
-                    romData: e.target.result, // ArrayBuffer
-                    isUploaded: true
-                };
-                
-                console.log('[Netcade] Uploaded ROM, routing through playGame:', file.name);
-                playGame(uploadedGame);
+                loadRomData(e.target.result, file.name);
             };
             reader.onerror = function() { setStatus('Failed to read file', 'error'); };
             reader.readAsArrayBuffer(file);
+        }
+        
+        // Extract ROM from ZIP file
+        function handleZipFile(file) {
+            if (typeof JSZip === 'undefined') {
+                setStatus('ZIP support not available', 'error');
+                return;
+            }
+            
+            setStatus('Extracting: ' + file.name, 'loading');
+            
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                JSZip.loadAsync(e.target.result).then(function(zip) {
+                    var allRomExtensions = getAllRomExtensions();
+                    var romFile = null;
+                    var romFileName = null;
+                    
+                    // Find first ROM file in the zip
+                    zip.forEach(function(relativePath, zipEntry) {
+                        if (romFile) return; // Already found one
+                        if (zipEntry.dir) return; // Skip directories
+                        
+                        var entryExt = relativePath.toLowerCase().substring(relativePath.lastIndexOf('.'));
+                        if (allRomExtensions.indexOf(entryExt) !== -1) {
+                            romFile = zipEntry;
+                            romFileName = relativePath.split('/').pop(); // Get just the filename
+                        }
+                    });
+                    
+                    if (!romFile) {
+                        setStatus('No ROM found in ZIP file', 'error');
+                        return;
+                    }
+                    
+                    setStatus('Loading: ' + romFileName, 'loading');
+                    romFile.async('arraybuffer').then(function(romData) {
+                        loadRomData(romData, romFileName);
+                    }).catch(function(err) {
+                        console.error('[Netcade] Failed to extract ROM:', err);
+                        setStatus('Failed to extract ROM', 'error');
+                    });
+                }).catch(function(err) {
+                    console.error('[Netcade] Failed to read ZIP:', err);
+                    setStatus('Failed to read ZIP file', 'error');
+                });
+            };
+            reader.onerror = function() { setStatus('Failed to read file', 'error'); };
+            reader.readAsArrayBuffer(file);
+        }
+        
+        // Load ROM data and start game
+        function loadRomData(romData, filename) {
+            var detectedConsole = detectConsole(filename) || 'n64';
+            var uploadedGame = {
+                id: 'uploaded-' + Date.now(),
+                title: filename.replace(/\.[^.]+$/, ''),
+                filename: filename,
+                romData: romData,
+                isUploaded: true,
+                console: detectedConsole
+            };
+            
+            console.log('[Netcade] Loaded ROM (' + detectedConsole + '), routing through playGame:', filename);
+            playGame(uploadedGame);
         }
         
         // ===== Event Bindings =====
@@ -3767,6 +3990,21 @@
                     option.classList.add('active');
                 }
             });
+            
+            // Console filter
+            if (elements.consoleFilter) {
+                elements.consoleFilter.addEventListener('click', function(e) {
+                    var btn = e.target.closest('.console-filter-btn');
+                    if (!btn) return;
+                    
+                    currentConsoleFilter = btn.getAttribute('data-console');
+                    document.querySelectorAll('.console-filter-btn').forEach(function(b) {
+                        b.classList.remove('active');
+                    });
+                    btn.classList.add('active');
+                    renderGameGrid();
+                });
+            }
             
             // Main tab switching
             elements.mainTabLibrary.addEventListener('click', function() { switchMainTab('library'); });
@@ -5263,7 +5501,7 @@
                             </svg>
                         </div>
                         <h3>Getting Started</h3>
-                        <p>Netcade is a Nintendo 64 emulator that runs right in your browser. Here's how to use it:</p>
+                        <p>Netcade is a multi-console emulator that runs right in your browser. Play N64, SNES, and Genesis games! Here's how to use it:</p>
                         <ul>
                             <li>
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -5277,7 +5515,7 @@
                                     <polyline points="17 8 12 3 7 8"></polyline>
                                     <line x1="12" y1="3" x2="12" y2="15"></line>
                                 </svg>
-                                <span><strong>Upload Games:</strong> Add your own N64 ROM files (.z64, .n64, .v64)</span>
+                                <span><strong>Upload Games:</strong> Add N64, SNES, or Genesis ROMs (.zip supported)</span>
                             </li>
                             <li>
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
