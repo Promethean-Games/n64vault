@@ -1880,6 +1880,170 @@
             border-color: var(--primary);
         }
         
+        /* ============================================
+           CONSOLE-SPECIFIC TOUCH LAYOUTS
+           ============================================ */
+        
+        /* Hide all console-specific elements by default */
+        .guest-touch-controls[data-console] .n64-only,
+        .guest-touch-controls[data-console] .snes-only,
+        .guest-touch-controls[data-console] .genesis-only {
+            display: none !important;
+        }
+        
+        /* Show N64-specific elements */
+        .guest-touch-controls[data-console="n64"] .n64-only {
+            display: flex !important;
+        }
+        .guest-touch-controls[data-console="n64"] .guest-c-btns {
+            display: block !important;
+        }
+        .guest-touch-controls[data-console="n64"] .guest-joystick {
+            display: block !important;
+        }
+        
+        /* Show SNES-specific elements */
+        .guest-touch-controls[data-console="snes"] .snes-only {
+            display: flex !important;
+        }
+        .guest-touch-controls[data-console="snes"] .guest-c-btns,
+        .guest-touch-controls[data-console="snes"] .guest-joystick,
+        .guest-touch-controls[data-console="snes"] .guest-z-trigger {
+            display: none !important;
+        }
+        
+        /* Show Genesis-specific elements */
+        .guest-touch-controls[data-console="segaMD"] .genesis-only {
+            display: flex !important;
+        }
+        .guest-touch-controls[data-console="segaMD"] .guest-c-btns,
+        .guest-touch-controls[data-console="segaMD"] .guest-joystick,
+        .guest-touch-controls[data-console="segaMD"] .guest-z-trigger,
+        .guest-touch-controls[data-console="segaMD"] .guest-shoulder-btns {
+            display: none !important;
+        }
+        
+        /* SNES Face Buttons (Diamond Layout: Y-X on top, B-A on bottom) */
+        .guest-snes-btns {
+            position: absolute;
+            right: 20px;
+            bottom: 40px;
+            width: 130px;
+            height: 130px;
+            pointer-events: auto;
+        }
+        .guest-snes-btn {
+            position: absolute;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            touch-action: none;
+            user-select: none;
+            transition: background 0.1s;
+        }
+        .guest-snes-btn:active, .guest-snes-btn.pressed {
+            filter: brightness(1.5);
+        }
+        /* SNES button colors match original controller */
+        .guest-snes-a { bottom: 0; right: 0; background: rgba(228, 63, 90, 0.4); border: 2px solid rgba(228, 63, 90, 0.7); color: #fff; }
+        .guest-snes-b { bottom: 43px; right: 43px; background: rgba(255, 200, 0, 0.4); border: 2px solid rgba(255, 200, 0, 0.7); color: #fff; }
+        .guest-snes-x { top: 0; right: 0; background: rgba(0, 120, 255, 0.4); border: 2px solid rgba(0, 120, 255, 0.7); color: #fff; }
+        .guest-snes-y { top: 43px; right: 86px; background: rgba(0, 180, 0, 0.4); border: 2px solid rgba(0, 180, 0, 0.7); color: #fff; }
+        
+        /* SNES Start/Select */
+        .guest-snes-meta {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            pointer-events: auto;
+        }
+        .guest-snes-meta-btn {
+            padding: 8px 16px;
+            background: rgba(100, 100, 100, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8);
+            touch-action: none;
+            user-select: none;
+            transition: background 0.1s;
+        }
+        .guest-snes-meta-btn:active, .guest-snes-meta-btn.pressed {
+            background: rgba(228, 63, 90, 0.6);
+            border-color: var(--primary);
+        }
+        
+        /* Genesis Face Buttons (Row Layout: A-B-C, with X-Y-Z above for 6-button) */
+        .guest-genesis-btns {
+            position: absolute;
+            right: 15px;
+            bottom: 40px;
+            width: 160px;
+            height: 110px;
+            pointer-events: auto;
+        }
+        .guest-genesis-btn {
+            position: absolute;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            touch-action: none;
+            user-select: none;
+            transition: background 0.1s;
+        }
+        .guest-genesis-btn:active, .guest-genesis-btn.pressed {
+            filter: brightness(1.5);
+        }
+        /* Genesis 3-button row (A-B-C) */
+        .guest-genesis-a { bottom: 0; left: 0; background: rgba(0, 120, 255, 0.4); border: 2px solid rgba(0, 120, 255, 0.7); color: #fff; }
+        .guest-genesis-b { bottom: 0; left: 50px; background: rgba(0, 180, 0, 0.4); border: 2px solid rgba(0, 180, 0, 0.7); color: #fff; }
+        .guest-genesis-c { bottom: 0; right: 0; background: rgba(228, 63, 90, 0.4); border: 2px solid rgba(228, 63, 90, 0.7); color: #fff; }
+        /* Genesis 6-button row (X-Y-Z) */
+        .guest-genesis-x { top: 0; left: 0; background: rgba(100, 80, 180, 0.4); border: 2px solid rgba(100, 80, 180, 0.7); color: #fff; width: 36px; height: 36px; font-size: 11px; }
+        .guest-genesis-y { top: 0; left: 50px; background: rgba(180, 100, 0, 0.4); border: 2px solid rgba(180, 100, 0, 0.7); color: #fff; width: 36px; height: 36px; font-size: 11px; }
+        .guest-genesis-z { top: 0; right: 6px; background: rgba(120, 120, 120, 0.4); border: 2px solid rgba(120, 120, 120, 0.7); color: #fff; width: 36px; height: 36px; font-size: 11px; }
+        
+        /* Genesis Start */
+        .guest-genesis-start {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 28px;
+            background: rgba(100, 100, 100, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8);
+            pointer-events: auto;
+            touch-action: none;
+            user-select: none;
+            transition: background 0.1s;
+        }
+        .guest-genesis-start:active, .guest-genesis-start.pressed {
+            background: rgba(228, 63, 90, 0.6);
+            border-color: var(--primary);
+        }
+        
         /* Mobile optimizations for tutorial */
         @media (max-width: 480px) {
             .tutorial-container {
@@ -1915,6 +2079,358 @@
                 left: 50%;
                 transform: translateX(-50%) translateY(-8px);
             }
+        }
+        
+        /* ===== Touch Layout Editor ===== */
+        .touch-layout-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(228, 63, 90, 0.9);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 9998;
+            box-shadow: 0 4px 16px rgba(228, 63, 90, 0.4);
+            transition: transform 0.2s, background 0.2s;
+        }
+        .touch-layout-btn:active {
+            transform: scale(0.95);
+            background: rgba(228, 63, 90, 1);
+        }
+        .touch-layout-btn svg {
+            width: 24px;
+            height: 24px;
+        }
+        
+        /* Edit mode indicator */
+        .guest-touch-controls.edit-mode {
+            pointer-events: auto !important;
+        }
+        .guest-touch-controls.edit-mode::before {
+            content: 'EDIT MODE - Drag buttons to reposition';
+            position: absolute;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(228, 63, 90, 0.9);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+            z-index: 10000;
+        }
+        .guest-touch-controls.edit-mode [data-btn],
+        .guest-touch-controls.edit-mode .guest-dpad,
+        .guest-touch-controls.edit-mode .guest-joystick,
+        .guest-touch-controls.edit-mode .guest-shoulder-btns,
+        .guest-touch-controls.edit-mode .guest-snes-btns,
+        .guest-touch-controls.edit-mode .guest-snes-meta,
+        .guest-touch-controls.edit-mode .guest-genesis-btns,
+        .guest-touch-controls.edit-mode .guest-genesis-start,
+        .guest-touch-controls.edit-mode .guest-c-btns,
+        .guest-touch-controls.edit-mode .guest-action-btns,
+        .guest-touch-controls.edit-mode .guest-z-trigger {
+            outline: 2px dashed rgba(228, 63, 90, 0.7);
+            outline-offset: 2px;
+        }
+        .guest-touch-controls.edit-mode .dragging {
+            outline-color: #00D9FF !important;
+            outline-width: 3px;
+            z-index: 10001;
+        }
+        
+        /* Button hidden by user */
+        .touch-btn-hidden {
+            opacity: 0.2 !important;
+            pointer-events: none !important;
+        }
+        .guest-touch-controls.edit-mode .touch-btn-hidden {
+            opacity: 0.3 !important;
+            pointer-events: auto !important;
+        }
+        
+        /* Touch Layout Editor Modal */
+        .touch-editor-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+            z-index: 10000;
+        }
+        .touch-editor-modal.active {
+            display: flex;
+        }
+        .touch-editor-panel {
+            width: 100%;
+            max-width: 500px;
+            max-height: 70vh;
+            background: var(--bg-card);
+            border-radius: 20px 20px 0 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .touch-editor-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .touch-editor-header h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem;
+            margin: 0;
+            color: var(--primary);
+        }
+        .touch-editor-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px;
+        }
+        .touch-editor-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 20px;
+        }
+        .touch-editor-section {
+            margin-bottom: 20px;
+        }
+        .touch-editor-section-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .touch-editor-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .touch-editor-row:last-child {
+            border-bottom: none;
+        }
+        .touch-editor-label {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.95rem;
+            color: white;
+        }
+        .touch-editor-slider {
+            width: 120px;
+            height: 6px;
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            outline: none;
+        }
+        .touch-editor-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+        }
+        .touch-editor-toggle {
+            position: relative;
+            width: 50px;
+            height: 28px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .touch-editor-toggle.active {
+            background: rgba(228, 63, 90, 0.7);
+        }
+        .touch-editor-toggle::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 22px;
+            height: 22px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.2s;
+        }
+        .touch-editor-toggle.active::after {
+            transform: translateX(22px);
+        }
+        .touch-editor-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+            gap: 8px;
+        }
+        .touch-editor-btn-toggle {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 10px 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .touch-editor-btn-toggle.active {
+            border-color: var(--primary);
+            background: rgba(228, 63, 90, 0.2);
+        }
+        .touch-editor-btn-toggle.hidden {
+            opacity: 0.4;
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        .touch-editor-btn-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            background: rgba(228, 63, 90, 0.4);
+            border: 2px solid rgba(228, 63, 90, 0.6);
+            color: white;
+        }
+        .touch-editor-btn-name {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .touch-editor-footer {
+            display: flex;
+            gap: 12px;
+            padding: 16px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .touch-editor-footer button {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .touch-editor-reset {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        .touch-editor-reset:active {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .touch-editor-save {
+            background: var(--primary);
+            border: none;
+            color: white;
+        }
+        .touch-editor-save:active {
+            background: rgba(228, 63, 90, 0.8);
+        }
+        
+        /* Size presets */
+        .touch-size-presets {
+            display: flex;
+            gap: 8px;
+        }
+        .touch-size-preset {
+            flex: 1;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid transparent;
+            border-radius: 8px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.85rem;
+            color: white;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .touch-size-preset.active {
+            border-color: var(--primary);
+            background: rgba(228, 63, 90, 0.2);
+        }
+        
+        /* Touch control size classes */
+        .guest-touch-controls.touch-size-small {
+            --touch-btn-scale: 0.8;
+        }
+        .guest-touch-controls.touch-size-medium {
+            --touch-btn-scale: 1.0;
+        }
+        .guest-touch-controls.touch-size-large {
+            --touch-btn-scale: 1.25;
+        }
+        
+        /* Apply size scaling to individual button groups */
+        .guest-touch-controls.touch-size-small .guest-dpad,
+        .guest-touch-controls.touch-size-small .guest-joystick,
+        .guest-touch-controls.touch-size-small .guest-c-btns,
+        .guest-touch-controls.touch-size-small .guest-action-btns,
+        .guest-touch-controls.touch-size-small .guest-snes-btns,
+        .guest-touch-controls.touch-size-small .guest-genesis-btns {
+            transform: scale(0.8);
+        }
+        .guest-touch-controls.touch-size-large .guest-dpad,
+        .guest-touch-controls.touch-size-large .guest-joystick,
+        .guest-touch-controls.touch-size-large .guest-c-btns,
+        .guest-touch-controls.touch-size-large .guest-action-btns,
+        .guest-touch-controls.touch-size-large .guest-snes-btns,
+        .guest-touch-controls.touch-size-large .guest-genesis-btns {
+            transform: scale(1.25);
+        }
+        
+        /* Opacity classes */
+        .guest-touch-controls.touch-opacity-low { --touch-opacity: 0.3; }
+        .guest-touch-controls.touch-opacity-medium { --touch-opacity: 0.7; }
+        .guest-touch-controls.touch-opacity-high { --touch-opacity: 1.0; }
+        
+        .guest-touch-controls[data-touch-opacity] .guest-dpad,
+        .guest-touch-controls[data-touch-opacity] .guest-joystick,
+        .guest-touch-controls[data-touch-opacity] .guest-c-btns,
+        .guest-touch-controls[data-touch-opacity] .guest-action-btns,
+        .guest-touch-controls[data-touch-opacity] .guest-shoulder-btns,
+        .guest-touch-controls[data-touch-opacity] .guest-snes-btns,
+        .guest-touch-controls[data-touch-opacity] .guest-snes-meta,
+        .guest-touch-controls[data-touch-opacity] .guest-genesis-btns,
+        .guest-touch-controls[data-touch-opacity] .guest-genesis-start,
+        .guest-touch-controls[data-touch-opacity] .guest-z-trigger {
+            opacity: var(--touch-opacity, 0.7);
+        }
+        
+        /* Editor-applied position marker */
+        .touch-editor-positioned {
+            /* Marker class for elements positioned by editor */
         }
     </style>
 </head>
@@ -1990,6 +2506,66 @@
             </div>
             <div class="settings-footer">
                 <p id="settingsVersion">Netcade v<span id="versionText"></span></p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Touch Layout Editor Button (mobile only) -->
+    <button class="touch-layout-btn" id="touchLayoutBtn" data-testid="button-touch-layout" aria-label="Customize Touch Controls">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+        </svg>
+    </button>
+    
+    <!-- Touch Layout Editor Modal -->
+    <div class="touch-editor-modal" id="touchEditorModal">
+        <div class="touch-editor-panel">
+            <div class="touch-editor-header">
+                <h3>Customize Touch Controls</h3>
+                <button class="touch-editor-close" id="touchEditorClose" data-testid="button-touch-editor-close">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="touch-editor-content">
+                <div class="touch-editor-section">
+                    <div class="touch-editor-section-title">Button Size</div>
+                    <div class="touch-size-presets" id="touchSizePresets">
+                        <button class="touch-size-preset" data-size="small" data-testid="touch-size-small">Small</button>
+                        <button class="touch-size-preset active" data-size="medium" data-testid="touch-size-medium">Medium</button>
+                        <button class="touch-size-preset" data-size="large" data-testid="touch-size-large">Large</button>
+                    </div>
+                </div>
+                
+                <div class="touch-editor-section">
+                    <div class="touch-editor-section-title">Button Opacity</div>
+                    <div class="touch-editor-row">
+                        <span class="touch-editor-label">Transparency</span>
+                        <input type="range" class="touch-editor-slider" id="touchOpacitySlider" min="20" max="100" value="70" data-testid="touch-opacity-slider">
+                    </div>
+                </div>
+                
+                <div class="touch-editor-section">
+                    <div class="touch-editor-section-title">Toggle Buttons</div>
+                    <div class="touch-editor-buttons" id="touchButtonToggles"></div>
+                </div>
+                
+                <div class="touch-editor-section">
+                    <div class="touch-editor-section-title">Edit Mode</div>
+                    <div class="touch-editor-row">
+                        <span class="touch-editor-label">Drag to reposition buttons</span>
+                        <div class="touch-editor-toggle" id="touchEditModeToggle" data-testid="touch-edit-mode"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="touch-editor-footer">
+                <button class="touch-editor-reset" id="touchEditorReset" data-testid="button-touch-reset">Reset to Default</button>
+                <button class="touch-editor-save" id="touchEditorSave" data-testid="button-touch-save">Save Layout</button>
             </div>
         </div>
     </div>
@@ -2094,19 +2670,16 @@
                 </button>
                 
                 <!-- Guest Touch Controls Overlay -->
-                <div class="guest-touch-controls" id="guestTouchControls">
-                    <!-- Shoulder Buttons -->
+                <div class="guest-touch-controls" id="guestTouchControls" data-console="n64">
+                    <!-- ========== SHARED CONTROLS ========== -->
+                    
+                    <!-- Shoulder Buttons (N64 & SNES) -->
                     <div class="guest-shoulder-btns">
                         <div class="guest-shoulder" data-btn="l" data-testid="guest-btn-l">L</div>
                         <div class="guest-shoulder" data-btn="r" data-testid="guest-btn-r">R</div>
                     </div>
                     
-                    <!-- Virtual Joystick -->
-                    <div class="guest-joystick" id="guestJoystick" data-testid="guest-joystick">
-                        <div class="guest-joystick-knob" id="guestJoystickKnob"></div>
-                    </div>
-                    
-                    <!-- D-Pad -->
+                    <!-- D-Pad (All Consoles) -->
                     <div class="guest-dpad">
                         <div class="guest-dpad-btn guest-dpad-up" data-btn="dUp" data-testid="guest-btn-dpad-up">
                             <svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"></polyline></svg>
@@ -2122,23 +2695,61 @@
                         </div>
                     </div>
                     
-                    <!-- C-Buttons -->
-                    <div class="guest-c-btns">
+                    <!-- ========== N64-ONLY CONTROLS ========== -->
+                    
+                    <!-- N64 Virtual Joystick -->
+                    <div class="guest-joystick n64-only" id="guestJoystick" data-testid="guest-joystick">
+                        <div class="guest-joystick-knob" id="guestJoystickKnob"></div>
+                    </div>
+                    
+                    <!-- N64 C-Buttons -->
+                    <div class="guest-c-btns n64-only">
                         <div class="guest-c-btn guest-c-up" data-btn="cUp" data-testid="guest-btn-c-up">C</div>
                         <div class="guest-c-btn guest-c-down" data-btn="cDown" data-testid="guest-btn-c-down">C</div>
                         <div class="guest-c-btn guest-c-left" data-btn="cLeft" data-testid="guest-btn-c-left">C</div>
                         <div class="guest-c-btn guest-c-right" data-btn="cRight" data-testid="guest-btn-c-right">C</div>
                     </div>
                     
-                    <!-- Action Buttons -->
-                    <div class="guest-action-btns">
+                    <!-- N64 Action Buttons -->
+                    <div class="guest-action-btns n64-only">
                         <div class="guest-btn guest-btn-start" data-btn="start" data-testid="guest-btn-start">START</div>
                         <div class="guest-btn guest-btn-a" data-btn="a" data-testid="guest-btn-a">A</div>
                         <div class="guest-btn guest-btn-b" data-btn="b" data-testid="guest-btn-b">B</div>
                     </div>
                     
-                    <!-- Z Trigger -->
-                    <div class="guest-z-trigger" data-btn="z" data-testid="guest-btn-z">Z</div>
+                    <!-- N64 Z Trigger -->
+                    <div class="guest-z-trigger n64-only" data-btn="z" data-testid="guest-btn-z">Z</div>
+                    
+                    <!-- ========== SNES-ONLY CONTROLS ========== -->
+                    
+                    <!-- SNES Face Buttons (Diamond: Y-X top, B-A bottom) -->
+                    <div class="guest-snes-btns snes-only">
+                        <div class="guest-snes-btn guest-snes-a" data-btn="snes-a" data-testid="guest-btn-snes-a">A</div>
+                        <div class="guest-snes-btn guest-snes-b" data-btn="snes-b" data-testid="guest-btn-snes-b">B</div>
+                        <div class="guest-snes-btn guest-snes-x" data-btn="snes-x" data-testid="guest-btn-snes-x">X</div>
+                        <div class="guest-snes-btn guest-snes-y" data-btn="snes-y" data-testid="guest-btn-snes-y">Y</div>
+                    </div>
+                    
+                    <!-- SNES Start/Select -->
+                    <div class="guest-snes-meta snes-only">
+                        <div class="guest-snes-meta-btn" data-btn="snes-select" data-testid="guest-btn-snes-select">SELECT</div>
+                        <div class="guest-snes-meta-btn" data-btn="snes-start" data-testid="guest-btn-snes-start">START</div>
+                    </div>
+                    
+                    <!-- ========== GENESIS-ONLY CONTROLS ========== -->
+                    
+                    <!-- Genesis Face Buttons (6-button: X-Y-Z top row, A-B-C bottom row) -->
+                    <div class="guest-genesis-btns genesis-only">
+                        <div class="guest-genesis-btn guest-genesis-a" data-btn="genesis-a" data-testid="guest-btn-genesis-a">A</div>
+                        <div class="guest-genesis-btn guest-genesis-b" data-btn="genesis-b" data-testid="guest-btn-genesis-b">B</div>
+                        <div class="guest-genesis-btn guest-genesis-c" data-btn="genesis-c" data-testid="guest-btn-genesis-c">C</div>
+                        <div class="guest-genesis-btn guest-genesis-x" data-btn="genesis-x" data-testid="guest-btn-genesis-x">X</div>
+                        <div class="guest-genesis-btn guest-genesis-y" data-btn="genesis-y" data-testid="guest-btn-genesis-y">Y</div>
+                        <div class="guest-genesis-btn guest-genesis-z" data-btn="genesis-z" data-testid="guest-btn-genesis-z">Z</div>
+                    </div>
+                    
+                    <!-- Genesis Start -->
+                    <div class="guest-genesis-start genesis-only" data-btn="genesis-start" data-testid="guest-btn-genesis-start">START</div>
                 </div>
             </div>
         </div>
@@ -2839,6 +3450,12 @@
             selectedGame = game;
             setStatus('Loading ' + game.title + '...', 'loading');
             
+            // Switch touch controls to match game console
+            var gameConsole = game.console || 'n64';
+            if (window.switchTouchLayout) {
+                window.switchTouchLayout(gameConsole);
+            }
+            
             console.log('[Netcade] playGame called, mp state:', {
                 isHost: state.mp.isHost,
                 hasRoom: !!state.mp.room,
@@ -2873,7 +3490,8 @@
                     type: 'start-game',
                     gameId: game.id,
                     gameName: game.title,
-                    romUrl: absoluteRomUrl
+                    romUrl: absoluteRomUrl,
+                    gameConsole: game.console || 'n64'
                 });
                 
                 // Start streaming to guests after emulator loads
@@ -4303,8 +4921,14 @@
                     state.mp.currentGame = {
                         id: msg.gameId,
                         name: msg.gameName,
-                        romUrl: msg.romUrl
+                        romUrl: msg.romUrl,
+                        console: msg.gameConsole || 'n64'
                     };
+                    
+                    // Switch touch controls to match game console
+                    if (window.switchTouchLayout) {
+                        window.switchTouchLayout(msg.gameConsole || 'n64');
+                    }
                     
                     // Only guests should show the stream viewer - host already has the emulator
                     if (!state.mp.isHost) {
@@ -5241,26 +5865,80 @@
             joystickStartY: 0,
             joystickCenterX: 0,
             joystickCenterY: 0,
-            pressedButtons: new Set()
+            pressedButtons: new Set(),
+            currentConsole: 'n64'
         };
         
-        // Button name mapping (data-btn to n64 button)
-        var buttonMap = {
-            'a': 'a',
-            'b': 'b',
-            'start': 'start',
-            'z': 'z',
-            'l': 'l',
-            'r': 'r',
-            'dUp': 'dUp',
-            'dDown': 'dDown',
-            'dLeft': 'dLeft',
-            'dRight': 'dRight',
-            'cUp': 'cUp',
-            'cDown': 'cDown',
-            'cLeft': 'cLeft',
-            'cRight': 'cRight'
+        // Console-specific button mappings
+        // Maps data-btn attribute to EmulatorJS expected button names
+        var buttonMaps = {
+            n64: {
+                'a': 'a',
+                'b': 'b',
+                'start': 'start',
+                'z': 'z',
+                'l': 'l',
+                'r': 'r',
+                'dUp': 'dUp',
+                'dDown': 'dDown',
+                'dLeft': 'dLeft',
+                'dRight': 'dRight',
+                'cUp': 'cUp',
+                'cDown': 'cDown',
+                'cLeft': 'cLeft',
+                'cRight': 'cRight'
+            },
+            snes: {
+                'snes-a': 'a',
+                'snes-b': 'b',
+                'snes-x': 'x',
+                'snes-y': 'y',
+                'snes-start': 'start',
+                'snes-select': 'select',
+                'l': 'l',
+                'r': 'r',
+                'dUp': 'up',
+                'dDown': 'down',
+                'dLeft': 'left',
+                'dRight': 'right'
+            },
+            segaMD: {
+                'genesis-a': 'a',
+                'genesis-b': 'b',
+                'genesis-c': 'c',
+                'genesis-x': 'x',
+                'genesis-y': 'y',
+                'genesis-z': 'z',
+                'genesis-start': 'start',
+                'dUp': 'up',
+                'dDown': 'down',
+                'dLeft': 'left',
+                'dRight': 'right'
+            }
         };
+        
+        // Get the current button map based on console
+        function getButtonMap() {
+            return buttonMaps[touchState.currentConsole] || buttonMaps.n64;
+        }
+        
+        // Switch touch layout for a specific console
+        function switchTouchLayout(consoleName) {
+            var controls = document.getElementById('guestTouchControls');
+            if (!controls) return;
+            
+            var validConsoles = ['n64', 'snes', 'segaMD'];
+            if (validConsoles.indexOf(consoleName) === -1) {
+                consoleName = 'n64';
+            }
+            
+            touchState.currentConsole = consoleName;
+            controls.setAttribute('data-console', consoleName);
+            console.log('[GuestTouch] Switched to', consoleName, 'layout');
+        }
+        
+        // Expose switchTouchLayout globally for use by game start logic
+        window.switchTouchLayout = switchTouchLayout;
         
         // Get rtcSendInput function from global scope
         function sendInput(input) {
@@ -5276,9 +5954,10 @@
             touchState.pressedButtons.add(btn);
             element.classList.add('pressed');
             
+            var buttonMap = getButtonMap();
             var mappedBtn = buttonMap[btn] || btn;
             sendInput({ type: 'button', button: mappedBtn, action: 'press' });
-            console.log('[GuestTouch] Button press:', mappedBtn);
+            console.log('[GuestTouch] Button press:', mappedBtn, '(console:', touchState.currentConsole + ')');
         }
         
         // Handle button release
@@ -5287,9 +5966,10 @@
             touchState.pressedButtons.delete(btn);
             element.classList.remove('pressed');
             
+            var buttonMap = getButtonMap();
             var mappedBtn = buttonMap[btn] || btn;
             sendInput({ type: 'button', button: mappedBtn, action: 'release' });
-            console.log('[GuestTouch] Button release:', mappedBtn);
+            console.log('[GuestTouch] Button release:', mappedBtn, '(console:', touchState.currentConsole + ')');
         }
         
         // Handle joystick movement
@@ -5417,6 +6097,533 @@
             document.addEventListener('DOMContentLoaded', initGuestTouchControls);
         } else {
             initGuestTouchControls();
+        }
+    })();
+    
+    // ===== Touch Layout Editor =====
+    (function() {
+        var touchLayoutState = {
+            editMode: false,
+            dragging: null,
+            dragStartX: 0,
+            dragStartY: 0,
+            elemStartX: 0,
+            elemStartY: 0,
+            layouts: {} // Per-console layouts
+        };
+        
+        // Default layouts for each console
+        var defaultLayouts = {
+            n64: {
+                size: 'medium',
+                opacity: 70,
+                hiddenButtons: [],
+                positions: {}
+            },
+            snes: {
+                size: 'medium',
+                opacity: 70,
+                hiddenButtons: [],
+                positions: {}
+            },
+            segaMD: {
+                size: 'medium',
+                opacity: 70,
+                hiddenButtons: [],
+                positions: {}
+            }
+        };
+        
+        // Button definitions per console for toggle UI
+        var consoleButtons = {
+            n64: [
+                { id: 'dpad', name: 'D-Pad', selector: '.guest-dpad' },
+                { id: 'joystick', name: 'Joystick', selector: '.guest-joystick' },
+                { id: 'a', name: 'A', selector: '[data-btn="a"]' },
+                { id: 'b', name: 'B', selector: '[data-btn="b"]' },
+                { id: 'start', name: 'Start', selector: '[data-btn="start"]' },
+                { id: 'z', name: 'Z', selector: '.guest-z-trigger' },
+                { id: 'l', name: 'L', selector: '[data-btn="l"]' },
+                { id: 'r', name: 'R', selector: '[data-btn="r"]' },
+                { id: 'cbtns', name: 'C-Buttons', selector: '.guest-c-btns' }
+            ],
+            snes: [
+                { id: 'dpad', name: 'D-Pad', selector: '.guest-dpad' },
+                { id: 'snes-a', name: 'A', selector: '[data-btn="snes-a"]' },
+                { id: 'snes-b', name: 'B', selector: '[data-btn="snes-b"]' },
+                { id: 'snes-x', name: 'X', selector: '[data-btn="snes-x"]' },
+                { id: 'snes-y', name: 'Y', selector: '[data-btn="snes-y"]' },
+                { id: 'snes-start', name: 'Start', selector: '[data-btn="snes-start"]' },
+                { id: 'snes-select', name: 'Select', selector: '[data-btn="snes-select"]' },
+                { id: 'l', name: 'L', selector: '[data-btn="l"]' },
+                { id: 'r', name: 'R', selector: '[data-btn="r"]' }
+            ],
+            segaMD: [
+                { id: 'dpad', name: 'D-Pad', selector: '.guest-dpad' },
+                { id: 'genesis-a', name: 'A', selector: '[data-btn="genesis-a"]' },
+                { id: 'genesis-b', name: 'B', selector: '[data-btn="genesis-b"]' },
+                { id: 'genesis-c', name: 'C', selector: '[data-btn="genesis-c"]' },
+                { id: 'genesis-x', name: 'X', selector: '[data-btn="genesis-x"]' },
+                { id: 'genesis-y', name: 'Y', selector: '[data-btn="genesis-y"]' },
+                { id: 'genesis-z', name: 'Z', selector: '[data-btn="genesis-z"]' },
+                { id: 'genesis-start', name: 'Start', selector: '.guest-genesis-start' }
+            ]
+        };
+        
+        // Size scale factors
+        var sizeScales = {
+            small: 0.8,
+            medium: 1.0,
+            large: 1.25
+        };
+        
+        // Get current console from touch controls
+        function getCurrentConsole() {
+            var controls = document.getElementById('guestTouchControls');
+            return controls ? (controls.getAttribute('data-console') || 'n64') : 'n64';
+        }
+        
+        // Load layout from localStorage
+        function loadLayout(consoleName) {
+            try {
+                var saved = localStorage.getItem('netcade_touch_layout_' + consoleName);
+                if (saved) {
+                    return JSON.parse(saved);
+                }
+            } catch (e) {
+                console.warn('[TouchEditor] Failed to load layout:', e);
+            }
+            return JSON.parse(JSON.stringify(defaultLayouts[consoleName] || defaultLayouts.n64));
+        }
+        
+        // Save layout to localStorage
+        function saveLayout(consoleName, layout) {
+            try {
+                localStorage.setItem('netcade_touch_layout_' + consoleName, JSON.stringify(layout));
+                console.log('[TouchEditor] Saved layout for', consoleName);
+            } catch (e) {
+                console.warn('[TouchEditor] Failed to save layout:', e);
+            }
+        }
+        
+        // List of all draggable selectors that can be repositioned
+        var draggableSelectors = [
+            '.guest-dpad', '.guest-joystick', '.guest-c-btns', '.guest-shoulder-btns',
+            '.guest-snes-btns', '.guest-snes-meta', '.guest-genesis-btns', 
+            '.guest-genesis-start', '.guest-action-btns', '.guest-z-trigger'
+        ];
+        
+        // Reset ALL draggable elements to their CSS defaults
+        function resetToDefaults(controls) {
+            if (!controls) return;
+            
+            // Remove position overrides from ALL draggable elements
+            draggableSelectors.forEach(function(selector) {
+                var elem = controls.querySelector(selector);
+                if (elem) {
+                    elem.classList.remove('touch-editor-positioned');
+                    elem.style.position = '';
+                    elem.style.left = '';
+                    elem.style.top = '';
+                    elem.style.right = '';
+                    elem.style.bottom = '';
+                }
+            });
+            
+            // Remove ALL hidden button classes
+            var hidden = controls.querySelectorAll('.touch-btn-hidden');
+            hidden.forEach(function(elem) {
+                elem.classList.remove('touch-btn-hidden');
+            });
+        }
+        
+        // Apply layout to touch controls
+        function applyLayout(consoleName) {
+            var layout = loadLayout(consoleName);
+            var controls = document.getElementById('guestTouchControls');
+            if (!controls) return;
+            
+            // First reset ALL elements to CSS defaults
+            resetToDefaults(controls);
+            
+            // Apply opacity using data attribute and CSS variable
+            controls.setAttribute('data-touch-opacity', layout.opacity);
+            controls.style.setProperty('--touch-opacity', (layout.opacity / 100).toString());
+            
+            // Apply size using CSS classes (remove old class, add new)
+            controls.classList.remove('touch-size-small', 'touch-size-medium', 'touch-size-large');
+            controls.classList.add('touch-size-' + (layout.size || 'medium'));
+            
+            // Apply hidden buttons for this console from saved layout
+            var buttons = consoleButtons[consoleName] || [];
+            buttons.forEach(function(btnDef) {
+                var elem = controls.querySelector(btnDef.selector);
+                if (elem && layout.hiddenButtons.indexOf(btnDef.id) !== -1) {
+                    elem.classList.add('touch-btn-hidden');
+                }
+            });
+            
+            // Apply saved positions for this console only
+            Object.keys(layout.positions || {}).forEach(function(selector) {
+                var pos = layout.positions[selector];
+                var elem = controls.querySelector(selector);
+                if (elem && pos) {
+                    elem.classList.add('touch-editor-positioned');
+                    elem.style.position = 'absolute';
+                    elem.style.left = pos.left;
+                    elem.style.top = pos.top;
+                    elem.style.right = 'auto';
+                    elem.style.bottom = 'auto';
+                }
+            });
+        }
+        
+        // Render button toggles in editor
+        function renderButtonToggles() {
+            var container = document.getElementById('touchButtonToggles');
+            if (!container) return;
+            
+            var consoleName = getCurrentConsole();
+            var layout = loadLayout(consoleName);
+            var buttons = consoleButtons[consoleName] || [];
+            
+            container.innerHTML = '';
+            buttons.forEach(function(btnDef) {
+                var isHidden = layout.hiddenButtons.indexOf(btnDef.id) !== -1;
+                
+                var toggle = document.createElement('div');
+                toggle.className = 'touch-editor-btn-toggle' + (isHidden ? ' hidden' : ' active');
+                toggle.setAttribute('data-btn-id', btnDef.id);
+                toggle.innerHTML = '<div class="touch-editor-btn-icon">' + btnDef.name.charAt(0) + '</div>' +
+                                   '<span class="touch-editor-btn-name">' + btnDef.name + '</span>';
+                
+                toggle.addEventListener('click', function() {
+                    var currentLayout = loadLayout(consoleName);
+                    var idx = currentLayout.hiddenButtons.indexOf(btnDef.id);
+                    if (idx === -1) {
+                        currentLayout.hiddenButtons.push(btnDef.id);
+                        toggle.classList.remove('active');
+                        toggle.classList.add('hidden');
+                    } else {
+                        currentLayout.hiddenButtons.splice(idx, 1);
+                        toggle.classList.remove('hidden');
+                        toggle.classList.add('active');
+                    }
+                    saveLayout(consoleName, currentLayout);
+                    applyLayout(consoleName);
+                });
+                
+                container.appendChild(toggle);
+            });
+        }
+        
+        // Update size presets UI
+        function updateSizePresets() {
+            var consoleName = getCurrentConsole();
+            var layout = loadLayout(consoleName);
+            
+            document.querySelectorAll('.touch-size-preset').forEach(function(btn) {
+                if (btn.getAttribute('data-size') === layout.size) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+        
+        // Update opacity slider
+        function updateOpacitySlider() {
+            var consoleName = getCurrentConsole();
+            var layout = loadLayout(consoleName);
+            var slider = document.getElementById('touchOpacitySlider');
+            if (slider) {
+                slider.value = layout.opacity;
+            }
+        }
+        
+        // Enable edit mode for drag repositioning
+        function enableEditMode() {
+            var controls = document.getElementById('guestTouchControls');
+            if (!controls) return;
+            
+            touchLayoutState.editMode = true;
+            controls.classList.add('edit-mode');
+            document.getElementById('touchEditModeToggle').classList.add('active');
+            
+            // Make draggable groups
+            var draggables = controls.querySelectorAll('.guest-dpad, .guest-joystick, .guest-c-btns, .guest-shoulder-btns, .guest-snes-btns, .guest-snes-meta, .guest-genesis-btns, .guest-genesis-start, .guest-action-btns, .guest-z-trigger');
+            
+            draggables.forEach(function(elem) {
+                elem.setAttribute('data-draggable', 'true');
+                
+                elem.addEventListener('touchstart', handleDragStart, { passive: false });
+                elem.addEventListener('touchmove', handleDragMove, { passive: false });
+                elem.addEventListener('touchend', handleDragEnd, { passive: false });
+                
+                // Mouse events for desktop testing
+                elem.addEventListener('mousedown', handleDragStart);
+            });
+            
+            document.addEventListener('mousemove', handleDragMove);
+            document.addEventListener('mouseup', handleDragEnd);
+        }
+        
+        // Disable edit mode
+        function disableEditMode() {
+            var controls = document.getElementById('guestTouchControls');
+            if (!controls) return;
+            
+            touchLayoutState.editMode = false;
+            controls.classList.remove('edit-mode');
+            document.getElementById('touchEditModeToggle').classList.remove('active');
+            
+            var draggables = controls.querySelectorAll('[data-draggable="true"]');
+            draggables.forEach(function(elem) {
+                elem.removeAttribute('data-draggable');
+                elem.removeEventListener('touchstart', handleDragStart);
+                elem.removeEventListener('touchmove', handleDragMove);
+                elem.removeEventListener('touchend', handleDragEnd);
+                elem.removeEventListener('mousedown', handleDragStart);
+            });
+            
+            document.removeEventListener('mousemove', handleDragMove);
+            document.removeEventListener('mouseup', handleDragEnd);
+        }
+        
+        // Drag handlers
+        function handleDragStart(e) {
+            if (!touchLayoutState.editMode) return;
+            
+            e.preventDefault();
+            e.stopPropagation();
+            
+            var touch = e.touches ? e.touches[0] : e;
+            var elem = e.currentTarget;
+            
+            touchLayoutState.dragging = elem;
+            touchLayoutState.dragStartX = touch.clientX;
+            touchLayoutState.dragStartY = touch.clientY;
+            
+            var rect = elem.getBoundingClientRect();
+            touchLayoutState.elemStartX = rect.left;
+            touchLayoutState.elemStartY = rect.top;
+            
+            elem.classList.add('dragging');
+        }
+        
+        function handleDragMove(e) {
+            if (!touchLayoutState.editMode || !touchLayoutState.dragging) return;
+            
+            e.preventDefault();
+            
+            var touch = e.touches ? e.touches[0] : e;
+            var dx = touch.clientX - touchLayoutState.dragStartX;
+            var dy = touch.clientY - touchLayoutState.dragStartY;
+            
+            var controls = document.getElementById('guestTouchControls');
+            var controlsRect = controls.getBoundingClientRect();
+            
+            var newLeft = touchLayoutState.elemStartX - controlsRect.left + dx;
+            var newTop = touchLayoutState.elemStartY - controlsRect.top + dy;
+            
+            touchLayoutState.dragging.style.position = 'absolute';
+            touchLayoutState.dragging.style.left = newLeft + 'px';
+            touchLayoutState.dragging.style.top = newTop + 'px';
+            touchLayoutState.dragging.style.right = 'auto';
+            touchLayoutState.dragging.style.bottom = 'auto';
+            touchLayoutState.dragging.style.transform = 'none';
+        }
+        
+        function handleDragEnd(e) {
+            if (!touchLayoutState.dragging) return;
+            
+            var elem = touchLayoutState.dragging;
+            elem.classList.remove('dragging');
+            
+            // Save position
+            var consoleName = getCurrentConsole();
+            var layout = loadLayout(consoleName);
+            
+            // Find the selector for this element
+            var selector = getElementSelector(elem);
+            if (selector) {
+                if (!layout.positions) layout.positions = {};
+                layout.positions[selector] = {
+                    left: elem.style.left,
+                    top: elem.style.top
+                };
+                saveLayout(consoleName, layout);
+            }
+            
+            touchLayoutState.dragging = null;
+        }
+        
+        // Get a unique selector for an element
+        function getElementSelector(elem) {
+            if (elem.classList.contains('guest-dpad')) return '.guest-dpad';
+            if (elem.classList.contains('guest-joystick')) return '.guest-joystick';
+            if (elem.classList.contains('guest-c-btns')) return '.guest-c-btns';
+            if (elem.classList.contains('guest-shoulder-btns')) return '.guest-shoulder-btns';
+            if (elem.classList.contains('guest-snes-btns')) return '.guest-snes-btns';
+            if (elem.classList.contains('guest-snes-meta')) return '.guest-snes-meta';
+            if (elem.classList.contains('guest-genesis-btns')) return '.guest-genesis-btns';
+            if (elem.classList.contains('guest-genesis-start')) return '.guest-genesis-start';
+            if (elem.classList.contains('guest-action-btns')) return '.guest-action-btns';
+            if (elem.classList.contains('guest-z-trigger')) return '.guest-z-trigger';
+            return null;
+        }
+        
+        // Reset layout to default
+        function resetLayout() {
+            var consoleName = getCurrentConsole();
+            localStorage.removeItem('netcade_touch_layout_' + consoleName);
+            
+            // Apply default layout (applyLayout calls resetToDefaults internally)
+            applyLayout(consoleName);
+            renderButtonToggles();
+            updateSizePresets();
+            updateOpacitySlider();
+        }
+        
+        // Check if we're on mobile and show the layout button
+        function checkMobileAndShowButton() {
+            var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                           (navigator.maxTouchPoints && navigator.maxTouchPoints > 2) ||
+                           ('ontouchstart' in window);
+            
+            var btn = document.getElementById('touchLayoutBtn');
+            if (btn) {
+                btn.style.display = isMobile ? 'flex' : 'none';
+            }
+        }
+        
+        // Initialize touch layout editor
+        function initTouchLayoutEditor() {
+            var btn = document.getElementById('touchLayoutBtn');
+            var modal = document.getElementById('touchEditorModal');
+            var closeBtn = document.getElementById('touchEditorClose');
+            var saveBtn = document.getElementById('touchEditorSave');
+            var resetBtn = document.getElementById('touchEditorReset');
+            var editModeToggle = document.getElementById('touchEditModeToggle');
+            var opacitySlider = document.getElementById('touchOpacitySlider');
+            
+            if (!btn || !modal) return;
+            
+            // Show button on mobile only
+            checkMobileAndShowButton();
+            
+            // Open modal
+            btn.addEventListener('click', function() {
+                modal.classList.add('active');
+                renderButtonToggles();
+                updateSizePresets();
+                updateOpacitySlider();
+            });
+            
+            // Close modal
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function() {
+                    modal.classList.remove('active');
+                    if (touchLayoutState.editMode) {
+                        disableEditMode();
+                    }
+                });
+            }
+            
+            // Close on backdrop click
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                    if (touchLayoutState.editMode) {
+                        disableEditMode();
+                    }
+                }
+            });
+            
+            // Size presets
+            document.querySelectorAll('.touch-size-preset').forEach(function(preset) {
+                preset.addEventListener('click', function() {
+                    var size = preset.getAttribute('data-size');
+                    var consoleName = getCurrentConsole();
+                    var layout = loadLayout(consoleName);
+                    layout.size = size;
+                    saveLayout(consoleName, layout);
+                    applyLayout(consoleName);
+                    updateSizePresets();
+                });
+            });
+            
+            // Opacity slider
+            if (opacitySlider) {
+                opacitySlider.addEventListener('input', function() {
+                    var consoleName = getCurrentConsole();
+                    var layout = loadLayout(consoleName);
+                    layout.opacity = parseInt(opacitySlider.value);
+                    saveLayout(consoleName, layout);
+                    applyLayout(consoleName);
+                });
+            }
+            
+            // Edit mode toggle
+            if (editModeToggle) {
+                editModeToggle.addEventListener('click', function() {
+                    if (touchLayoutState.editMode) {
+                        disableEditMode();
+                    } else {
+                        enableEditMode();
+                    }
+                });
+            }
+            
+            // Save button
+            if (saveBtn) {
+                saveBtn.addEventListener('click', function() {
+                    modal.classList.remove('active');
+                    if (touchLayoutState.editMode) {
+                        disableEditMode();
+                    }
+                });
+            }
+            
+            // Reset button
+            if (resetBtn) {
+                resetBtn.addEventListener('click', function() {
+                    if (confirm('Reset touch controls to default positions?')) {
+                        resetLayout();
+                    }
+                });
+            }
+            
+            // Apply saved layout when console changes
+            var originalSwitchLayout = window.switchTouchLayout;
+            
+            window.switchTouchLayout = function(consoleName) {
+                // Switch the console (changes data-console attribute)
+                if (originalSwitchLayout) {
+                    originalSwitchLayout(consoleName);
+                }
+                
+                // Apply the console's saved layout (resets to defaults first)
+                setTimeout(function() {
+                    applyLayout(consoleName);
+                    renderButtonToggles();
+                    updateSizePresets();
+                    updateOpacitySlider();
+                }, 50);
+            };
+            
+            // Apply initial layout
+            var currentConsole = getCurrentConsole();
+            applyLayout(currentConsole);
+            
+            console.log('[TouchEditor] Touch layout editor initialized');
+        }
+        
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initTouchLayoutEditor);
+        } else {
+            initTouchLayoutEditor();
         }
     })();
     </script>
