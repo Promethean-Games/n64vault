@@ -3563,6 +3563,7 @@
         
         function playGame(game) {
             selectedGame = game;
+            state.currentGame = game;  // Set for emulator core selection
             setStatus('Loading ' + game.title + '...', 'loading');
             
             // Switch touch controls to match game console
