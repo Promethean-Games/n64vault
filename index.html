@@ -3348,6 +3348,7 @@
             wizard: { active: false, index: 0, mode: null },
             isMobile: false,
             mobileGamepadSwitched: false,  // Tracks if we already auto-switched to gamepad on mobile
+            consoleAutoSwitched: false,    // Tracks if we already auto-switched console based on controller type
             gameRunning: false,
             controlsVisible: true,
             // Multiplayer state
@@ -4182,10 +4183,22 @@
                 console.log('[Gamepad] Connected count changed:', prevCount, '->', newCount);
             }
             
-            // Check for newly connected controllers to auto-apply mappings
+            // Check for newly connected controllers to auto-apply mappings and auto-switch console
             connected.forEach(function(controller, idx) {
                 var controllerKey = controller.index + ':' + controller.id;
                 var isNew = !previousControllers[controllerKey];
+                
+                // Auto-switch console selector to match controller type (genesis/snes/n64)
+                // Only do this for newly detected controllers and matching console types
+                if (isNew && controller.type !== 'generic' && !state.consoleAutoSwitched) {
+                    var controllerConsole = controller.type; // genesis, snes, or n64
+                    if (consoleSchemas[controllerConsole] && selectedMappingConsole !== controllerConsole) {
+                        console.log('[Gamepad] Auto-switching console from', selectedMappingConsole, 'to', controllerConsole);
+                        state.consoleAutoSwitched = true; // Only auto-switch once per session
+                        switchMappingConsole(controllerConsole);
+                    }
+                }
+                
                 var schema = getCurrentSchema();
                 var storageKey = schema.storageGamepadPrefix + idx;
                 var hasCustomMapping = localStorage.getItem(storageKey);
