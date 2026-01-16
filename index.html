@@ -4211,12 +4211,21 @@
                 render();
                 var typeInfo = connected[0].type !== 'generic' ? ' (' + connected[0].typeName + ')' : '';
                 setStatus(newCount + ' controller(s) connected' + typeInfo, 'ready');
+                
+                // On mobile, auto-switch to gamepad mode when controller is connected
+                if (state.isMobile && state.mode === 'mobile') {
+                    switchMode('gamepad');
+                    showToast('Controller Connected', 
+                        'Switched to gamepad controls. Use the Mobile tab for touch controls.', 
+                        'success');
+                }
             } else if (newCount === 0 && prevCount > 0) {
                 elements.tabGamepad.disabled = true;
                 elements.gamepadTabLabel.textContent = 'USB Controller';
                 elements.controllerTabs.style.display = 'none';
                 if (state.mode === 'gamepad') {
-                    switchMode('keyboard');
+                    // On mobile, switch back to mobile mode; otherwise keyboard
+                    switchMode(state.isMobile ? 'mobile' : 'keyboard');
                 }
                 setStatus('All controllers disconnected', 'ready');
             } else if (newCount !== prevCount) {
@@ -6083,11 +6092,13 @@
             state.isMobile = isMobileDevice();
             if (state.isMobile) {
                 elements.tabMobile.style.display = 'flex';
+                // Default to mobile mode, but don't disable gamepad detection
                 switchMode('mobile');
             }
             
             render();
             bindEvents();
+            // Detect gamepads even on mobile - users can connect controllers
             detectGamepads();
             loadGames();
             
