@@ -3347,6 +3347,7 @@
             connectedGamepads: [],
             wizard: { active: false, index: 0, mode: null },
             isMobile: false,
+            mobileGamepadSwitched: false,  // Tracks if we already auto-switched to gamepad on mobile
             gameRunning: false,
             controlsVisible: true,
             // Multiplayer state
@@ -4203,39 +4204,54 @@
             
             state.connectedGamepads = connected;
             
-            if (newCount > 0 && prevCount === 0) {
-                elements.tabGamepad.disabled = false;
-                state.selectedGamepadIndex = 0;
-                updateControllerTabs();
-                updateGamepadBanner();
-                render();
-                var typeInfo = connected[0].type !== 'generic' ? ' (' + connected[0].typeName + ')' : '';
-                setStatus(newCount + ' controller(s) connected' + typeInfo, 'ready');
+            // Always ensure gamepad tab is properly enabled/disabled based on current count
+            if (newCount > 0) {
+                // Enable gamepad tab whenever we have controllers
+                if (elements.tabGamepad.disabled) {
+                    elements.tabGamepad.disabled = false;
+                    console.log('[Gamepad] Enabled gamepad tab, count:', newCount);
+                }
                 
-                // On mobile, auto-switch to gamepad mode when controller is connected
-                if (state.isMobile && state.mode === 'mobile') {
+                // First time detecting gamepads - initialize state
+                if (prevCount === 0) {
+                    state.selectedGamepadIndex = 0;
+                    updateControllerTabs();
+                    updateGamepadBanner();
+                    render();
+                    var typeInfo = connected[0].type !== 'generic' ? ' (' + connected[0].typeName + ')' : '';
+                    setStatus(newCount + ' controller(s) connected' + typeInfo, 'ready');
+                }
+                
+                // On mobile, auto-switch to gamepad mode if still on mobile mode (only once)
+                if (state.isMobile && state.mode === 'mobile' && !state.mobileGamepadSwitched) {
+                    state.mobileGamepadSwitched = true;
                     switchMode('gamepad');
                     showToast('Controller Connected', 
-                        'Switched to gamepad controls. Use the Mobile tab for touch controls.', 
+                        connected[0].typeName + ' controller ready! Tap Mobile tab for touch controls.', 
                         'success');
+                    console.log('[Gamepad] Mobile: Auto-switched to gamepad mode, controller:', connected[0].id);
+                }
+                
+                // Update UI if count changed
+                if (newCount !== prevCount && prevCount > 0) {
+                    if (state.selectedGamepadIndex >= newCount) {
+                        state.selectedGamepadIndex = Math.max(0, newCount - 1);
+                    }
+                    updateControllerTabs();
+                    updateGamepadBanner();
+                    render();
+                    setStatus(newCount + ' controller(s) connected', 'ready');
                 }
             } else if (newCount === 0 && prevCount > 0) {
                 elements.tabGamepad.disabled = true;
                 elements.gamepadTabLabel.textContent = 'USB Controller';
                 elements.controllerTabs.style.display = 'none';
+                state.mobileGamepadSwitched = false; // Reset so next connection will auto-switch
                 if (state.mode === 'gamepad') {
                     // On mobile, switch back to mobile mode; otherwise keyboard
                     switchMode(state.isMobile ? 'mobile' : 'keyboard');
                 }
                 setStatus('All controllers disconnected', 'ready');
-            } else if (newCount !== prevCount) {
-                if (state.selectedGamepadIndex >= newCount) {
-                    state.selectedGamepadIndex = Math.max(0, newCount - 1);
-                }
-                updateControllerTabs();
-                updateGamepadBanner();
-                render();
-                setStatus(newCount + ' controller(s) connected', 'ready');
             }
         }
         
