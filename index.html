@@ -2772,6 +2772,20 @@
                 </button>
             </div>
             
+            <!-- Console Selector for Mappings -->
+            <div class="console-mapping-selector" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: rgba(0,0,0,0.3); border-radius: 8px; margin-bottom: 16px;">
+                <label for="consoleMappingSelect" style="font-weight: 600; color: var(--primary);">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 18px; height: 18px; vertical-align: middle; margin-right: 6px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
+                    Console:
+                </label>
+                <select id="consoleMappingSelect" data-testid="select-console-mapping" style="padding: 8px 16px; border-radius: 6px; background: var(--bg-dark); color: var(--text); border: 1px solid var(--primary); font-size: 0.95rem; cursor: pointer;">
+                    <option value="n64">Nintendo 64</option>
+                    <option value="snes">Super Nintendo (SNES)</option>
+                    <option value="segaMD">Sega Genesis</option>
+                </select>
+                <span style="font-size: 0.85rem; color: var(--text-muted);">Configure controls for this console</span>
+            </div>
+            
             <!-- Keyboard Content -->
             <div class="input-content active" id="content-keyboard">
                 <div class="mapping-header">
@@ -3030,43 +3044,139 @@
         'use strict';
         
         // ===== Constants =====
-        var STORAGE_KEY_KEYBOARD = 'netcade_mappings_keyboard';
-        var STORAGE_KEY_GAMEPAD_PREFIX = 'netcade_mappings_gamepad_';
         var MAX_CONTROLLERS = 4;
+        var STORAGE_KEY_SELECTED_CONSOLE = 'netcade_selected_console';
         
-        var defaultKeyboardMap = {
-            a: 'KeyZ', b: 'KeyX', start: 'Enter', z: 'ShiftLeft',
-            l: 'KeyQ', r: 'KeyE',
-            cUp: 'KeyI', cDown: 'KeyK', cLeft: 'KeyJ', cRight: 'KeyL',
-            dUp: 'ArrowUp', dDown: 'ArrowDown', dLeft: 'ArrowLeft', dRight: 'ArrowRight',
-            stickUp: 'KeyW', stickDown: 'KeyS', stickLeft: 'KeyA', stickRight: 'KeyD'
+        // Per-console schemas define buttons, labels, and EmulatorJS indices for each console
+        var consoleSchemas = {
+            n64: {
+                name: 'Nintendo 64',
+                shortName: 'N64',
+                storageKeyboard: 'netcade_mappings_keyboard_n64',
+                storageGamepadPrefix: 'netcade_mappings_gamepad_n64_',
+                buttonGroups: [
+                    { title: 'Action Buttons', keys: ['a', 'b', 'start', 'z'] },
+                    { title: 'Shoulder Buttons', keys: ['l', 'r'] },
+                    { title: 'C-Buttons', keys: ['cUp', 'cDown', 'cLeft', 'cRight'] },
+                    { title: 'D-Pad', keys: ['dUp', 'dDown', 'dLeft', 'dRight'] },
+                    { title: 'Analog Stick', keys: ['stickUp', 'stickDown', 'stickLeft', 'stickRight'] }
+                ],
+                buttonLabels: {
+                    a: 'A Button', b: 'B Button', start: 'Start', z: 'Z Trigger',
+                    l: 'L Shoulder', r: 'R Shoulder',
+                    cUp: 'C-Up', cDown: 'C-Down', cLeft: 'C-Left', cRight: 'C-Right',
+                    dUp: 'D-Up', dDown: 'D-Down', dLeft: 'D-Left', dRight: 'D-Right',
+                    stickUp: 'Stick Up', stickDown: 'Stick Down', stickLeft: 'Stick Left', stickRight: 'Stick Right'
+                },
+                wizardOrder: ['a', 'b', 'start', 'z', 'l', 'r', 'cUp', 'cDown', 'cLeft', 'cRight', 'dUp', 'dDown', 'dLeft', 'dRight', 'stickUp', 'stickDown', 'stickLeft', 'stickRight'],
+                // EmulatorJS control IDs for N64
+                ejsMap: {
+                    'a': 0, 'b': 1, 'start': 3,
+                    'dUp': 4, 'dDown': 5, 'dLeft': 6, 'dRight': 7,
+                    'l': 8, 'r': 9, 'z': 10,
+                    'cUp': 11, 'cDown': 12, 'cLeft': 13, 'cRight': 14,
+                    'stickUp': 16, 'stickDown': 17, 'stickLeft': 18, 'stickRight': 19
+                },
+                defaultKeyboard: {
+                    a: 'KeyZ', b: 'KeyX', start: 'Enter', z: 'ShiftLeft',
+                    l: 'KeyQ', r: 'KeyE',
+                    cUp: 'KeyI', cDown: 'KeyK', cLeft: 'KeyJ', cRight: 'KeyL',
+                    dUp: 'ArrowUp', dDown: 'ArrowDown', dLeft: 'ArrowLeft', dRight: 'ArrowRight',
+                    stickUp: 'KeyW', stickDown: 'KeyS', stickLeft: 'KeyA', stickRight: 'KeyD'
+                },
+                defaultGamepad: {
+                    a: 'Button:0', b: 'Button:2', start: 'Button:9', z: 'Button:6',
+                    l: 'Button:4', r: 'Button:5',
+                    cUp: 'Axis:3:-', cDown: 'Axis:3:+', cLeft: 'Axis:2:-', cRight: 'Axis:2:+',
+                    dUp: 'Hat:up', dDown: 'Hat:down', dLeft: 'Hat:left', dRight: 'Hat:right',
+                    stickUp: 'Axis:1:-', stickDown: 'Axis:1:+', stickLeft: 'Axis:0:-', stickRight: 'Axis:0:+'
+                }
+            },
+            snes: {
+                name: 'Super Nintendo',
+                shortName: 'SNES',
+                storageKeyboard: 'netcade_mappings_keyboard_snes',
+                storageGamepadPrefix: 'netcade_mappings_gamepad_snes_',
+                buttonGroups: [
+                    { title: 'Face Buttons', keys: ['a', 'b', 'x', 'y'] },
+                    { title: 'Shoulder Buttons', keys: ['l', 'r'] },
+                    { title: 'Menu Buttons', keys: ['start', 'select'] },
+                    { title: 'D-Pad', keys: ['dUp', 'dDown', 'dLeft', 'dRight'] }
+                ],
+                buttonLabels: {
+                    a: 'A Button', b: 'B Button', x: 'X Button', y: 'Y Button',
+                    l: 'L Shoulder', r: 'R Shoulder',
+                    start: 'Start', select: 'Select',
+                    dUp: 'D-Up', dDown: 'D-Down', dLeft: 'D-Left', dRight: 'D-Right'
+                },
+                wizardOrder: ['a', 'b', 'x', 'y', 'l', 'r', 'start', 'select', 'dUp', 'dDown', 'dLeft', 'dRight'],
+                // EmulatorJS control IDs for SNES: 0=Y, 1=X, 2=Select, 3=Start, 4-7=D-pad, 8=B, 9=A, 10=L, 11=R
+                ejsMap: {
+                    'y': 0, 'x': 1, 'select': 2, 'start': 3,
+                    'dUp': 4, 'dDown': 5, 'dLeft': 6, 'dRight': 7,
+                    'b': 8, 'a': 9, 'l': 10, 'r': 11
+                },
+                defaultKeyboard: {
+                    a: 'KeyZ', b: 'KeyX', x: 'KeyA', y: 'KeyS',
+                    l: 'KeyQ', r: 'KeyE',
+                    start: 'Enter', select: 'ShiftLeft',
+                    dUp: 'ArrowUp', dDown: 'ArrowDown', dLeft: 'ArrowLeft', dRight: 'ArrowRight'
+                },
+                defaultGamepad: {
+                    a: 'Button:1', b: 'Button:0', x: 'Button:3', y: 'Button:2',
+                    l: 'Button:4', r: 'Button:5',
+                    start: 'Button:9', select: 'Button:8',
+                    dUp: 'Hat:up', dDown: 'Hat:down', dLeft: 'Hat:left', dRight: 'Hat:right'
+                }
+            },
+            segaMD: {
+                name: 'Sega Genesis',
+                shortName: 'Genesis',
+                storageKeyboard: 'netcade_mappings_keyboard_genesis',
+                storageGamepadPrefix: 'netcade_mappings_gamepad_genesis_',
+                buttonGroups: [
+                    { title: 'Face Buttons', keys: ['a', 'b', 'c'] },
+                    { title: 'Upper Buttons (6-btn)', keys: ['x', 'y', 'z'] },
+                    { title: 'Menu Buttons', keys: ['start', 'mode'] },
+                    { title: 'D-Pad', keys: ['dUp', 'dDown', 'dLeft', 'dRight'] }
+                ],
+                buttonLabels: {
+                    a: 'A Button', b: 'B Button', c: 'C Button',
+                    x: 'X Button', y: 'Y Button', z: 'Z Button',
+                    start: 'Start', mode: 'Mode',
+                    dUp: 'D-Up', dDown: 'D-Down', dLeft: 'D-Left', dRight: 'D-Right'
+                },
+                wizardOrder: ['a', 'b', 'c', 'x', 'y', 'z', 'start', 'mode', 'dUp', 'dDown', 'dLeft', 'dRight'],
+                // EmulatorJS control IDs for Genesis: 0=Y, 1=X, 2=Mode, 3=Start, 4-7=D-pad, 8=A, 9=B, 10=C, 11=Z (varies by core)
+                ejsMap: {
+                    'y': 0, 'x': 1, 'mode': 2, 'start': 3,
+                    'dUp': 4, 'dDown': 5, 'dLeft': 6, 'dRight': 7,
+                    'a': 8, 'b': 9, 'c': 10, 'z': 11
+                },
+                defaultKeyboard: {
+                    a: 'KeyZ', b: 'KeyX', c: 'KeyC',
+                    x: 'KeyA', y: 'KeyS', z: 'KeyD',
+                    start: 'Enter', mode: 'ShiftLeft',
+                    dUp: 'ArrowUp', dDown: 'ArrowDown', dLeft: 'ArrowLeft', dRight: 'ArrowRight'
+                },
+                defaultGamepad: {
+                    a: 'Button:0', b: 'Button:1', c: 'Button:2',
+                    x: 'Button:3', y: 'Button:4', z: 'Button:5',
+                    start: 'Button:9', mode: 'Button:8',
+                    dUp: 'Hat:up', dDown: 'Hat:down', dLeft: 'Hat:left', dRight: 'Hat:right'
+                }
+            }
         };
         
-        var defaultGamepadMap = {
-            a: 'Button:0', b: 'Button:2', start: 'Button:9', z: 'Button:6',
-            l: 'Button:4', r: 'Button:5',
-            cUp: 'Button:12', cDown: 'Button:13', cLeft: 'Button:14', cRight: 'Button:15',
-            dUp: 'Axis:1:-', dDown: 'Axis:1:+', dLeft: 'Axis:0:-', dRight: 'Axis:0:+',
-            stickUp: 'Axis:3:-', stickDown: 'Axis:3:+', stickLeft: 'Axis:2:-', stickRight: 'Axis:2:+'
-        };
+        // Selected console for mapping (defaults to n64)
+        var selectedMappingConsole = localStorage.getItem(STORAGE_KEY_SELECTED_CONSOLE) || 'n64';
         
-        var buttonGroups = [
-            { title: 'Action Buttons', keys: ['a', 'b', 'start', 'z'] },
-            { title: 'Shoulder Buttons', keys: ['l', 'r'] },
-            { title: 'C-Buttons', keys: ['cUp', 'cDown', 'cLeft', 'cRight'] },
-            { title: 'D-Pad', keys: ['dUp', 'dDown', 'dLeft', 'dRight'] },
-            { title: 'Analog Stick', keys: ['stickUp', 'stickDown', 'stickLeft', 'stickRight'] }
-        ];
+        // Helper to get current schema
+        function getCurrentSchema() {
+            return consoleSchemas[selectedMappingConsole] || consoleSchemas.n64;
+        }
         
-        var buttonLabels = {
-            a: 'A Button', b: 'B Button', start: 'Start', z: 'Z Trigger',
-            l: 'L Trigger', r: 'R Trigger',
-            cUp: 'C-Up', cDown: 'C-Down', cLeft: 'C-Left', cRight: 'C-Right',
-            dUp: 'D-Up', dDown: 'D-Down', dLeft: 'D-Left', dRight: 'D-Right',
-            stickUp: 'Stick Up', stickDown: 'Stick Down', stickLeft: 'Stick Left', stickRight: 'Stick Right'
-        };
-        
-        var wizardOrder = ['a', 'b', 'start', 'z', 'l', 'r', 'cUp', 'cDown', 'cLeft', 'cRight', 'dUp', 'dDown', 'dLeft', 'dRight', 'stickUp', 'stickDown', 'stickLeft', 'stickRight'];
+        // All storage keys and defaults are now console-specific via consoleSchemas
         
         var gamepadButtonNames = {
             0: 'A', 1: 'B', 2: 'X', 3: 'Y', 4: 'LB', 5: 'RB', 6: 'LT', 7: 'RT',
@@ -3186,22 +3296,50 @@
         
         // Get default mapping for a controller type
         function getDefaultMapForController(type) {
-            return controllerDefaultMaps[type] || defaultGamepadMap;
+            var schema = getCurrentSchema();
+            return controllerDefaultMaps[type] || schema.defaultGamepad;
         }
         
         // ===== State =====
         function loadGamepadMaps() {
+            var schema = getCurrentSchema();
             var maps = {};
             for (var i = 0; i < MAX_CONTROLLERS; i++) {
-                maps[i] = loadMap(STORAGE_KEY_GAMEPAD_PREFIX + i, defaultGamepadMap);
+                maps[i] = loadMap(schema.storageGamepadPrefix + i, schema.defaultGamepad);
             }
             return maps;
+        }
+        
+        function loadKeyboardMap() {
+            var schema = getCurrentSchema();
+            return loadMap(schema.storageKeyboard, schema.defaultKeyboard);
+        }
+        
+        // Switch to a different console's mappings
+        function switchMappingConsole(consoleId) {
+            if (!consoleSchemas[consoleId]) return;
+            selectedMappingConsole = consoleId;
+            localStorage.setItem(STORAGE_KEY_SELECTED_CONSOLE, consoleId);
+            
+            // Reload mappings for the new console
+            state.keyboardMap = loadKeyboardMap();
+            state.gamepadMaps = loadGamepadMaps();
+            
+            // Update the dropdown if it exists
+            var selector = document.getElementById('consoleMappingSelect');
+            if (selector) selector.value = consoleId;
+            
+            // Re-render the controls UI
+            render();
+            
+            var schema = getCurrentSchema();
+            showToast('Console Changed', 'Now configuring controls for ' + schema.name, 'success');
         }
         
         var state = {
             mainTab: 'library',
             mode: 'keyboard',
-            keyboardMap: loadMap(STORAGE_KEY_KEYBOARD, defaultKeyboardMap),
+            keyboardMap: loadKeyboardMap(),
             gamepadMaps: loadGamepadMaps(),
             selectedGamepadIndex: 0,
             listeningKey: null,
@@ -3572,6 +3710,11 @@
                 window.switchTouchLayout(gameConsole);
             }
             
+            // Auto-switch mapping console selector to match the game being played
+            if (selectedMappingConsole !== gameConsole) {
+                switchMappingConsole(gameConsole);
+            }
+            
             console.log('[Netcade] playGame called, mp state:', {
                 isHost: state.mp.isHost,
                 hasRoom: !!state.mp.room,
@@ -3691,7 +3834,13 @@
             var container = document.getElementById(containerId);
             container.innerHTML = '';
             
-            buttonGroups.forEach(function(group) {
+            // Use dynamic schema for current console
+            var schema = getCurrentSchema();
+            var groups = schema.buttonGroups;
+            var labels = schema.buttonLabels;
+            var order = schema.wizardOrder;
+            
+            groups.forEach(function(group) {
                 var groupDiv = document.createElement('div');
                 groupDiv.className = 'mapping-group';
                 
@@ -3713,7 +3862,7 @@
                         item.classList.add('listening');
                     }
                     if (state.wizard.active && state.wizard.mode === mode) {
-                        var wizardIdx = wizardOrder.indexOf(key);
+                        var wizardIdx = order.indexOf(key);
                         if (wizardIdx < state.wizard.index) {
                             item.classList.add('completed');
                         }
@@ -3721,7 +3870,7 @@
                     
                     var label = document.createElement('span');
                     label.className = 'key-label';
-                    label.textContent = buttonLabels[key];
+                    label.textContent = labels[key] || key;
                     
                     var value = document.createElement('span');
                     value.className = 'key-value';
@@ -3731,7 +3880,7 @@
                         value.classList.add('listening');
                         value.textContent = 'Press...';
                     } else {
-                        value.textContent = formatKeyName(map[key]);
+                        value.textContent = formatKeyName(map[key] || '');
                     }
                     
                     item.appendChild(label);
@@ -4036,16 +4185,18 @@
             connected.forEach(function(controller, idx) {
                 var controllerKey = controller.index + ':' + controller.id;
                 var isNew = !previousControllers[controllerKey];
-                var hasCustomMapping = localStorage.getItem(STORAGE_KEY_GAMEPAD_PREFIX + idx);
+                var schema = getCurrentSchema();
+                var storageKey = schema.storageGamepadPrefix + idx;
+                var hasCustomMapping = localStorage.getItem(storageKey);
                 
                 if (isNew && !hasCustomMapping && controller.type !== 'generic') {
                     var defaultMap = getDefaultMapForController(controller.type);
                     state.gamepadMaps[idx] = Object.assign({}, defaultMap);
-                    // Persist to localStorage so mappings survive page reload and work with new games
-                    saveMap(STORAGE_KEY_GAMEPAD_PREFIX + idx, state.gamepadMaps[idx]);
-                    console.log('[Gamepad] Auto-applied and saved', controller.type, 'mapping for controller', idx);
+                    // Persist to localStorage using current console's storage key
+                    saveMap(storageKey, state.gamepadMaps[idx]);
+                    console.log('[Gamepad] Auto-applied and saved', controller.type, 'mapping for', schema.name, 'at controller', idx);
                     showToast('Controller Detected', 
-                        controller.typeName + ' controller detected! Default mappings applied.', 
+                        controller.typeName + ' controller detected! Default mappings applied for ' + schema.shortName + '.', 
                         'success');
                 }
             });
@@ -4141,13 +4292,15 @@
         
         // ===== Wizard =====
         function startWizard(mode) {
+            var schema = getCurrentSchema();
+            var order = schema.wizardOrder;
             state.wizard = { active: true, index: 0, mode: mode };
-            state.listeningKey = wizardOrder[0];
+            state.listeningKey = order[0];
             state.listeningMode = mode;
             
             elements.wizardOverlay.classList.add('active');
-            elements.wizardMode.textContent = mode === 'keyboard' ? 'Keyboard Mapping' : 'Controller Mapping';
-            elements.wizardTotal.textContent = wizardOrder.length;
+            elements.wizardMode.textContent = schema.shortName + ' ' + (mode === 'keyboard' ? 'Keyboard Mapping' : 'Controller Mapping');
+            elements.wizardTotal.textContent = order.length;
             elements.wizardInstruction.textContent = mode === 'keyboard' ? 'Press the key for this button' : 'Press a button or move a stick';
             
             updateWizardUI();
@@ -4159,14 +4312,16 @@
         }
         
         function advanceWizard() {
+            var schema = getCurrentSchema();
+            var order = schema.wizardOrder;
             state.wizard.index++;
             
-            if (state.wizard.index >= wizardOrder.length) {
+            if (state.wizard.index >= order.length) {
                 completeWizard();
                 return;
             }
             
-            state.listeningKey = wizardOrder[state.wizard.index];
+            state.listeningKey = order[state.wizard.index];
             stabilizationFrames = 0;
             previousButtons = [];
             previousAxes = [];
@@ -4202,12 +4357,15 @@
         }
         
         function updateWizardUI() {
-            var key = wizardOrder[state.wizard.index];
-            var progress = ((state.wizard.index) / wizardOrder.length) * 100;
+            var schema = getCurrentSchema();
+            var order = schema.wizardOrder;
+            var labels = schema.buttonLabels;
+            var key = order[state.wizard.index];
+            var progress = ((state.wizard.index) / order.length) * 100;
             
             elements.wizardStep.textContent = state.wizard.index + 1;
             elements.wizardProgressBar.style.width = progress + '%';
-            elements.wizardButtonName.textContent = buttonLabels[key];
+            elements.wizardButtonName.textContent = labels[key] || key;
             elements.wizardHint.textContent = 'Waiting for input...';
         }
         
@@ -4450,38 +4608,11 @@
             };
             
             // Build control mappings from saved user preferences
-            // EmulatorJS N64 Control IDs (from their source):
-            // 0=A, 1=B, 2=SELECT(unused), 3=START, 4=D-Up, 5=D-Down, 6=D-Left, 7=D-Right
-            // 8=L, 9=R, 10=Z, 11=C-Up, 12=C-Down, 13=C-Left, 14=C-Right
-            // 16-19=Analog stick directions (Up/Down/Left/Right)
-            // 24-27=Analog axes
-            var n64ToEjsMap = {
-                'a': 0, 'b': 1, 'start': 3,
-                'dUp': 4, 'dDown': 5, 'dLeft': 6, 'dRight': 7,
-                'l': 8, 'r': 9, 'z': 10,
-                'cUp': 11, 'cDown': 12, 'cLeft': 13, 'cRight': 14,
-                'stickUp': 16, 'stickDown': 17, 'stickLeft': 18, 'stickRight': 19
-            };
+            // Get schema for the game's console type
+            var gameSchema = consoleSchemas[gameConsole] || consoleSchemas.n64;
+            var ejsMap = gameSchema.ejsMap;
             
-            // Default keyboard mappings as fallback (A=Z, B=X per documentation)
-            var defaultKbFallback = {
-                a: 'z', b: 'x', start: 'enter', z: 'shift',
-                l: 'q', r: 'e',
-                cUp: 'i', cDown: 'k', cLeft: 'j', cRight: 'l',
-                dUp: 'arrowup', dDown: 'arrowdown', dLeft: 'arrowleft', dRight: 'arrowright',
-                stickUp: 'w', stickDown: 's', stickLeft: 'a', stickRight: 'd'
-            };
-            
-            // Default gamepad mappings as fallback
-            var defaultGpFallback = {
-                a: 'FACE_1', b: 'FACE_2', start: 'START', z: 'LEFT_TRIGGER',
-                l: 'LEFT_SHOULDER', r: 'RIGHT_SHOULDER',
-                cUp: 'RIGHT_STICK_Y:-1', cDown: 'RIGHT_STICK_Y:+1', 
-                cLeft: 'RIGHT_STICK_X:-1', cRight: 'RIGHT_STICK_X:+1',
-                dUp: 'DPAD_UP', dDown: 'DPAD_DOWN', dLeft: 'DPAD_LEFT', dRight: 'DPAD_RIGHT',
-                stickUp: 'LEFT_STICK_Y:-1', stickDown: 'LEFT_STICK_Y:+1', 
-                stickLeft: 'LEFT_STICK_X:-1', stickRight: 'LEFT_STICK_X:+1'
-            };
+            console.log('[Netcade] Loading controls for console:', gameConsole, 'schema:', gameSchema.name);
             
             function keyCodeToEjsKey(keyCode) {
                 if (!keyCode) return null;
@@ -4536,32 +4667,34 @@
             
             function buildPlayerControls(playerIndex) {
                 var controls = {};
-                // Re-read from localStorage to get the freshest mappings (auto-detected or user-saved)
-                var kbMap = loadMap(STORAGE_KEY_KEYBOARD, defaultKbFallback);
-                var gpMap = loadMap(STORAGE_KEY_GAMEPAD_PREFIX + playerIndex, defaultGpFallback);
+                // Load console-specific mappings from localStorage
+                var kbMap = loadMap(gameSchema.storageKeyboard, gameSchema.defaultKeyboard);
+                var gpMap = loadMap(gameSchema.storageGamepadPrefix + playerIndex, gameSchema.defaultGamepad);
                 
-                console.log('[Netcade] Building controls for player', playerIndex, 'kbMap:', kbMap, 'gpMap:', gpMap);
+                console.log('[Netcade] Building controls for player', playerIndex, 'console:', gameConsole, 'kbMap:', kbMap, 'gpMap:', gpMap);
                 
-                for (var n64Btn in n64ToEjsMap) {
-                    var ejsId = n64ToEjsMap[n64Btn];
+                for (var btn in ejsMap) {
+                    var ejsId = ejsMap[btn];
                     var ctrl = {};
                     
                     // Get keyboard mapping with fallback
-                    var kbKey = keyCodeToEjsKey(kbMap[n64Btn]);
-                    ctrl.value = kbKey || defaultKbFallback[n64Btn] || '';
+                    var kbKey = keyCodeToEjsKey(kbMap[btn]);
+                    ctrl.value = kbKey || keyCodeToEjsKey(gameSchema.defaultKeyboard[btn]) || '';
                     
                     // Get gamepad mapping with fallback
-                    var gpBtn = gamepadBindingToEjs(gpMap[n64Btn]);
-                    ctrl.value2 = gpBtn || defaultGpFallback[n64Btn] || '';
+                    var gpBtn = gamepadBindingToEjs(gpMap[btn]);
+                    ctrl.value2 = gpBtn || gamepadBindingToEjs(gameSchema.defaultGamepad[btn]) || '';
                     
                     controls[ejsId] = ctrl;
                 }
                 
-                // Add analog stick axes for gamepad (these are always the same)
-                controls[24] = { 'value2': 'LEFT_STICK_X:+1' };
-                controls[25] = { 'value2': 'LEFT_STICK_X:-1' };
-                controls[26] = { 'value2': 'LEFT_STICK_Y:+1' };
-                controls[27] = { 'value2': 'LEFT_STICK_Y:-1' };
+                // Add analog stick axes for gamepad (N64 only has analog stick mapping)
+                if (gameConsole === 'n64') {
+                    controls[24] = { 'value2': 'LEFT_STICK_X:+1' };
+                    controls[25] = { 'value2': 'LEFT_STICK_X:-1' };
+                    controls[26] = { 'value2': 'LEFT_STICK_Y:+1' };
+                    controls[27] = { 'value2': 'LEFT_STICK_Y:-1' };
+                }
                 
                 return controls;
             }
@@ -4786,6 +4919,15 @@
                 });
             });
             
+            // Console mapping selector
+            var consoleMappingSelect = document.getElementById('consoleMappingSelect');
+            if (consoleMappingSelect) {
+                consoleMappingSelect.value = selectedMappingConsole;
+                consoleMappingSelect.addEventListener('change', function() {
+                    switchMappingConsole(this.value);
+                });
+            }
+            
             document.addEventListener('keydown', handleKeyDown);
             
             // Game keyboard input handlers (translate user mappings to EmulatorJS keys)
@@ -4794,35 +4936,38 @@
             
             document.getElementById('wizardKeyboard').addEventListener('click', function() { startWizard('keyboard'); });
             document.getElementById('resetKeyboard').addEventListener('click', function() {
-                state.keyboardMap = Object.assign({}, defaultKeyboardMap);
+                var schema = getCurrentSchema();
+                state.keyboardMap = Object.assign({}, schema.defaultKeyboard);
                 render();
-                setStatus('Keyboard mappings reset', 'ready');
+                setStatus(schema.shortName + ' keyboard mappings reset', 'ready');
             });
             document.getElementById('saveKeyboard').addEventListener('click', function() {
-                saveMap(STORAGE_KEY_KEYBOARD, state.keyboardMap);
-                setStatus('Keyboard mappings saved!', 'ready');
-                showToast('Controls Saved', 'Your keyboard mappings have been saved.', 'success');
+                var schema = getCurrentSchema();
+                saveMap(schema.storageKeyboard, state.keyboardMap);
+                setStatus(schema.shortName + ' keyboard mappings saved!', 'ready');
+                showToast('Controls Saved', 'Your ' + schema.shortName + ' keyboard mappings have been saved.', 'success');
             });
             
             document.getElementById('wizardGamepad').addEventListener('click', function() { startWizard('gamepad'); });
             document.getElementById('resetGamepad').addEventListener('click', function() {
+                var schema = getCurrentSchema();
                 var idx = state.selectedGamepadIndex;
                 var controller = state.connectedGamepads[idx];
                 var controllerType = controller ? controller.type : 'generic';
-                var defaultMap = getDefaultMapForController(controllerType);
-                state.gamepadMaps[idx] = Object.assign({}, defaultMap);
-                localStorage.removeItem(STORAGE_KEY_GAMEPAD_PREFIX + idx);
+                var defaultMap = Object.assign({}, schema.defaultGamepad);
+                state.gamepadMaps[idx] = defaultMap;
+                localStorage.removeItem(schema.storageGamepadPrefix + idx);
                 render();
                 var playerLabel = state.connectedGamepads.length > 1 ? 'Player ' + (idx + 1) + ' ' : '';
-                var typeLabel = controllerType !== 'generic' ? ' (' + getControllerTypeName(controllerType) + ' defaults)' : '';
-                setStatus(playerLabel + 'controller mappings reset' + typeLabel, 'ready');
+                setStatus(playerLabel + schema.shortName + ' controller mappings reset', 'ready');
             });
             document.getElementById('saveGamepad').addEventListener('click', function() {
+                var schema = getCurrentSchema();
                 var idx = state.selectedGamepadIndex;
-                saveMap(STORAGE_KEY_GAMEPAD_PREFIX + idx, state.gamepadMaps[idx]);
+                saveMap(schema.storageGamepadPrefix + idx, state.gamepadMaps[idx]);
                 var playerLabel = state.connectedGamepads.length > 1 ? 'Player ' + (idx + 1) + ' ' : '';
-                setStatus(playerLabel + 'controller mappings saved!', 'ready');
-                showToast('Controls Saved', (playerLabel || 'Your ') + 'gamepad mappings have been saved.', 'success');
+                setStatus(playerLabel + schema.shortName + ' controller mappings saved!', 'ready');
+                showToast('Controls Saved', (playerLabel || 'Your ') + schema.shortName + ' gamepad mappings have been saved.', 'success');
             });
             
             // Debug toggle
